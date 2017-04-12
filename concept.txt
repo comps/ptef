@@ -55,7 +55,12 @@ the full path specification, or all tests in 'c' with /a/b/c, including,
 eventually, 'e', which is part of 'c'.
 
 Additionally, passing the path remainder to a file enables us to run imaginary
-or "virtual" tests that cannot be represented by a file on a filesystem (ltp).
+or "virtual" tests that cannot be represented by a file on a filesystem (ltp)
+as well as passing "parameters" to tests, ie.
+  /a/b/permission/devfileperm
+  /a/b/permission/dirperm
+  /a/b/permission/fileperm
+where 'permission' is an executable file (test).
 
 -----------------
 
