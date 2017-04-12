@@ -69,17 +69,18 @@ where 'permission' is an executable file (test).
 - suppose you're in 'c' and want to run 'e'
   - to run all setups from the topmost level, you would
       ../../../run d/e
-    as runner is smart enough to know where 'run' is and what PWD you're in
-    and builds the full path as /a/b/c/d/e
+    as runner is smart enough to know where 'run' is and what PWD you're in,
+    it builds the full path as /a/b/c/d/e
     - alternatively, some "fully qualified" mode could be enabled to specify
-      the full path manually
-        ../../../run -f a/b/c/d/e
+      the full path manually, identified as an absolute path by leading '/':
+        ../../../run /a/b/c/d/e
+      where '/' represents the directory containing 'run'
 
 - suppose you're in 'c' and want to run 'e', but have already run the setup
   for 'a' and 'b'
   - you would thus run setup for 'c' and any following dirs like
       ./run d/e
-    because './run' doesn't know about anything above it, so it constructs
+    because './run' doesn't know about anything above it, it constructs
     its own setup, recurses and eventually runs 'e', going back and executing
     cleanups, all the way up to 'c' where it stops, so you can re-run it while
     keeping the setup from 'a' and 'b' intact
@@ -96,12 +97,12 @@ $ realpath --relative-to=/var/cache/yum/x86_64 .
 -----------------
 
 To run more tests while sharing their setup/cleanup, you can specify more
-arguments to the runner binary. The runner uses a guessing logic to strip
-a common leading path as it enumerates the arguments until it encounters
-an argument where the initially found leading path prefix cannot be found.
-Then it passes the list of arguments (enumerated so far) to a sublevel
-runner, as arguments.
+arguments to the runner binary.
 
+The runner can use a guessing logic to strip a common leading path as it
+enumerates the arguments until it encounters an argument where the initially
+found leading path prefix cannot be found. Then it passes the list of arguments
+(enumerated so far) to a sublevel runner, as arguments.
 Note that this is an optional optimization, a runner doesn't need to implement
 it (in case the runner is ie. a simple C binary), it only reduces duplicate
 setup/cleanup events when running individually-specified tests.
@@ -128,8 +129,8 @@ setup/cleanup events when running individually-specified tests.
 
 - suppose you're in '/' and the user gives you:
     /a/b/c1 /x/y /a/b/c2
-  which the runner could reorder, however it has to honor the order, so it
-  runs all 3 separately, that is
+  which the runner could reorder, however it has to honor the order as /a/b/c2
+  might depend on something /x/y did, so it runs all 3 separately, that is
   - running 'a/runner' with 'b/c1'
   - running 'x/runner' with 'y'
   - running 'a/runner' with 'b/c2'
