@@ -1,0 +1,132 @@
+- test specification "lines"
+  - "line" is an abstraction behind some bash function machinery
+  - line can run in background (parallel) or foreground (block)
+
+
+-----------------
+
+The test runner is a source-able bash "include" file, with each level of the
+suite having its own shell script, sourcing the common include file, which
+contains logic for command line parsing, common functions, job control, etc.
+
+However the hierarchical API between levels is UNIX/POSIX, so a runner inside
+a level can easily be C/python/perl/any executable, though its functionality
+may be limited compared to the bash runner.
+
+It's also possible for the suite to provide "include" files/libs for more than
+just one language (bash), enabling easy multi-language runner implementations,
+if desired.
+
+Aside from the runner, such include/lib files would be provided for the tests
+themselves as well, making test-specific setup/cleanup easy, restarting and
+managing services, contacting remote daemons, etc.
+
+-----------------
+
+The test hierarchy behaves as if everything is a test; a file or a directory.
+
+When run as a directory, it's up to the runner to recurse further. In this case,
+the runner should look for and execute a file inside the directory matching the
+argv[0] of the runner, passing it a test path argument with one level removed,
+ie.
+
+/a/b/c/d/e
+
+- runner executable 'builder' in 'a' runs with argument 'b/c/d'
+- it finds that 'b' is a directory
+- it looks for an executable in 'b' called 'builder'
+- it runs the executable, passing 'c/d' to it
+
+When the target found is a file and not a directory, it runs the file, passing
+any remaining levels left to it as an argument, ie.
+
+/a/b
+
+- runner executable 'builder' in 'a' runs with argument 'b/c/d'
+- it finds that 'b' is an executable file
+- it runs 'b', passing 'c/d' as an argument to it
+
+If the path ends on an executable file and the argument would be empty,
+no argument is passed. For a directory, this would mean calling ie. 'builder'
+without arguments, which would tell it to run all tests under its rule.
+
+This allows, in the above /a/b/c/d/e case, to run ie. a single test 'e' using
+the full path specification, or all tests in 'c' with /a/b/c, including,
+eventually, 'e', which is part of 'c'.
+
+Additionally, passing the path remainder to a file enables us to run imaginary
+or "virtual" tests that cannot be represented by a file on a filesystem (ltp).
+
+-----------------
+
+/a/b/c/d/e
+
+- suppose you're in 'c' and want to run 'e'
+  - to run all setups from the topmost level, you would
+      ../../../run d/e
+    as runner is smart enough to know where 'run' is and what PWD you're in
+    and builds the full path as /a/b/c/d/e
+    - alternatively, some "fully qualified" mode could be enabled to specify
+      the full path manually
+        ../../../run -f a/b/c/d/e
+
+- suppose you're in 'c' and want to run 'e', but have already run the setup
+  for 'a' and 'b'
+  - you would thus run setup for 'c' and any following dirs like
+      ./run d/e
+    because './run' doesn't know about anything above it, so it constructs
+    its own setup, recurses and eventually runs 'e', going back and executing
+    cleanups, all the way up to 'c' where it stops, so you can re-run it while
+    keeping the setup from 'a' and 'b' intact
+
+$ pwd
+/var/cache/yum/x86_64/19/qa-tools/gen
+$ dirname $(realpath ./test.sh)
+/var/cache/yum/x86_64/19/qa-tools/gen
+$ dirname $(realpath ../../../test.sh)
+/var/cache/yum/x86_64
+$ realpath --relative-to=/var/cache/yum/x86_64 .
+19/qa-tools/gen
+
+-----------------
+
+To run more tests while sharing their setup/cleanup, you can specify more
+arguments to the runner binary. The runner uses a guessing logic to strip
+a common leading path as it enumerates the arguments until it encounters
+an argument where the initially found leading path prefix cannot be found.
+Then it passes the list of arguments (enumerated so far) to a sublevel
+runner, as arguments.
+
+Note that this is an optional optimization, a runner doesn't need to implement
+it (in case the runner is ie. a simple C binary), it only reduces duplicate
+setup/cleanup events when running individually-specified tests.
+
+/a/b
+/a/d
+/x/y/z
+
+- suppose you're in '/' and the user tells you to run:
+    /a/b/c{1,2,3} /a/d /x/y
+  which the interactive bash expands to commandline arguments:
+    /a/b/c1 /a/b/c2 /a/b/c3 /a/d /x/y
+  the runner then takes the first path element of the first argument ('a')
+  and grabs all following arguments that share the same prefix (4 of them)
+  and runs the 'a/runner' binary, passing it the 4 arguments
+  - after it finishes, it continues with parsing arguments, takes 'x' as
+    the prefix, however as /x/y is the last argument, it simply runs
+    'x/runner' and passes the one argument, 'y' to it
+
+  meanwhile, the 'a/runner' binary would iterate over the arguments it got,
+    b/c1 b/c2 b/c3 d
+  the same way as the original runner in '/' would, passing first 3 arguments
+  to 'b/runner' and running 'd/runner' without arguments, etc.
+
+- suppose you're in '/' and the user gives you:
+    /a/b/c1 /x/y /a/b/c2
+  which the runner could reorder, however it has to honor the order, so it
+  runs all 3 separately, that is
+  - running 'a/runner' with 'b/c1'
+  - running 'x/runner' with 'y'
+  - running 'a/runner' with 'b/c2'
+
+-----------------
