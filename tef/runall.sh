@@ -1,12 +1,12 @@
 #!/bin/bash
-set -x
+#set -x
 
 TEF_ARGV0_NAME=$(basename "$0")
 TEF_ARGV0_DNAME=$(dirname "$0")
 TEF_ARGV=("$@")
 
 tef_err() { echo "error: $1" 1>&2; exit 1; }
-#tef_warn() { echo "error: $1" 1>&2; }
+tef_warn() { echo "error: $1" 1>&2; }
 
 # if $1 is dir, run runner inside it, pass it args
 # if $1 is exec file, run it, pass it args
@@ -25,6 +25,8 @@ tef_run_child() {
             args[0]="./$1"
         fi
         "${args[@]}"
+    else
+        tef_warn "$1 not dir/exec, skipping"
     fi
 }
 
@@ -39,13 +41,6 @@ tef_normalize_path() {
         echo "${path:1}"  # omit leading '/'
     else
         realpath -ms --relative-to="$TEF_ARGV0_DNAME" "$path"
-#
-#        path=$(realpath -ms --relative-to="$TEF_ARGV0_DNAME" "$path")
-#        case "$path" in
-#            *..*)
-#            tef_warn "given path $path outside the runner scope, skipping" ;;
-#        esac
-#        echo "$path"
     fi
 }
 
@@ -78,22 +73,31 @@ tef_run() {
 
             # gather all args with a common prefix in sequential order,
             # store their postfixes (arg without prefix)
+
             prefix="${argv[$i]%%/*}"
+            postfix="${argv[$i]#*/}"
+            [ "$postfix" = "${argv[$i]}" ] && postfix=
+
+            # leaf part hit, no coalescing possible, just run
+            if [ -z "$postfix" ]; then
+                tef_run_child "$prefix"
+                (( i++ ))
+                continue
+            fi
+
+            # got a valid prefix and postfix
             for (( ; i < "${#argv[@]}" ; i++ )); do
-                if [ "${argv[$i]%%/*}" = "$prefix" ]; then
-                    postfix="${argv[$i]#*/}"
-                    # if there's no '/', bash doesn't remove anything, so treat
-                    # last path element as special (don't add anything to arr)
-                    if [ "$postfix" != "${argv[$i]}" ]; then
-                        arr+=("$postfix")
-                    fi
-                else
+                postfix="${argv[$i]#*/}"
+                [ "$postfix" = "${argv[$i]}" ] && postfix=
+
+                # if we hit a non-coalesce-able member, stop
+                if [ -z "$postfix" -o "${argv[$i]%%/*}" != "$prefix" ]; then
                     break
                 fi
+                arr+=("$postfix")
             done
 
             arr=("$prefix" "${arr[@]}")
-            #echo would run "${arr[@]}"
             tef_run_child "${arr[@]}"
         done
     fi
