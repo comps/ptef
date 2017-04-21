@@ -159,7 +159,7 @@ Here, the test name in CWD is "spaces" and "name", with the full dirname being
 supplied from a parent runner through the TEF_PREFIX var, ie.
   TEF_PREFIX="/some/test/name with"
 
-Second, the runner writes the same output it wrote to active terminal to its
+Second, the runner writes the same output* it wrote to active terminal to its
 standard output. If the stdout is connected to the same terminal, this output
 is suppressed. It's expected that a parent runner would redirect the output
 to a log file, not differentiating between a child runner vs child test.
@@ -169,6 +169,11 @@ inside 'logs' directory in the CWD (same as runner binary), creating it if it
 doesn't exist. Alternatively, if TEF_LOGS is nonempty, the log path would be
 constructed as $TEF_LOGS/$TEF_PREFIX/logs/. The output should go to a file with
 identical name as the test (no suffix) inside this 'logs' dir.
+
+*The output is nul-separated instead of newline-separated and is thus a binary
+ file, not a text file. This helps machine parsing when test names contain
+ newlines. It also contains a magic header of 'tefresults\0'. The file is always
+ opened with O_APPEND and should never be overwritten in case of re-runs.
 
 -----------------
 
