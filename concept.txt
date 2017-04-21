@@ -166,6 +166,8 @@ identical name as the test (no suffix) inside this 'logs' dir.
  file, not a text file. This helps machine parsing when test names contain
  newlines. It also contains a magic header of 'tefresults\0'. The file is always
  opened with O_APPEND and should never be overwritten in case of re-runs.
+ An external tool can scan the 'logs' dir for 'tefresults' binary files to
+ construct a summary of all executed tests.
 
 -----------------
 
