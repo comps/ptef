@@ -1,22 +1,24 @@
-The test runner is a source-able bash "include" file, with each level of the
-suite having its own shell script, sourcing the common include file, which
-contains logic for command line parsing, common functions, job control, etc.
+The suite consists of hiearchical "levels", separated by directory levels
+(or virtual/imaginary levels), with each level having one "runner" responsible
+for test execution and results reporting. The API between levels is UNIX/POSIX,
+so the runners can be implemented in different programming languages and don't
+rely on implementation specifics.
 
-However the hierarchical API between levels is UNIX/POSIX, so a runner inside
-a level can easily be C/python/perl/any executable, though its functionality
-may be limited compared to the bash runner.
+Anything outside the API specification is implementation-dependent, ie. if the
+API doesn't specify which tests to run (all? based on some config? list?), it's
+up to the runner to decide which tests to include.
 
-It's also possible for the suite to provide "include" files/libs for more than
-just one language (bash), enabling easy multi-language runner implementations,
-if desired.
-
-Aside from the runner, such include/lib files would be provided for the tests
-themselves as well, making test-specific setup/cleanup easy, restarting and
-managing services, contacting remote daemons, etc.
+As symlinks inside the suite are allowed (to runners, to executables, to dirs)
+and always dereferenced by the runner logic, one runner binary could be shared
+across levels by simply symlinking it from a common directory. Similarly,
+runners can be independent with the common code in include/import/source files.
+This spec or the API leave this to the implementation.
 
 -----------------
 
 The test hierarchy behaves as if everything is a test; a file or a directory.
+It also doesn't differentiate between a test and a child runner, the API is the
+same.
 
 When run as a directory, it's up to the runner to recurse further. In this case,
 the runner should look for and execute a file inside the directory matching the
@@ -41,15 +43,15 @@ any remaining levels left to it as an argument, ie.
 
 If the path ends on an executable file and the argument would be empty,
 no argument is passed. For a directory, this would mean calling ie. 'builder'
-without arguments, which would tell it to run all tests under its rule.
+without arguments, which could ie. tell it to run all tests under its rule.
 
 This allows, in the above /a/b/c/d/e case, to run ie. a single test 'e' using
 the full path specification, or all tests in 'c' with /a/b/c, including,
 eventually, 'e', which is part of 'c'.
 
 Additionally, passing the path remainder to a file enables us to run imaginary
-or "virtual" tests that cannot be represented by a file on a filesystem (ltp)
-as well as passing "parameters" to tests, ie.
+or "virtual" tests that cannot be represented by a file on a filesystem (like an
+LTP runner) as well as passing "parameters" to tests, ie.
   /a/b/permission/devfileperm
   /a/b/permission/dirperm
   /a/b/permission/fileperm
@@ -64,10 +66,9 @@ where 'permission' is an executable file (test).
       ../../../run d/e
     as runner is smart enough to know where 'run' is and what PWD you're in,
     it builds the full path as /a/b/c/d/e
-    - alternatively, some "fully qualified" mode could be enabled to specify
-      the full path manually, identified as an absolute path by leading '/':
+    - alternatively, an absolute path can be passed to be run from the runner's
+      (argv[0]) location, ignoring CWD:
         ../../../run /a/b/c/d/e
-      where '/' represents the directory containing 'run'
 
 - suppose you're in 'c' and want to run 'e', but have already run the setup
   for 'a' and 'b'
@@ -77,15 +78,6 @@ where 'permission' is an executable file (test).
     its own setup, recurses and eventually runs 'e', going back and executing
     cleanups, all the way up to 'c' where it stops, so you can re-run it while
     keeping the setup from 'a' and 'b' intact
-
-$ pwd
-/var/cache/yum/x86_64/19/qa-tools/gen
-$ dirname $(realpath ./test.sh)
-/var/cache/yum/x86_64/19/qa-tools/gen
-$ dirname $(realpath ../../../test.sh)
-/var/cache/yum/x86_64
-$ realpath --relative-to=/var/cache/yum/x86_64 .
-19/qa-tools/gen
 
 -----------------
 
@@ -97,7 +89,7 @@ enumerates the arguments until it encounters an argument where the initially
 found leading path prefix cannot be found. Then it passes the list of arguments
 (enumerated so far) to a sublevel runner, as arguments.
 Note that this is an optional optimization, a runner doesn't need to implement
-it (in case the runner is ie. a simple C binary), it only reduces duplicate
+it (in case the runner is ie. a simple C binary), as it only reduces duplicate
 setup/cleanup events when running individually-specified tests.
 
 /a/b
@@ -178,16 +170,6 @@ identical name as the test (no suffix) inside this 'logs' dir.
 -----------------
 
 Random Notes:
-
-- test specification "lines"
-  - "line" is an abstraction behind some bash function machinery
-  - line can run in background (parallel) or foreground (block)
-
-- symlinks inside the suite are allowed, this includes
-  - symlinks to runners
-  - symlinks to execuable files / tests
-  - symlinks to directories for further recursion
-  in general, any symlink should be dereferenced to check for file type
 
 -----------------
 
