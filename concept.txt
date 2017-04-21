@@ -128,6 +128,48 @@ setup/cleanup events when running individually-specified tests.
   - running 'x/runner' with 'y'
   - running 'a/runner' with 'b/c2'
 
+- when two tests are specified where one is the subset of the other,
+  like /a/b/c and /a/b/c/d, there's no clear solution to it, because either
+  - we run only /a/b/c, which runs 'd' amongst other things
+  - we run only /a/b/c/d
+  - we run both /a/b/c and then /a/b/c/d separately, ignoring common prefix
+  however as common-prefix optimization is optional, choice 3 wins because
+  without the optimization, both tests would be run separately, which is also
+  what the user would naturally expect
+
+-----------------
+
+Result reporting is done by runners to multiple destinations.
+
+First, realtime reporting is done to the active TTY or /dev/tty, but only if
+the process has a valid terminal (ie. on fd 0). This is done in the following
+format:
+  STATUS /some/test/name with/spaces
+  STATUS /another/test/name
+where STATUS is one of PASS (retval 0) or FAIL (retval non-0) for a finished
+test or RUN for a test that is being started, meaning the log could look like
+  RUN /some/test/name with/spaces
+  PASS /some/test/name with/spaces
+  RUN /another/test/name
+  FAIL /another/test/name
+but the lines may be interleaved if the tests run in parallel. In that case,
+the runner needs to flock() its active tty to get exclusive access for writing.
+
+Here, the test name in CWD is "spaces" and "name", with the full dirname being
+supplied from a parent runner through the TEF_PREFIX var, ie.
+  TEF_PREFIX="/some/test/name with"
+
+Second, the runner writes the same output it wrote to active terminal to its
+standard output. If the stdout is connected to the same terminal, this output
+is suppressed. It's expected that a parent runner would redirect the output
+to a log file, not differentiating between a child runner vs child test.
+
+When running a test, a runner would redirect both stdout and stderr to a file
+inside 'logs' directory in the CWD (same as runner binary), creating it if it
+doesn't exist. Alternatively, if TEF_LOGS is nonempty, the log path would be
+constructed as $TEF_LOGS/$TEF_PREFIX/logs/. The output should go to a file with
+identical name as the test (no suffix) inside this 'logs' dir.
+
 -----------------
 
 Random Notes:
@@ -136,16 +178,11 @@ Random Notes:
   - "line" is an abstraction behind some bash function machinery
   - line can run in background (parallel) or foreground (block)
 
-- when two tests are specified where one is the subset of the other,
-  like /a/b/c and /a/b/c/d, there's no clear solution to it, because either
-
-  - we run only /a/b/c, which runs 'd' amongst other things
-  - we run only /a/b/c/d
-  - we run both /a/b/c and then /a/b/c/d separately, ignoring common prefix
-
-  however as common-prefix optimization is optional, choice 3 wins because
-  without the optimization, both tests would be run separately, which is also
-  what the user would naturally expect
+- symlinks inside the suite are allowed, this includes
+  - symlinks to runners
+  - symlinks to execuable files / tests
+  - symlinks to directories for further recursion
+  in general, any symlink should be dereferenced to check for file type
 
 -----------------
 
