@@ -145,7 +145,8 @@ test or RUN for a test that is being started, meaning the log could look like
   RUN /another/test/name
   FAIL /another/test/name
 but the lines may be interleaved if the tests run in parallel. In that case,
-the runner needs to flock() its active tty to get exclusive access for writing.
+the runner needs to flock() its active tty (ie. fd 0) to get exclusive access
+for writing.
 
 Here, the test name in CWD is "spaces" and "name", with the full dirname being
 supplied from a parent runner through the TEF_PREFIX var, ie.
@@ -158,8 +159,12 @@ only the base test names would be included, without a prefix:
   tefresults\0RUN spaces\0PASS spaces\0RUN name\0FAIL name\0
 
 If the stdout is connected to current terminal, this output is suppressed.
+In C, this can be done with fstat() on ie. fd 0 vs fd 1 and comparing st_ino
+and st_dev, which both together uniquely identify a file on the system (incl.
+a terminal device).
 It's expected that a parent runner would redirect the output to a log file,
-not differentiating between a child runner vs child test.
+as it doesn't differentiate between a child runner vs child test as "everything
+is a test".
 
 When running a test, a runner would redirect both stdout and stderr to a file
 inside 'logs' directory in the CWD (same as runner binary), creating it if it
@@ -171,7 +176,7 @@ Any log file (stdout redirected) would be opened by the runner as O_APPEND,
 allowing test re-run output to be accumulated and test runner binary file
 to cumulatively collect results for all runs/reruns.
 The test/runner cannot rely on stdout being a seekable file, they have to
-use it as a write-only stream.
+use it as a write-only stream, writing the binary header on every open.
 
 -----------------
 

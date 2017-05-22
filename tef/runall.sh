@@ -6,7 +6,16 @@ TEF_ARGV0_DNAME=$(dirname "$0")
 TEF_ARGV=("$@")
 
 tef_err() { echo "error: $1" 1>&2; exit 1; }
-tef_warn() { echo "error: $1" 1>&2; }
+tef_warn() { echo "warn: $1" 1>&2; }
+
+# execute a command line,
+# - logging the retval status to terminal, if available
+# - logging the retval status to stdout, if different from terminal
+# - redirecting stderr/stdout to a log file
+exec_args() {
+    # TODO
+    "$@"
+}
 
 # if $1 is dir, run runner inside it, pass it args
 # if $1 is exec file, run it, pass it args
@@ -16,7 +25,7 @@ tef_run_child() {
         if [ -x "$1/$TEF_ARGV0_NAME" ]; then
             pushd "$1" >/dev/null
             args[0]="./$TEF_ARGV0_NAME"
-            "${args[@]}"
+            exec_args "${args[@]}"
             popd >/dev/null
         fi
     elif [ -x "$1" ]; then
@@ -24,7 +33,7 @@ tef_run_child() {
         if [ "${1::1}" != "/" -a "${1::2}" != "./" ]; then
             args[0]="./$1"
         fi
-        "${args[@]}"
+        exec_args "${args[@]}"
     else
         tef_warn "$1 not dir/exec, skipping"
     fi
