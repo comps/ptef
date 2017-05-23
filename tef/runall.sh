@@ -7,12 +7,16 @@ TEF_ARGV=("$@")
 #TEF_PREFIX="${TEF_PREFIX:-/}"
 TEF_TTY_FD=0
 
-tef_err() { echo "error: $1" 1>&2; exit 1; }
-tef_warn() { echo "warn: $1" 1>&2; }
+tef_err() {
+    [ -t "$TEF_TTY_FD" ] && echo "error: $1" >&${TEF_TTY_FD}
+    exit 1
+}
+tef_warn() {
+    [ -t "$TEF_TTY_FD" ] && echo "warn: $1" >&${TEF_TTY_FD}
+}
 
 is_fd_open() {
-    # (doesn't work for 2, obviously)
-    command >&${1} 2>/dev/null
+    [ -e "/proc/self/fd/$1" ]
 }
 
 # log a status for a test name (path)
@@ -23,9 +27,9 @@ log_status() {
     if [ -t "$TEF_TTY_FD" ]; then
         echo "$status $TEF_PREFIX/$name" >&${TEF_TTY_FD}
     fi
-#    if is_fd_open 1; then
-#        echo -ne "${1}\0${2}\0"
-#    fi
+    if is_fd_open 1; then
+        echo -ne "${1}\0${2}\0"
+    fi
 }
 
 # if $1 is dir, run runner inside it, pass it args
@@ -35,22 +39,30 @@ tef_run_child() {
     args[0]="${args[0]#./}" # tidy up
     local base="${args[0]}"
 
+    # prepare child log
+    # TODO: this may create empty logdir if no tests are found,
+    #       solve this better in python/C implementation
+    local logdir=logs
+    [ "$TEF_LOGS" ] && logdir="${TEF_LOGS}${TEF_PREFIX}/logs"
+    mkdir -p "$logdir"
+
+    # run the child process
     if [ -d "$base" ]; then
         if [ -x "$base/$TEF_ARGV0_NAME" ]; then
-            pushd "$base" >/dev/null
             log_status RUN "$base"
             args[0]="./$TEF_ARGV0_NAME"
-            TEF_PREFIX="$TEF_PREFIX/$base" "${args[@]}"
+            {
+                pushd "$base" >/dev/null
+                TEF_PREFIX="$TEF_PREFIX/$base" "${args[@]}"
+                popd >/dev/null
+            } &>> "$logdir/$base"
             [ $? -eq 0 ] && log_status PASS "$base" || log_status FAIL "$base"
-            popd >/dev/null
         fi
     elif [ -x "$base" ]; then
         log_status RUN "$base"
         args[0]="./$1"
-        "${args[@]}"
+        "${args[@]}" &>> "$logdir/$base"
         [ $? -eq 0 ] && log_status PASS "$base" || log_status FAIL "$base"
-    else
-        tef_warn "$base not dir/exec, skipping"
     fi
 }
 
@@ -77,7 +89,12 @@ tef_run() {
     # (only if stdout != terminal, else close stdout)
     local term=$(readlink -s "/proc/$$/fd/$TEF_TTY_FD")
     local out=$(readlink -s "/proc/$$/fd/1")
-    #[ "$term" = "$out" ] && exec 1>&-
+    if [ "$term" = "$out" ]; then
+        exec 1>&-
+    else
+        # stdout is a valid binary log destination, write header
+        echo -ne 'tefresults\0'
+    fi
 
     # no args, run all without args
     if [ "${#TEF_ARGV[@]}" -eq 0 ]; then
@@ -133,8 +150,13 @@ tef_run() {
                 arr+=("$postfix")
             done
 
-            arr=("$prefix" "${arr[@]}")
-            tef_run_child "${arr[@]}"
+            # skip non-dirs and non-executables
+            if [ -d "$prefix" -o -x "$prefix" ]; then
+                arr=("$prefix" "${arr[@]}")
+                tef_run_child "${arr[@]}"
+            else
+                tef_warn "$prefix not dir/exec, skipping"
+            fi
         done
     fi
 }
