@@ -131,7 +131,9 @@ setup/cleanup events when running individually-specified tests.
 
 -----------------
 
-Result reporting is done by runners to multiple destinations.
+Result reporting is done by runners to multiple destinations and should be done
+by every runner (every recursion level). Only the test path/basename should be
+reported/logged, without any arguments passed.
 
 First, realtime reporting is done to the active TTY or /dev/tty, but only if
 the process has a valid terminal (ie. on fd 0). This is done in the following
