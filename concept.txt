@@ -154,6 +154,8 @@ supplied from a parent runner through the TEF_PREFIX var, ie.
   TEF_PREFIX="/some/test/name with"
 
 The status may be colorized or bold/underline/etc. if the terminal supports it.
+Also, there may be any number of spaces/tabs between the status and the test
+name, however at least one is mandatory.
 
 Second, the runner writes similar output as it wrote to active terminal to its
 standard output. It would however use a binary format with nul-separated results

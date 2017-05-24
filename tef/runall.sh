@@ -39,7 +39,7 @@ log_status() {
         case "$status" in
             PASS) echo -ne "\033[1;32m${status}\033[0m" >&2 ;;
             FAIL) echo -ne "\033[1;31m${status}\033[0m" >&2 ;;
-            RUN) echo -ne "\033[1;34m${status}\033[0m" >&2 ;;
+            RUN) echo -ne "\033[1;34m${status} \033[0m" >&2 ;;
             *) echo -n "$status" >&2 ;;
         esac
         echo " $TEF_PREFIX/$name" >&2
