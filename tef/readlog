@@ -1,0 +1,27 @@
+#!/bin/bash
+#set -x
+
+err() {
+    echo "error: $1" >&2
+    exit 1
+}
+warn() {
+    echo "warn: $1" >&2
+}
+
+
+
+while IFS= read -r -d '' filename; do
+    exec {fd}<"$filename"
+    # len 'tefresults\0' = 11, bash variables ignore \0, so 10 is stored
+    read -u "$fd" -n 11 -d '' header
+    [ "$header" = "tefresults" ] || { exec {fd}>&-; continue; }
+    read -u "$fd" -d '' version
+    [ "$version" -eq 1 ] || { exec {fd}>&-; continue; }
+    echo "found metafile: $filename"
+    exec {fd}>&-
+done < <(find . -type f -size +11c -print0)
+
+ls /proc/$$/fd
+
+# vim: sts=4 sw=4 et :

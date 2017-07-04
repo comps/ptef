@@ -105,7 +105,7 @@ tef_run() {
     setup_io
 
     # prepare binary header
-    echo -ne 'tefresults\0'
+    echo -ne 'tefresults\0\x31\0'
 
     # no args, run all without args
     if [ "${#TEF_ARGV[@]}" -eq 0 ]; then
