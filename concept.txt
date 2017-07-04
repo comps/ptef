@@ -159,9 +159,10 @@ name, however at least one is mandatory.
 
 Second, the runner writes similar output as it wrote to active terminal to its
 standard output. It would however use a binary format with nul-separated results
-instead of newline separation and include a 'tefresults\0' header. Additionally,
-only the base test names would be included, without a prefix:
-  tefresults\0RUN spaces\0PASS spaces\0RUN name\0FAIL name\0
+instead of newline separation and include a 'tefresults' header with ASCII
+representation of a header version. Additionally, only the base test names would
+be included, without a prefix:
+  tefresults\01\0RUN spaces\0PASS spaces\0RUN name\0FAIL name\0
 
 If the stdout is connected to current terminal, this output is suppressed.
 In C, this can be done with fstat() on ie. fd 0 vs fd 1 and comparing st_ino
