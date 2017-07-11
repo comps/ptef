@@ -9,19 +9,60 @@ warn() {
     echo "warn: $1" >&2
 }
 
+declare -A results
 
+print_status() {
+    local tst="/${1#./}" res="$2"
+    if [ "$TERM" -a "$(tput colors)" -ge 8 ]; then
+        case "$res" in
+            PASS) echo -ne "\033[1;32m${res}\033[0m" ;;
+            FAIL) echo -ne "\033[1;31m${res}\033[0m" ;;
+            RUN) echo -ne "\033[1;34m${res} \033[0m" ;;
+            *) echo -n "$res" ;;
+        esac
+        echo " $tst"
+    else
+        echo "$res $tst"
+    fi
+}
+
+process_one() {
+    local tst="$1" res="$2"
+    shift 2
+
+    case "$1" in
+        final) results["$tst"]="$res" ;;
+        only)  [ "$res" = "$2" ] && results["$tst"]="$res" ;;
+        not)   [ "$res" != "$2" ] && results["$tst"]="$res" ;;
+        all|*) print_status "$tst" "$res" ;;
+    esac
+}
 
 while IFS= read -r -d '' filename; do
     exec {fd}<"$filename"
+
     # len 'tefresults\0' = 11, bash variables ignore \0, so 10 is stored
-    read -u "$fd" -n 11 -d '' header
+    read -u "$fd" -n 11 -r -d '' header
     [ "$header" = "tefresults" ] || { exec {fd}>&-; continue; }
-    read -u "$fd" -d '' version
+    read -u "$fd" -r -d '' version
     [ "$version" -eq 1 ] || { exec {fd}>&-; continue; }
     echo "found metafile: $filename"
-    exec {fd}>&-
-done < <(find . -type f -size +11c -print0)
 
-ls /proc/$$/fd
+    # TODO: doesn't support tests or paths with /logs/ in name
+    path_base="${filename/\/logs\//\/}"  # remove filename
+
+    while IFS= read -u "$fd" -r -d '' status && IFS= read -u "$fd" -r -d '' test; do
+        process_one "$path_base/$test" "$status" "$@"
+    done
+    exec {fd}>&-
+done < <(find . -type f -size +11c -print0 | sort -z)
+
+case "$1" in
+    final|only|not)
+        while IFS= read -r -d '' key; do
+            print_status "$key" "${results[$key]}"
+        done < <(printf '%s\0' "${!results[@]}" | sort -z)
+        ;;
+esac
 
 # vim: sts=4 sw=4 et :

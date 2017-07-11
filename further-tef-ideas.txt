@@ -1,0 +1,9 @@
+- don't have tefresults as binary log
+- instead, output verbose, debug info, (or errors) and store it in logs/, like with any executed test (which presumably uses stdout/stderr for verbose data)
+- get rid of any binary formats, any "if stdout is the same terminal as fd 0", etc.
+
+- basically:
+- use logs/ for verbose optional debug whatever output
+  - also allows easy manual debugging via a runner option that doesn't redirect stderr to a file, but leaves it attached to terminal
+- if fd 0 is a terminal, output (the text version of) the test results to it (STATUS and test name, full path with TEF_PREFIX)
+- if some variable (TEF_RESULTS or whatever) is set to a fd number, output the stuff sent to fd 0 tty to this fd as well
