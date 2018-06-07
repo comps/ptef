@@ -13,3 +13,4 @@
 TODO:
 - hidden files/executables (starting with '.') should not be run
 - specify execution order (alphanumerical)
+- passed arguments need to be normalized, paths leading up ('..') rejected/trimmed

@@ -1,12 +1,10 @@
 # Test Execution Framework (TEF) - Specification
 
-Version 0.4
+Version 0.5
 
 ## Unspecified/undefined behavior
 
 Anything outside this specification is implementation-dependent.
-Ie. if the spec doesn't specify which tests to run (All? Based on some config?
-From a list?), it's up to the implementation to decide which tests to include.
 
 This document declares the minimum mandatory interface, other documents then
 supplement it with recommendations and rationale.
@@ -23,7 +21,7 @@ Symbolic links (files) are always dereferenced when accessing a directory or
 executing a file.
 
 The primary function of the test "runner" is to iterate over the contents of
-the directory it itself resides in (dirname of `argv[0]`):
+the current working directory (CWD):
 
 * If a directory is encountered, it makes an attempt to find an executable file
   matching the current basename of `argv[0]` in this directory and execute it
@@ -32,11 +30,7 @@ the directory it itself resides in (dirname of `argv[0]`):
 * If an executable file is encountered and it doesn't match the basename of
   `argv[0]`, it is executed
 
-"Dirname" being the directory path portion of `argv[0]`, "basename" the last
-member of the path, usually a filename.
-
-Unless specified otherwise, the runner shall exit with non-0 return value
-if the dirname and CWD are not the same directory.
+"Basename" being the last member of the path, usually a filename.
 
 ## Argument passing
 
@@ -87,8 +81,8 @@ where `permission` is an executable file (test).
 ## Standard IO redirection and logging
 
 When executing any executable, the runner redirects both stdout and stderr
-to a file inside a `logs` directory in the dirname of `argv[0]`, creating the
-directory if it doesn't exist.
+to a file inside a `logs` directory in the CWD, creating the directory if it
+doesn't exist.
 
 Alternatively, if `TEF_LOGS` env variable exists, path constructed as
 ```
@@ -98,10 +92,9 @@ is to be used instead of the `logs` directory, created if necessary, relative
 to CWD. If `TEF_PREFIX` doesn't exist, it is defined as `/`, see below for
 further details.
 
-If the executable is in the same directory as the runner (dirname of `argv[0]`),
-the log output file name matches the name of the executed binary. If the
-executable is a runner inside a subdirectory, a name of the subdirectory is used
-instead.
+If the executable is in CWD, the log output file name matches the name of
+the executed binary. If the executable is a runner inside a subdirectory,
+a name of the subdirectory is used instead.
 
 The output file is opened for appending (`O_APPEND`), not overwriting.
 

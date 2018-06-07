@@ -19,7 +19,6 @@
 #set -x
 
 TEF_ARGV0_NAME=$(basename "$0")
-TEF_ARGV0_DNAME=$(dirname "$0")
 TEF_ARGV=("$@")
 
 tef_err() {
@@ -100,17 +99,13 @@ tef_run_child() {
     fi
 }
 
-# given an absolute path, return relative path from the runner's location
-# (essentially just omit the leading '/')
-# given a relative path from the caller's CWD, return path relative to
-# it from the runner's location
 tef_normalize_path() {
     local path="$1"
     if [ "${path::1}" = "/" ]; then
         path=$(realpath -ms "$path")  # remove trailing '/', '//', '..', etc.
         echo "${path:1}"  # omit leading '/'
     else
-        realpath -ms --relative-to="$TEF_ARGV0_DNAME" "$path"
+        realpath -ms --relative-to="." "$path"
     fi
 }
 
