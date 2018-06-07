@@ -7,3 +7,9 @@
   - also allows easy manual debugging via a runner option that doesn't redirect stderr to a file, but leaves it attached to terminal
 - if fd 0 is a terminal, output (the text version of) the test results to it (STATUS and test name, full path with TEF_PREFIX)
 - if some variable (TEF_RESULTS or whatever) is set to a fd number, output the stuff sent to fd 0 tty to this fd as well
+
+
+
+TODO:
+- hidden files/executables (starting with '.') should not be run
+- specify execution order (alphanumerical)
