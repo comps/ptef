@@ -48,7 +48,7 @@ setup_io() {
 # - to stdout, if available
 log_status() {
     local status="$1" name="${2#./}"
-    if [ "$TERM" -a "$(tput colors)" -ge 8 ]; then
+    if [ -t 0 -a "$(tput colors)" -ge 8 ]; then
         case "$status" in
             PASS) echo -ne "\033[1;32m${status}\033[0m" >&2 ;;
             FAIL) echo -ne "\033[1;31m${status}\033[0m" >&2 ;;

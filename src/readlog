@@ -30,7 +30,7 @@ declare -A results
 
 print_status() {
     local tst="/${1#./}" res="$2"
-    if [ "$TERM" -a "$(tput colors)" -ge 8 ]; then
+    if [ -t 1 -a "$(tput colors)" -ge 8 ]; then
         case "$res" in
             PASS) echo -ne "\033[1;32m${res}\033[0m" ;;
             FAIL) echo -ne "\033[1;31m${res}\033[0m" ;;
