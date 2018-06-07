@@ -49,8 +49,8 @@ process_one() {
 
     case "$1" in
         final) results["$tst"]="$res" ;;
-        only)  [ "$res" = "$2" ] && results["$tst"]="$res" ;;
-        not)   [ "$res" != "$2" ] && results["$tst"]="$res" ;;
+        only)  [ "$res" = "$2" ] && print_status "$tst" "$res" ;;
+        not)   [ "$res" != "$2" ] && print_status "$tst" "$res" ;;
         all|*) print_status "$tst" "$res" ;;
     esac
 }
