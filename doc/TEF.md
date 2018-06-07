@@ -36,7 +36,8 @@ the current working directory (CWD):
 
 When called without CLI arguments, the behavior of the runner is undefined.
 The recommended approach is to execute all files/directories, according to the
-`argv[0]` rules above, ignoring hidden files (beginning with `.`).
+`argv[0]` rules above, ignoring hidden files (beginning with `.`), in
+alphanumerical order.
 
 When called with arguments, the runner must execute exactly the files or
 directories specified by the arguments.
@@ -77,6 +78,11 @@ Amongst other things, this helps with test parametrization, ie. running
 /a/b/permission/fileperm
 ```
 where `permission` is an executable file (test).
+
+All arguments need to be normalized and fully resolved prior to any evaluation,
+that is any `..` paths should be transcribed, `./` removed, etc. If the final
+result leads above CWD, it must be trimmed to stay in CWD, ie. by removing all
+leading `..` elements.
 
 ## Standard IO redirection and logging
 
