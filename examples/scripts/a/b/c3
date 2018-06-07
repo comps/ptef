@@ -1,0 +1,3 @@
+#!/bin/bash
+echo c3 running: \$#: $#   \$@: "$@"
+exit "${C3EXIT:-0}"

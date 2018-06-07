@@ -18,9 +18,6 @@
 
 #set -x
 
-TEF_ARGV0_NAME=$(basename "$0")
-TEF_ARGV=("$@")
-
 tef_err() {
     echo "error: $1" >&2
     exit 1
@@ -120,7 +117,7 @@ tef_run() {
     echo -ne 'tefresults\0\x31\0'
 
     # no args, run all without args
-    if [ "${#TEF_ARGV[@]}" -eq 0 ]; then
+    if [ "${#TEF_ARGS[@]}" -eq 0 ]; then
         # do two loops to avoid stdin (fd 0) redirection issues;
         # (the < <(find..) would overwrite the original tty on fd 0)
         local children=()
@@ -136,7 +133,7 @@ tef_run() {
     else
         local argv=() arg= i=0 arr= prefix= postfix=
 
-        for arg in "${TEF_ARGV[@]}"; do
+        for arg in "${TEF_ARGS[@]}"; do
             arg=$(tef_normalize_path "$arg")
             case "$arg" in
                 *..*) tef_err "given path $path outside the runner scope" ;;
@@ -187,6 +184,26 @@ tef_run() {
         done
     fi
 }
+
+
+
+#
+# args:
+#   -a: override detected argv[0]
+#
+
+TEF_ARGV0_NAME=$(basename "$0")
+
+while getopts ":a:" opt; do
+    case "$opt" in
+        a)
+            TEF_ARGV0_NAME="$OPTARG"
+            ;;
+    esac
+done
+shift "$((OPTIND-1))"
+
+TEF_ARGS=("$@")
 
 tef_run
 

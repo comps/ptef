@@ -1,0 +1,3 @@
+#!/bin/sh
+echo "this should not be run"
+exit 1

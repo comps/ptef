@@ -180,5 +180,6 @@ a more user-friendly interface and richer feature set.
 
 ## Examples
 
-See other documents for further examples explaining these basic concepts
-as well as demonstrating example deployments and practical usage.
+See other documents for further examples explaining these basic concepts.
+
+Also see the `examples` directory for practical deployment demonstration.

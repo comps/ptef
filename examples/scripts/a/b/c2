@@ -1,0 +1,3 @@
+#!/bin/bash
+echo c2 running: \$#: $#   \$@: "$@"
+exit 1

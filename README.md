@@ -40,4 +40,3 @@ only for management of their execution.
 
 * It's KISS. It's small and does what it was designed to do, nothing more.
   Any non-essential parts are either intentionally left undefined or optional.
-
