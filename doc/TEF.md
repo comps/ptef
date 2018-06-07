@@ -111,8 +111,8 @@ every runner (every recursion level).
 
 ### Realtime reporting
 
-If the runner process has a valid terminal (ie. on fd 0), it outputs the report
-on it in the following format:
+If the runner process has a valid terminal on fd 0 (see `tcgetattr(3)`),
+it outputs the report on it in the following format:
 ```
 STATUS executable_name
 ```
@@ -155,10 +155,8 @@ however at least one is mandatory.
 
 ## Reporting into a log
 
-If the runner does not have a terminal or if its standard output (stdout) is
-different from the connected terminal (`fstat()` on both fds, comparing `st_ino`
-and `st_dev`), it outputs a simplified binary version of the format used for
-terminal reporting.
+If stdout is not a terminal, the runner outputs a simplified binary version
+of the format used for terminal reporting.
 
 This simplified version starts with a header and a version (both ASCII),
 followed by nul-separated results (`\0` denotes a nul byte):

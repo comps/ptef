@@ -36,11 +36,9 @@ setup_io() {
         exec 2>/dev/null
     fi
 
-    # if stdout is different (term or not) from the reference terminal,
-    # leave it open for binary output, else suppress it
-    local term=$(readlink -s "/proc/$$/fd/0")
-    local out=$(readlink -s "/proc/$$/fd/1")
-    [ "$term" = "$out" ] && exec 1>/dev/null
+    # if stdout is not terminal, leave it open for binary output,
+    # else suppress it
+    [ -t 1 ] && exec 1>/dev/null
 }
 
 # log a status for a test name (path)
