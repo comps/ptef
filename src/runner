@@ -59,7 +59,7 @@ log_status() {
     else
         echo "$status $TEF_PREFIX/$name" >&2
     fi
-    echo -ne "${1}\0${2}\0"
+    echo -ne "${1} ${2}\0"
 }
 
 # if $1 is dir, run runner inside it, pass it args
@@ -115,7 +115,7 @@ tef_run() {
     setup_io
 
     # prepare binary header
-    echo -ne 'tefresults\0\x31\0'
+    echo -ne 'tefresults\0\x32\0'
 
     # no args, run all without args
     if [ "${#TEF_ARGS[@]}" -eq 0 ]; then

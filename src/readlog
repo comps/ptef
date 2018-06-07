@@ -55,20 +55,34 @@ process_one() {
     esac
 }
 
+check_version() {
+    local fd="$1" version=
+    IFS= read -u "$fd" -r -d '' version
+    [ "$version" = "2" ]
+}
+
 while IFS= read -r -d '' filename; do
     exec {fd}<"$filename"
 
     # len 'tefresults\0' = 11, bash variables ignore \0, so 10 is stored
     read -u "$fd" -n 11 -r -d '' header
     [ "$header" = "tefresults" ] || { exec {fd}>&-; continue; }
-    read -u "$fd" -r -d '' version
-    [ "$version" -eq 1 ] || { exec {fd}>&-; continue; }
-    echo "found metafile: $filename"
+    check_version "$fd" || { exec {fd}>&-; continue; }
 
-    # TODO: doesn't support tests or paths with /logs/ in name
-    path_base="${filename/\/logs\//\/}"  # remove filename
+    #echo "found metafile: $filename"
 
-    while IFS= read -u "$fd" -r -d '' status && IFS= read -u "$fd" -r -d '' test; do
+    # TODO: doesn't support tests or paths with /logs/ in name;
+    # needed because we search through /some/path/logs/* instead of /some/path/*
+    # and we need to prepend /some/path/ to the test names
+    path_base="${filename/\/logs\//\/}"
+
+    while IFS= read -u "$fd" -r -d '' block; do
+        # check for repeated headers
+        if [ "$block" = "tefresults" ]; then
+            check_version "$fd" && continue || break
+        fi
+
+        read -r status test <<<"$block"
         process_one "$path_base/$test" "$status" "$@"
     done
     exec {fd}>&-
@@ -76,9 +90,11 @@ done < <(find . -type f -size +11c -print0 | sort -z)
 
 case "$1" in
     final|only|not)
-        while IFS= read -r -d '' key; do
-            print_status "$key" "${results[$key]}"
-        done < <(printf '%s\0' "${!results[@]}" | sort -z)
+        if [ "${#results[@]}" -gt 0 ]; then
+            while IFS= read -r -d '' key; do
+                print_status "$key" "${results[$key]}"
+            done < <(printf '%s\0' "${!results[@]}" | sort -z)
+        fi
         ;;
 esac
 

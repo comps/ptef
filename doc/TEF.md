@@ -160,10 +160,10 @@ different from the connected terminal (`fstat()` on both fds, comparing `st_ino`
 and `st_dev`), it outputs a simplified binary version of the format used for
 terminal reporting.
 
-This simplified version starts with a header and a version, followed by
-nul-separated results (`\0` denotes a nul byte):
+This simplified version starts with a header and a version (both ASCII),
+followed by nul-separated results (`\0` denotes a nul byte):
 ```
-tefresults\01\0RUN first_executable\0PASS first_executable\0
+tefresults\02\0RUN first_executable\0PASS first_executable\0
 ```
 
 The `TEF_PREFIX` variable is ignored, no `/` is prepended.
