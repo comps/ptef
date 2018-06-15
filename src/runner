@@ -66,6 +66,7 @@ tef_run_child() {
     local args=("$@")
     args[0]="${args[0]#./}" # tidy up
     local base="${args[0]}"
+    local rc=
 
     # prepare child log
     # TODO: this may create empty logdir if no tests are found,
@@ -82,9 +83,10 @@ tef_run_child() {
             {
                 pushd "$base" >/dev/null
                 TEF_PREFIX="$TEF_PREFIX/$base" "${args[@]}"
+                rc=$?
                 popd >/dev/null
             } &>> "$logdir/$base"
-            [ $? -eq 0 ] && log_status PASS "$base" || log_status FAIL "$base"
+            [ $rc -eq 0 ] && log_status PASS "$base" || log_status FAIL "$base"
         fi
     elif [ -x "$base" ]; then
         log_status RUN "$base"
