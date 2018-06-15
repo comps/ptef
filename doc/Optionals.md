@@ -27,3 +27,17 @@ executed twice, once for each argument.
 
 The merging can be performed only on subsequent arguments, eg. the arguments
 must not be reordered as that would alter the execution flow.
+
+## Log file rotation
+
+(Optional feature.)
+
+As the log file of each test is overwritten on suite re-runs, the runner may
+implement log file rotation to preserve previous versions of the log.
+
+This would be done in the `logrotate(8)` fashion, eg. by appending `.1` to the
+existing filename and if it already exists, renaming the existing `.1` to `.2`,
+etc., up until a defined maximum of ie. 8 files total.
+
+This obviously risks mixing unrelated test results if there are two separate
+tests with one having the exact same name as the other, but with `.1` appended.

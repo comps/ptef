@@ -26,38 +26,20 @@ tef_warn() {
     echo "warn: $1" >&2
 }
 
-setup_io() {
-    if [ -t 0 ]; then
-        # we have a terminal, redirect verbose messages as well as any
-        # unexpected errors to it
-        exec 2>&0
-    else
-        # no terminal, suppress verbose/error messages
-        exec 2>/dev/null
-    fi
-
-    # if stdout is not terminal, leave it open for binary output,
-    # else suppress it
-    [ -t 1 ] && exec 1>/dev/null
-}
-
 # log a status for a test name (path)
-# - to terminal, if available
-# - to stdout, if available
 log_status() {
     local status="$1" name="${2#./}"
     if [ -t 0 -a "$(tput colors)" -ge 8 ]; then
         case "$status" in
-            PASS) echo -ne "\033[1;32m${status}\033[0m" >&2 ;;
-            FAIL) echo -ne "\033[1;31m${status}\033[0m" >&2 ;;
-            RUN) echo -ne "\033[1;34m${status} \033[0m" >&2 ;;
-            *) echo -n "$status" >&2 ;;
+            PASS) echo -ne "\033[1;32m${status}\033[0m" >&0 ;;
+            FAIL) echo -ne "\033[1;31m${status}\033[0m" >&0 ;;
+            RUN) echo -ne "\033[1;34m${status} \033[0m" >&0 ;;
+            *) echo -n "$status" >&0 ;;
         esac
-        echo " $TEF_PREFIX/$name" >&2
+        echo " $TEF_PREFIX/$name" >&0
     else
-        echo "$status $TEF_PREFIX/$name" >&2
+        echo "$status $TEF_PREFIX/$name" 2>/dev/null >&0
     fi
-    echo -ne "${1} ${2}\0"
 }
 
 # if $1 is dir, run runner inside it, pass it args
@@ -85,13 +67,13 @@ tef_run_child() {
                 TEF_PREFIX="$TEF_PREFIX/$base" "${args[@]}"
                 rc=$?
                 popd >/dev/null
-            } &>> "$logdir/$base"
+            } &> "$logdir/$base"
             [ $rc -eq 0 ] && log_status PASS "$base" || log_status FAIL "$base"
         fi
     elif [ -x "$base" ]; then
         log_status RUN "$base"
         args[0]="./$1"
-        "${args[@]}" &>> "$logdir/$base"
+        "${args[@]}" &> "$logdir/$base"
         [ $? -eq 0 ] && log_status PASS "$base" || log_status FAIL "$base"
     fi
 }
@@ -111,11 +93,6 @@ tef_run() {
     local name="$1" target="$2"
     [ "$target" ] || target="$name"
     local child=
-
-    setup_io
-
-    # prepare binary header
-    echo -ne 'tefresults\0\x32\0'
 
     # no args, run all without args
     if [ "${#TEF_ARGS[@]}" -eq 0 ]; then

@@ -1,6 +1,6 @@
 # Test Execution Framework (TEF) - Specification
 
-Version 0.5
+Version 0.6
 
 ## Unspecified/undefined behavior
 
@@ -99,17 +99,15 @@ If the executable is in CWD, the log output file name matches the name of
 the executed binary. If the executable is a runner inside a subdirectory,
 a name of the subdirectory is used instead.
 
-The output file is opened for appending (`O_APPEND`), not overwriting.
+The output file shall be opened for overwriting, eg. without `O_APPEND`.
 
 ## Result reporting
 
-Result reporting is done by runners to multiple destinations and is done by
-every runner (every recursion level).
+Result reporting is done by every runner (every recursion level).
 
-### Realtime reporting
-
-If the runner process has a valid terminal on fd 0 (see `tcgetattr(3)`),
-it outputs the report on it in the following format:
+If the runner process has stdin (fd 0) open for writing, such as when
+it is connected to a tty, it outputs status reporting lines on it with
+the following format:
 ```
 STATUS executable_name
 ```
@@ -145,34 +143,19 @@ The first two lines being from a first runner, the last two lines from another
 runner inside a `subdir` directory, to which the first runner passed
 `TEF_PREFIX` equal to `/subdir`.
 
-The status may be colorized or bold/underline/etc. if the terminal supports it.
+The status may be colorized or bold/underline/etc., but only if the output fd is
+a terminal (`tcgetattr(3)`). Terminfo should be queried for safety.
 
 There may be any number of spaces/tabs between the status and the test name,
 however at least one is mandatory.
 
-## Reporting into a log
+## Reporting on stdout and stderr
 
-If stdout is not a terminal, the runner outputs a simplified binary version
-of the format used for terminal reporting.
+The runner shall use output stdio for any relevant debugging, informatory or
+error output. The format is undefined here.
 
-This simplified version starts with a header and a version (both ASCII),
-followed by nul-separated results (`\0` denotes a nul byte):
-```
-tefresults\02\0RUN first_executable\0PASS first_executable\0
-```
-
-The `TEF_PREFIX` variable is ignored, no `/` is prepended.
-
-No color or other special formatting characters are added by the runner.
-
-It's expected that a parent runner would redirect the output to a log file,
-as it doesn't differentiate between a child runner vs any executable.
-The log files can then be collected by a separate tool and the hierarchy
-re-constructed.
-
-The header needs to be written every time a runner is started, as it cannot
-rely on seeking its stdout. It's expected that any log-parsing tool would
-skip the duplicate headers inside one log file, like ie. gzip does.
+During normal and default operation, no output should be written to stdout or
+stderr.
 
 ## Additional functionality
 
