@@ -28,3 +28,14 @@ levels using environment variables with known names.
 Note that a runner implementation can provide user-friendly CLI interface,
 unspecified here, but it itself needs to export the user-provided settings
 via env variables to sub-runners.
+
+## Running without arguments is undefined
+
+When running without arguments, the recommended approach is to execute all
+files/directories, according to the `argv[0]` rules in the spec, ignoring
+hidden files (beginning with `.`), in alphanumerical order.
+
+However that may not fit all cases, such as when multiple runners are present
+on the same directory level, with different argv[0] names, ie. 'setup', 'run',
+'cleanup', each recursing through the structure, but only 'run' executing
+binaries which don't match argv[0].

@@ -35,9 +35,6 @@ the current working directory (CWD):
 ## Argument passing
 
 When called without CLI arguments, the behavior of the runner is undefined.
-The recommended approach is to execute all files/directories, according to the
-`argv[0]` rules above, ignoring hidden files (beginning with `.`), in
-alphanumerical order.
 
 When called with arguments, the runner must execute exactly the files or
 directories specified by the arguments.
