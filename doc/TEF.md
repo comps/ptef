@@ -68,38 +68,10 @@ current directory, ie.
 - it runs 'b', passing 'c/d' as an argument to it
 ```
 
-Amongst other things, this helps with test parametrization, ie. running
-```
-/a/b/permission/devfileperm
-/a/b/permission/dirperm
-/a/b/permission/fileperm
-```
-where `permission` is an executable file (test).
-
 All arguments need to be normalized and fully resolved prior to any evaluation,
 that is any `..` paths should be transcribed, `./` removed, etc. If the final
 result leads above CWD, it must be trimmed to stay in CWD, ie. by removing all
 leading `..` elements.
-
-## Standard IO redirection and logging
-
-When executing any executable, the runner redirects both stdout and stderr
-to a file inside a `logs` directory in the CWD, creating the directory if it
-doesn't exist.
-
-Alternatively, if `TEF_LOGS` env variable exists, path constructed as
-```
-TEF_LOGS/TEF_PREFIX
-```
-is to be used instead of the `logs` directory, created if necessary, relative
-to CWD. If `TEF_PREFIX` doesn't exist, it is defined as `/`, see below for
-further details.
-
-If the executable is in CWD, the log output file name matches the name of
-the executed binary. If the executable is a runner inside a subdirectory,
-a name of the subdirectory is used instead.
-
-The output file shall be opened for overwriting, eg. without `O_APPEND`.
 
 ## Result reporting
 
@@ -126,8 +98,8 @@ for writing.
 
 Since the runner has no notion of its location within the hierarchy, it needs
 to prefix each executable name with the contents of `TEF_PREFIX` env variable,
-followed by a forward slash. If it doesn't exist, it is defined as a forward
-slash.
+followed by a forward slash. If the variable doesn't exist, it is defined as
+a forward slash.
 
 When executing a runner inside a subdirectory, the subdirectory name is appended
 to the `TEF_PREFIX` variable passed to the runner, separated by a forward slash.
@@ -149,13 +121,46 @@ a terminal (`tcgetattr(3)`). Terminfo should be queried for safety.
 There may be any number of spaces/tabs between the status and the test name,
 however at least one is mandatory.
 
-## Reporting on stdout and stderr
+### Reporting on stdout and stderr
 
 The runner shall use output stdio for any relevant debugging, informatory or
 error output. The format is undefined here.
 
 During normal and default operation, no output should be written to stdout or
 stderr.
+
+## Standard IO redirection and logging
+
+When executing any executable, the runner redirects both stdout and stderr
+to a log file. The log file is always opened for overwriting (without
+`O_APPEND`).
+
+### Logging in CWD
+
+By default, the log files are placed inside a `logs` directory in CWD, which
+is created if nonexistent. This way, each directory level has locally-accessible
+logs, allowing execution to start from any point of the hierarchy.
+
+The name of each log file matches the name of the executable. When executing
+a subdirectory (executable with argv[0] name in a directory), the filename
+inside `logs` is the name of the subdirectory, not argv[0].
+
+### Logging in separate hierarchy
+
+When `TEF_LOGS` env variable exists, the above logging scheme is replaced with
+one that mimics the execution hierarchy, with `TEF_LOGS` specifying the root,
+created if necessary.
+As such, the destination logfile is stored in `TEF_LOGS/TEF_PREFIX`.
+
+Since directories and log files from argv[0] runners of the directories cannot
+share the same name, `.log` is appended to all log files inside the hierarchy.
+
+Ie. under `TEF_LOGS`:
+```
+/first_executable.log
+/subdir/second_executable.log
+/subdir.log
+```
 
 ## Additional functionality
 

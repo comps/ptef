@@ -42,39 +42,62 @@ log_status() {
     fi
 }
 
+rotate_logfile() {
+    local path="$1" i=
+    [ -e "$path" ] || return 1
+    for (( i = 7; i > 0; i-- )); do
+        if [ -e "${path}.${i}" ]; then
+            mv -f "${path}.${i}" "${path%%.$i}.$((i+1))"
+        fi
+    done
+    rm -f "${path}.8"
+    mv -f "$path" "${path}.1"
+}
+create_logfile() {
+    local name="$1" path=
+
+    if [ "$TEF_LOGS" ]; then
+        [ -d "$TEF_LOGS" ] || mkdir "$TEF_LOGS" || return 1
+        [ -d "$TEF_LOGS/$TEF_PREFIX" ] || \
+            mkdir -p "$TEF_LOGS/$TEF_PREFIX" || return 1
+        path="$TEF_LOGS/$TEF_PREFIX/${name}.log"
+    else
+        [ -d logs ] || mkdir logs || return 1
+        path=logs/"$name"
+    fi
+
+    rotate_logfile "$path"
+    touch "$path" || return 1
+    echo "$path"
+}
+
 # if $1 is dir, run runner inside it, pass it args
 # if $1 is exec file, run it, pass it args
 tef_run_child() {
     local args=("$@")
     args[0]="${args[0]#./}" # tidy up
-    local base="${args[0]}"
-    local rc=
+    local child="${args[0]}"
+    local logfile= rc=
 
-    # prepare child log
-    # TODO: this may create empty logdir if no tests are found,
-    #       solve this better in python/C implementation
-    local logdir=logs
-    [ "$TEF_LOGS" ] && logdir="${TEF_LOGS}${TEF_PREFIX}/logs"
-    mkdir -p "$logdir"
-
-    # run the child process
-    if [ -d "$base" ]; then
-        if [ -x "$base/$TEF_ARGV0_NAME" ]; then
-            log_status RUN "$base"
+    if [ -d "$child" ]; then
+        if [ -x "$child/$TEF_ARGV0_NAME" ]; then
+            logfile=$(create_logfile "$child") || return 1
+            log_status RUN "$child"
             args[0]="./$TEF_ARGV0_NAME"
             {
-                pushd "$base" >/dev/null
-                TEF_PREFIX="$TEF_PREFIX/$base" "${args[@]}"
+                pushd "$child" >/dev/null
+                TEF_PREFIX="$TEF_PREFIX/$child" "${args[@]}"
                 rc=$?
                 popd >/dev/null
-            } &> "$logdir/$base"
-            [ $rc -eq 0 ] && log_status PASS "$base" || log_status FAIL "$base"
+            } &> "$logfile"
+            [ $rc -eq 0 ] && log_status PASS "$child" || log_status FAIL "$child"
         fi
-    elif [ -x "$base" ]; then
-        log_status RUN "$base"
+    elif [ -x "$child" ]; then
+        logfile=$(create_logfile "$child") || return 1
+        log_status RUN "$child"
         args[0]="./$1"
-        "${args[@]}" &> "$logdir/$base"
-        [ $? -eq 0 ] && log_status PASS "$base" || log_status FAIL "$base"
+        "${args[@]}" &> "$logfile"
+        [ $? -eq 0 ] && log_status PASS "$child" || log_status FAIL "$child"
     fi
 }
 
@@ -169,6 +192,7 @@ tef_run() {
 #
 
 TEF_ARGV0_NAME=$(basename "$0")
+[ "$TEF_LOGS" ] && TEF_LOGS=$(realpath "$TEF_LOGS")  # no relative path
 
 while getopts ":a:" opt; do
     case "$opt" in
