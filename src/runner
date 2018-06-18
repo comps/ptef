@@ -16,19 +16,20 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-#set -x
-
-tef_err() {
-    echo "error: $1" >&2
-    exit 1
-}
-tef_warn() {
-    echo "warn: $1" >&2
+normalize_path() {
+    local path="$1"
+    if [ "${path::1}" = "/" ]; then
+        path=$(realpath -ms "$path")  # remove trailing '/', '//', '..', etc.
+        echo "${path:1}"  # omit leading '/'
+    else
+        path=$(realpath -ms --relative-to="." "$path")
+        echo "${path##*../}"  # trim possible leading '../../../'
+    fi
 }
 
 # log a status for a test name (path)
 log_status() {
-    local status="$1" name="${2#./}"
+    local status="$1" name="$2"
     if [ -t 0 -a "$(tput colors)" -ge 8 ]; then
         case "$status" in
             PASS) echo -ne "\033[1;32m${status}\033[0m" >&0 ;;
@@ -73,7 +74,7 @@ create_logfile() {
 
 # if $1 is dir, run runner inside it, pass it args
 # if $1 is exec file, run it, pass it args
-tef_run_child() {
+run_child() {
     local args=("$@")
     args[0]="${args[0]#./}" # tidy up
     local child="${args[0]}"
@@ -101,17 +102,6 @@ tef_run_child() {
     fi
 }
 
-tef_normalize_path() {
-    local path="$1"
-    if [ "${path::1}" = "/" ]; then
-        path=$(realpath -ms "$path")  # remove trailing '/', '//', '..', etc.
-        echo "${path:1}"  # omit leading '/'
-    else
-        path=$(realpath -ms --relative-to="." "$path")
-        echo "${path##*../}"  # trim possible leading '../../../'
-    fi
-}
-
 tef_run() {
     local name="$1" target="$2"
     [ "$target" ] || target="$name"
@@ -128,7 +118,7 @@ tef_run() {
                         -not -name "$TEF_ARGV0_NAME" -and -not -name '.*' \
                         -print0 | sort -z)
         for child in "${children[@]}"; do
-            tef_run_child "$child"
+            run_child "$child"
         done
 
     # some args - run only the specified tests
@@ -136,7 +126,7 @@ tef_run() {
         local argv=() arg= i=0 arr= prefix= postfix=
 
         for arg in "${TEF_ARGS[@]}"; do
-            arg=$(tef_normalize_path "$arg")
+            arg=$(normalize_path "$arg")
             argv+=("$arg")
         done
 
@@ -153,9 +143,9 @@ tef_run() {
             # leaf part hit, no coalescing possible, just run
             if [ -z "$postfix" ]; then
                 if [ -d "$prefix" -o -x "$prefix" ]; then
-                    tef_run_child "$prefix"
+                    run_child "$prefix"
                 else
-                    tef_warn "$prefix not dir/exec, skipping"
+                    echo "$prefix not dir/exec, skipping" >&2
                 fi
                 (( i++ ))
                 continue
@@ -176,9 +166,9 @@ tef_run() {
             # skip non-dirs and non-executables
             if [ -d "$prefix" -o -x "$prefix" ]; then
                 arr=("$prefix" "${arr[@]}")
-                tef_run_child "${arr[@]}"
+                run_child "${arr[@]}"
             else
-                tef_warn "$prefix not dir/exec, skipping"
+                echo "$prefix not dir/exec, skipping" >&2
             fi
         done
     fi
