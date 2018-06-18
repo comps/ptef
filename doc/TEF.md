@@ -104,6 +104,8 @@ a forward slash.
 
 When executing a runner inside a subdirectory, the subdirectory name is appended
 to the `TEF_PREFIX` variable passed to the runner, separated by a forward slash.
+When executing a regular executable, the name of the executable is appended
+instead.
 
 Thus, the actual results could look like ie.
 ```

@@ -103,7 +103,7 @@ run_child() {
         logfile=$(create_logfile "$child") || return 1
         log_status RUN "$child"
         args[0]="./$1"
-        "${args[@]}" &> "$logfile"
+        TEF_PREFIX="$TEF_PREFIX/$child" "${args[@]}" &> "$logfile"
         [ $? -eq 0 ] && log_status PASS "$child" || log_status FAIL "$child"
     fi
 }
