@@ -93,7 +93,9 @@ RUN second_executable
 FAIL second_executable
 ```
 The lines may be interleaved if the executables run in parallel. In that case,
-the runner needs to `flock(2)` fd 0 to get exclusive access for writing.
+the runner needs to lock fd 0 to get exclusive access for writing. This is done
+using POSIX advisory record locks (the `fcntl` variant) with maximum byte range
+specified (`l_type=F_WRLCK`,`l_whence=SEEK_SET`,`l_start=0`,`l_len=0`).
 
 Since the runner has no notion of its location within the hierarchy, it needs
 to prefix each executable name with the contents of `TEF_PREFIX` env variable,
@@ -129,9 +131,9 @@ variable.
 Any special characters (color, formatting) is omitted, the output on this fd
 must match the original data (exact status and exec path).
 
-Locking via `flock(2)` (see above) applies too. The order of entries may however
-be different, holding exclusive access to both fd 0 and `TEF_RESULTS_FD` is not
-required.
+Locking via POSIX advisory locks (see above) applies too. The order of entries
+may however be different, holding exclusive access to both fd 0 and
+`TEF_RESULTS_FD` is not required.
 
 ### Usage of stdout and stderr
 
