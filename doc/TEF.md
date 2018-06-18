@@ -93,8 +93,7 @@ RUN second_executable
 FAIL second_executable
 ```
 The lines may be interleaved if the executables run in parallel. In that case,
-the runner needs to flock() its active tty (ie. fd 0) to get exclusive access
-for writing.
+the runner needs to `flock(2)` fd 0 to get exclusive access for writing.
 
 Since the runner has no notion of its location within the hierarchy, it needs
 to prefix each executable name with the contents of `TEF_PREFIX` env variable,
@@ -121,7 +120,20 @@ a terminal (`tcgetattr(3)`). Terminfo should be queried for safety.
 There may be any number of spaces/tabs between the status and the test name,
 however at least one is mandatory.
 
-### Reporting on stdout and stderr
+### Result reporting for logging
+
+If the `TEF_RESULTS_FD` environment variable is set, the same output that is
+sent to fd 0 (see above) is also copied to the file descriptor specified by the
+variable.
+
+Any special characters (color, formatting) is omitted, the output on this fd
+must match the original data (exact status and exec path).
+
+Locking via `flock(2)` (see above) applies too. The order of entries may however
+be different, holding exclusive access to both fd 0 and `TEF_RESULTS_FD` is not
+required.
+
+### Usage of stdout and stderr
 
 The runner shall use output stdio for any relevant debugging, informatory or
 error output. The format is undefined here.

@@ -29,6 +29,7 @@ normalize_path() {
 # log a status for a test name (path)
 log_status() {
     local status="$1" name="$2"
+
     if [ -t 0 -a "$(tput colors)" -ge 8 ]; then
         case "$status" in
             PASS) echo -ne "\033[1;32m${status}\033[0m" >&0 ;;
@@ -40,6 +41,12 @@ log_status() {
     else
         echo "$status $TEF_PREFIX/$name" 2>/dev/null >&0
     fi
+
+    if [ "$TEF_RESULTS_FD" ]; then
+        echo "$status $TEF_PREFIX/$name" 2>/dev/null >&"$TEF_RESULTS_FD"
+    fi
+
+    return 0
 }
 
 rotate_logfile() {
