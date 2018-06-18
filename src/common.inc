@@ -1,4 +1,3 @@
-#!/bin/bash
 #
 # Copyright (C) 2018  Red Hat, Inc.
 #
@@ -174,27 +173,4 @@ tef_run() {
     fi
 }
 
-
-
-#
-# args:
-#   -a: override detected argv[0]
-#
-
-TEF_ARGV0_NAME=$(basename "$0")
-[ "$TEF_LOGS" ] && TEF_LOGS=$(realpath "$TEF_LOGS")  # no relative path
-
-while getopts ":a:" opt; do
-    case "$opt" in
-        a)
-            TEF_ARGV0_NAME="$OPTARG"
-            ;;
-    esac
-done
-shift "$((OPTIND-1))"
-
-TEF_ARGS=("$@")
-
-tef_run
-
-# vim: sts=4 sw=4 et :
+# vim: syntax=sh sts=4 sw=4 et :
