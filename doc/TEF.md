@@ -151,35 +151,29 @@ stderr.
 ## Standard IO redirection and logging
 
 When executing any executable, the runner redirects both stdout and stderr
-to a log file. The log file is always opened for overwriting (without
-`O_APPEND`).
+to a log file, stored in a separate hierarchy that mimics the execution
+hierarchy, that is with `TEF_PREFIX` appended after its root.
 
-### Logging in CWD
+The default root for the logging hierarchy is a `logs` directory in CWD.
+If `TEF_LOGS` environment variable exists, it specifies a replacement root.
+The root of the hierarchy and any directories inside it are created if necessary
+and non-existent.
 
-By default, the log files are placed inside a `logs` directory in CWD, which
-is created if nonexistent. This way, each directory level has locally-accessible
-logs, allowing execution to start from any point of the hierarchy.
-
-The name of each log file matches the name of the executable. When executing
-a subdirectory (executable with argv[0] name in a directory), the filename
-inside `logs` is the name of the subdirectory, not argv[0].
-
-### Logging in separate hierarchy
-
-When `TEF_LOGS` env variable exists, the above logging scheme is replaced with
-one that mimics the execution hierarchy, with `TEF_LOGS` specifying the root,
-created if necessary.
-As such, the destination logfile is stored in `TEF_LOGS/TEF_PREFIX`.
+The log file name matches the name of the executable. When executing
+a subdirectory (executable with argv[0] name in a directory), the name of the
+directory is used instead.
 
 Since directories and log files from argv[0] runners of the directories cannot
 share the same name, `.log` is appended to all log files inside the hierarchy.
 
-Ie. under `TEF_LOGS`:
+Ie. under the logging hierarchy root:
 ```
 /first_executable.log
 /subdir/second_executable.log
 /subdir.log
 ```
+
+The log files are always opened for overwriting (without `O_APPEND`).
 
 ## Additional functionality
 

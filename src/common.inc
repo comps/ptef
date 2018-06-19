@@ -61,17 +61,14 @@ rotate_logfile() {
     mv -f "$path" "${path}.1"
 }
 create_logfile() {
-    local name="$1" path=
+    local name="$1" path= root=logs
 
-    if [ "$TEF_LOGS" ]; then
-        [ -d "$TEF_LOGS" ] || mkdir "$TEF_LOGS" || return 1
-        [ -d "$TEF_LOGS/$TEF_PREFIX" ] || \
-            mkdir -p "$TEF_LOGS/$TEF_PREFIX" || return 1
-        path="$TEF_LOGS/$TEF_PREFIX/${name}.log"
-    else
-        [ -d logs ] || mkdir logs || return 1
-        path=logs/"$name"
-    fi
+    [ "$TEF_LOGS" ] && root="$TEF_LOGS"
+
+    [ -d "$root" ] || mkdir "$root" || return 1
+    [ -d "$root/$TEF_PREFIX" ] || \
+        mkdir -p "$root/$TEF_PREFIX" || return 1
+    path="$root/$TEF_PREFIX/${name}.log"
 
     rotate_logfile "$path"
     touch "$path" || return 1
