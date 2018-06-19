@@ -3,6 +3,8 @@
 A (fairly) simple specification and an example implementation of a test "runner"
 framework for system testing and/or integration and execution of test suites.
 
+Currently still in active development (unstable API).
+
 ## Basic intro
 
 ### What is TEF?
