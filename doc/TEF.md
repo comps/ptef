@@ -124,6 +124,9 @@ a terminal (`tcgetattr(3)`). Terminfo should be queried for safety.
 There may be any number of spaces/tabs between the status and the test name,
 however at least one is mandatory.
 
+The use of the RUN status is recommended and default, but it may be omitted
+where appropriate.
+
 ### Result reporting for logging
 
 If the `TEF_RESULTS_FD` environment variable is set, the same output that is
