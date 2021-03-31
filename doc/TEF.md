@@ -100,7 +100,7 @@ specified (`l_type=F_WRLCK`,`l_whence=SEEK_SET`,`l_start=0`,`l_len=0`).
 Since the runner has no notion of its location within the hierarchy, it needs
 to prefix each executable name with the contents of `TEF_PREFIX` env variable,
 followed by a forward slash. If the variable doesn't exist, it is defined as
-a forward slash.
+an empty string.
 
 When executing a runner inside a subdirectory, the subdirectory name is appended
 to the `TEF_PREFIX` variable passed to the runner, separated by a forward slash.
@@ -160,10 +160,10 @@ The root of the hierarchy and any directories inside it are created if necessary
 and non-existent.
 
 The log file name matches the name of the executable. When executing
-a subdirectory (executable with argv[0] name in a directory), the name of the
+a subdirectory (executable with `argv[0]` name in a directory), the name of the
 directory is used instead.
 
-Since directories and log files from argv[0] runners of the directories cannot
+Since directories and log files from `argv[0]` runners of the directories cannot
 share the same name, `.log` is appended to all log files inside the hierarchy.
 
 Ie. under the logging hierarchy root:
