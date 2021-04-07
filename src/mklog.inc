@@ -21,7 +21,7 @@ print_help() {
     echo "-d    Create and printout logs dir, do not create test log"
 }
 
-[ "$TEF_LOGS" ] && TEF_LOGS=$(realpath "$TEF_LOGS")  # no relative path
+[ -n "$TEF_LOGS" ] && TEF_LOGS=$(realpath "$TEF_LOGS")  # no relative path
 
 while getopts ":dh" opt; do
     case "$opt" in

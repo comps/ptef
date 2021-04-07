@@ -22,7 +22,7 @@ print_help() {
 }
 
 TEF_ARGV0_NAME=$(basename "$0")
-[ "$TEF_LOGS" ] && TEF_LOGS=$(realpath "$TEF_LOGS")  # no relative path
+[ -n "$TEF_LOGS" ] && TEF_LOGS=$(realpath "$TEF_LOGS")  # no relative path
 
 while getopts ":a:h" opt; do
     case "$opt" in

@@ -42,7 +42,7 @@ log_status() {
         echo "$status $TEF_PREFIX/$name" 2>/dev/null >&0
     fi
 
-    if [ "$TEF_RESULTS_FD" ]; then
+    if [ -n "$TEF_RESULTS_FD" ]; then
         echo "$status $TEF_PREFIX/$name" 2>/dev/null >&"$TEF_RESULTS_FD"
     fi
 
@@ -62,7 +62,7 @@ rotate_logfile() {
 }
 
 create_logroot() {
-    if [ "$TEF_LOGS" ]; then
+    if [ -n "$TEF_LOGS" ]; then
         [ -d "$TEF_LOGS" ] || mkdir "$TEF_LOGS" || return 1
         [ -d "$TEF_LOGS/$TEF_PREFIX" ] || \
             mkdir -p "$TEF_LOGS/$TEF_PREFIX" || return 1
@@ -117,7 +117,7 @@ run_child() {
 
 tef_run() {
     local name="$1" target="$2"
-    [ "$target" ] || target="$name"
+    [ -n "$target" ] || target="$name"
     local child=
 
     # no args, run all without args
