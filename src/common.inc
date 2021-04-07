@@ -15,7 +15,11 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-normalize_path() {
+#
+## PRIVATE
+#
+
+_tef_normalize_path() {
     local path="$1"
     if [ "${path::1}" = "/" ]; then
         path=$(realpath -ms "$path")  # remove trailing '/', '//', '..', etc.
@@ -27,7 +31,7 @@ normalize_path() {
 }
 
 # log a status for a test name (path)
-log_status() {
+_tef_log_status() {
     local status="$1" name="$2"
 
     if [ -t 0 ]; then
@@ -49,7 +53,7 @@ log_status() {
     return 0
 }
 
-rotate_logfile() {
+_tef_rotate_logfile() {
     local path="$1" i=
     [ -e "$path" ] || return 1
     for (( i = 7; i > 0; i-- )); do
@@ -61,7 +65,7 @@ rotate_logfile() {
     mv -f "$path" "${path}.1"
 }
 
-create_logroot() {
+_tef_create_logroot() {
     if [ -n "$TEF_LOGS" ]; then
         [ -d "$TEF_LOGS" ] || mkdir "$TEF_LOGS" || return 1
         [ -d "$TEF_LOGS/$TEF_PREFIX" ] || \
@@ -74,34 +78,34 @@ create_logroot() {
     fi
 }
 
-create_logfile() {
+_tef_create_logfile() {
     local name="$1" path=
 
-    path=$(create_logroot) || return 1
+    path=$(_tef_create_logroot) || return 1
     path+="/${name}.log"
 
-    rotate_logfile "$path"
+    _tef_rotate_logfile "$path"
     : > "$path" || return 1   # built-in touch
     echo "$path"
 }
 
 # if $1 is dir, run runner inside it, pass it args
 # if $1 is exec file, run it, pass it args
-run_child() {
+_tef_run_child() {
     local args=("$@")
     args[0]="${args[0]#./}" # tidy up
     local child="${args[0]}"
     local logfile= rc= newlogs=
 
     if [ -d "$child" ]; then
-        if [ -x "$child/$TEF_ARGV0_NAME" ]; then
+        if [ -x "$child/$_tef_argv0_name" ]; then
             # if TEF_LOGS is relative, calculate new path to it from child
             if [ -n "$TEF_LOGS" -a "${TEF_LOGS::1}" != / ]; then
                 newlogs=$(realpath --relative-to="$child" "$TEF_LOGS")
             fi
-            logfile=$(create_logfile "$child") || return 1
-            args[0]="./$TEF_ARGV0_NAME"
-            log_status RUN "$child"
+            logfile=$(_tef_create_logfile "$child") || return 1
+            args[0]="./$_tef_argv0_name"
+            _tef_log_status RUN "$child"
             {
                 pushd "$child" >/dev/null
                 if [ -n "$newlogs" ]; then
@@ -112,42 +116,40 @@ run_child() {
                 rc=$?
                 popd >/dev/null
             } &> "$logfile"
-            [ $rc -eq 0 ] && log_status PASS "$child" || log_status FAIL "$child"
+            [ $rc -eq 0 ] && _tef_log_status PASS "$child" || _tef_log_status FAIL "$child"
         fi
     elif [ -x "$child" ]; then
-        logfile=$(create_logfile "$child") || return 1
-        log_status RUN "$child"
+        logfile=$(_tef_create_logfile "$child") || return 1
+        _tef_log_status RUN "$child"
         args[0]="./$1"
         TEF_PREFIX="$TEF_PREFIX/$child" "${args[@]}" &> "$logfile"
-        [ $? -eq 0 ] && log_status PASS "$child" || log_status FAIL "$child"
+        [ $? -eq 0 ] && _tef_log_status PASS "$child" || _tef_log_status FAIL "$child"
     fi
 }
 
-tef_run() {
-    local name="$1" target="$2"
-    [ -n "$target" ] || target="$name"
+_tef_run() {
     local child=
 
     # no args, run all without args
-    if [ "${#TEF_ARGS[@]}" -eq 0 ]; then
+    if [ $# -eq 0 ]; then
         # do two loops to avoid stdin (fd 0) redirection issues;
         # (the < <(find..) would overwrite the original tty on fd 0)
         local children=()
         while read -r -d '' child; do
             children+=("$child")
         done < <(find . -mindepth 1 -maxdepth 1 \
-                        -not -name "$TEF_ARGV0_NAME" -and -not -name '.*' \
+                        -not -name "$_tef_argv0_name" -and -not -name '.*' \
                         -print0 | sort -z)
         for child in "${children[@]}"; do
-            run_child "$child"
+            _tef_run_child "$child"
         done
 
     # some args - run only the specified tests
     else
         local argv=() arg= i=0 arr= prefix= postfix=
 
-        for arg in "${TEF_ARGS[@]}"; do
-            arg=$(normalize_path "$arg")
+        for arg in "$@"; do
+            arg=$(_tef_normalize_path "$arg")
             argv+=("$arg")
         done
 
@@ -164,7 +166,7 @@ tef_run() {
             # leaf part hit, no coalescing possible, just run
             if [ -z "$postfix" ]; then
                 if [ -d "$prefix" -o -x "$prefix" ]; then
-                    run_child "$prefix"
+                    _tef_run_child "$prefix"
                 else
                     echo "$prefix not dir/exec, skipping" >&2
                 fi
@@ -187,12 +189,139 @@ tef_run() {
             # skip non-dirs and non-executables
             if [ -d "$prefix" -o -x "$prefix" ]; then
                 arr=("$prefix" "${arr[@]}")
-                run_child "${arr[@]}"
+                _tef_run_child "${arr[@]}"
             else
                 echo "$prefix not dir/exec, skipping" >&2
             fi
         done
     fi
+}
+
+#
+## PUBLIC
+#
+
+_tef_runner_help() {
+    echo "Usage: tef-runner [-a argv0] [ARG]..."
+    echo
+    echo "-a    Override detected argv0 basename (for subdir execution)"
+}
+
+tef_runner() {
+    local opt= OPTIND= OPTARG= OPTERR=
+
+    while getopts ":a:h" opt; do
+        case "$opt" in
+            a)
+                _tef_argv0_name="$OPTARG"
+                ;;
+            h)
+                _tef_runner_help
+                return 0
+                ;;
+            :)
+                echo "missing argument for: -${OPTARG}" >&2
+                _tef_runner_help >&2
+                return 1
+                ;;
+            \?)
+                echo "unknown argument: -${OPTARG}" >&2
+                _tef_runner_help >&2
+                return 1
+                ;;
+        esac
+    done
+    shift "$((OPTIND-1))"
+
+    if [ -z "$_tef_argv0_name" ]; then
+        {
+            echo "the _tef_argv0_name variable is empty"
+            echo "when running via a bash function, it must be defined to the"
+            echo "basename of \$0 of the calling program, or set via the -a"
+            echo "option passed to the tef_runner function"
+        } >&2
+        return 1
+    fi
+
+    _tef_run "$@"
+}
+
+_tef_report_help() {
+    echo "Usage: tef-report <STATUS> <TESTNAME>"
+}
+
+tef_report() {
+    local opt= OPTIND= OPTARG= OPTERR=
+
+    while getopts ":h" opt; do
+        case "$opt" in
+            h)
+                _tef_report_help
+                return 0
+                ;;
+            :)
+                echo "missing argument for: -${OPTARG}" >&2
+                _tef_report_help >&2
+                return 1
+                ;;
+            \?)
+                echo "unknown argument: -${OPTARG}" >&2
+                _tef_report_help >&2
+                return 1
+                ;;
+        esac
+    done
+    shift "$((OPTIND-1))"
+
+    if [ $# -ne 2 ]; then
+        echo "incorrect arguments" >&2
+        _tef_report_help >&2
+        return 1
+    fi
+
+    _tef_log_status "$1" "$2"
+}
+
+_tef_mklog_help() {
+    echo "Usage: tef-mklog [-d] <TESTNAME>"
+    echo
+    echo "-d    Create and printout logs dir, do not create test log"
+}
+
+tef_mklog() {
+    local opt= OPTIND= OPTARG= OPTERR=
+
+    while getopts ":dh" opt; do
+        case "$opt" in
+            d)
+                _tef_create_logroot
+                return 0
+                ;;
+            h)
+                _tef_mklog_help
+                return 0
+                ;;
+            :)
+                echo "missing argument for: -${OPTARG}" >&2
+                _tef_mklog_help >&2
+                return 1
+                ;;
+            \?)
+                echo "unknown argument: -${OPTARG}" >&2
+                _tef_mklog_help >&2
+                return 1
+                ;;
+        esac
+    done
+    shift "$((OPTIND-1))"
+
+    if [ $# -ne 1 ]; then
+        echo "incorrect arguments" >&2
+        _tef_mklog_help >&2
+        return 1
+    fi
+
+    _tef_create_logfile "$1"
 }
 
 # vim: syntax=sh sts=4 sw=4 et :
