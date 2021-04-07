@@ -127,6 +127,21 @@ however at least one is mandatory.
 The use of the RUN status is recommended and default, but it may be omitted
 where appropriate.
 
+### Timestamps and the MARK status
+
+A runner may, at any time, output a result with a MARK status with the current
+wall clock time in place of the executable name. The time must be in an ISO 8601
+format and may optionally include a timezone and/or nanosecond information.
+
+Ie.
+```
+MARK 2021-04-07T08:15:46+02:00
+MARK 2021-04-07T08:20:36,909601272+02:00
+```
+
+The runner may also output this result while an executable is running (ie. from
+a separate thread), assuming it acquired an appropriate lock.
+
 ### Result reporting for logging
 
 If the `TEF_RESULTS_FD` environment variable is set, the same output that is
