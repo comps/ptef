@@ -60,15 +60,25 @@ rotate_logfile() {
     rm -f "${path}.8"
     mv -f "$path" "${path}.1"
 }
+
+create_logroot() {
+    if [ "$TEF_LOGS" ]; then
+        [ -d "$TEF_LOGS" ] || mkdir "$TEF_LOGS" || return 1
+        [ -d "$TEF_LOGS/$TEF_PREFIX" ] || \
+            mkdir -p "$TEF_LOGS/$TEF_PREFIX" || return 1
+        # no trailing slash on empty TEF_PREFIX
+        echo "${TEF_LOGS}${TEF_PREFIX:+/$TEF_PREFIX}"
+    else
+        [ -d logs ] || mkdir logs || return 1
+        echo logs
+    fi
+}
+
 create_logfile() {
-    local name="$1" path= root=logs
+    local name="$1" path=
 
-    [ "$TEF_LOGS" ] && root="$TEF_LOGS"
-
-    [ -d "$root" ] || mkdir "$root" || return 1
-    [ -d "$root/$TEF_PREFIX" ] || \
-        mkdir -p "$root/$TEF_PREFIX" || return 1
-    path="$root/$TEF_PREFIX/${name}.log"
+    path=$(create_logroot) || return 1
+    path+="/${name}.log"
 
     rotate_logfile "$path"
     touch "$path" || return 1

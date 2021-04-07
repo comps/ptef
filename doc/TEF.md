@@ -1,6 +1,6 @@
 # Test Execution Framework (TEF) - Specification
 
-Version 0.6
+Version 0.7
 
 ## Unspecified/undefined behavior
 
@@ -151,22 +151,24 @@ stderr.
 ## Standard IO redirection and logging
 
 When executing any executable, the runner redirects both stdout and stderr
-to a log file, stored in a separate hierarchy that mimics the execution
-hierarchy, that is with `TEF_PREFIX` appended after its root.
+to a log file.
 
-The default root for the logging hierarchy is a `logs` directory in CWD.
-If `TEF_LOGS` environment variable exists, it specifies a replacement root.
-The root of the hierarchy and any directories inside it are created if necessary
-and non-existent.
+### Logging in a separate hierarchy
 
-The log file name matches the name of the executable. When executing
-a subdirectory (executable with `argv[0]` name in a directory), the name of the
-directory is used instead.
+If the `TEF_LOGS` environment variable is non-empty, it specifies the root
+of a separate logging hierarchy, which mimics the execution hierarchy.
+
+The `TEF_LOGS` directory and any sub-directories inside it are created
+if non-existent.
+
+In this hierarchy, the log files match the name of the executables. When
+executing a directory (executable with `argv[0]` name in a directory), the name
+of the directory is used instead.
 
 Since directories and log files from `argv[0]` runners of the directories cannot
 share the same name, `.log` is appended to all log files inside the hierarchy.
 
-Ie. under the logging hierarchy root:
+Ie. under `TEF_LOGS`:
 ```
 /first_executable.log
 /subdir/second_executable.log
@@ -174,6 +176,31 @@ Ie. under the logging hierarchy root:
 ```
 
 The log files are always opened for overwriting (without `O_APPEND`).
+
+### Logging in CWD
+
+If the `TEF_LOGS` environment variable is nonexistent or empty, a `logs`
+directory (created if non-existent) in the current working directory is used
+instead.
+
+The `logs` directory contains only logs for executables on the current level,
+eg. it never contains any subdirectories.
+
+For consistency, `.log` is appended to all log files, as before.
+
+If it is logically impossible to store logs (due to virtual hierarchies which
+cannot hold real directories with logs), no IO redirection is performed. The
+parent runner thus collects the outputs in the current runner's log file.
+
+Ie. under CWD:
+```
+logs/first_executable.log
+logs/subdir.log
+```
+and under `subdir` in CWD:
+```
+logs/second_executable.log
+```
 
 ## Additional functionality
 
