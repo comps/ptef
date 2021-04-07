@@ -30,7 +30,7 @@ normalize_path() {
 log_status() {
     local status="$1" name="$2"
 
-    if [ -t 0 -a "$(tput colors)" -ge 8 ]; then
+    if [ -t 0 ]; then
         case "$status" in
             PASS) echo -ne "\033[1;32m${status}\033[0m" >&0 ;;
             FAIL) echo -ne "\033[1;31m${status}\033[0m" >&0 ;;
@@ -81,7 +81,7 @@ create_logfile() {
     path+="/${name}.log"
 
     rotate_logfile "$path"
-    touch "$path" || return 1
+    : > "$path" || return 1   # built-in touch
     echo "$path"
 }
 
