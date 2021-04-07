@@ -1,4 +1,5 @@
-.PHONY: all runner report mklog clean
+.PHONY: all clean
+
 all: runner report mklog
 
 runner:
