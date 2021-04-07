@@ -16,13 +16,19 @@
 #
 
 print_help() {
-    echo "Usage: $0 <TESTNAME>"
+    echo "Usage: $0 [-d] <TESTNAME>"
+    echo
+    echo "-d    Create and printout logs dir, do not create test log"
 }
 
 [ "$TEF_LOGS" ] && TEF_LOGS=$(realpath "$TEF_LOGS")  # no relative path
 
-while getopts ":h" opt; do
+while getopts ":dh" opt; do
     case "$opt" in
+        d)
+            create_logroot
+            exit 0
+            ;;
         h)
             print_help
             exit 0
