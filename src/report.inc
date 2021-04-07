@@ -19,8 +19,6 @@ print_help() {
     echo "Usage: $0 <STATUS> <TESTNAME>"
 }
 
-[ -n "$TEF_LOGS" ] && TEF_LOGS=$(realpath "$TEF_LOGS")  # no relative path
-
 while getopts ":h" opt; do
     case "$opt" in
         h)

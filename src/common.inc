@@ -91,16 +91,24 @@ run_child() {
     local args=("$@")
     args[0]="${args[0]#./}" # tidy up
     local child="${args[0]}"
-    local logfile= rc=
+    local logfile= rc= newlogs=
 
     if [ -d "$child" ]; then
         if [ -x "$child/$TEF_ARGV0_NAME" ]; then
+            # if TEF_LOGS is relative, calculate new path to it from child
+            if [ -n "$TEF_LOGS" -a "${TEF_LOGS::1}" != / ]; then
+                newlogs=$(realpath --relative-to="$child" "$TEF_LOGS")
+            fi
             logfile=$(create_logfile "$child") || return 1
-            log_status RUN "$child"
             args[0]="./$TEF_ARGV0_NAME"
+            log_status RUN "$child"
             {
                 pushd "$child" >/dev/null
-                TEF_PREFIX="$TEF_PREFIX/$child" "${args[@]}"
+                if [ -n "$newlogs" ]; then
+                    TEF_PREFIX="$TEF_PREFIX/$child" TEF_LOGS="$newlogs" "${args[@]}"
+                else
+                    TEF_PREFIX="$TEF_PREFIX/$child" "${args[@]}"
+                fi
                 rc=$?
                 popd >/dev/null
             } &> "$logfile"
