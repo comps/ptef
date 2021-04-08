@@ -39,6 +39,7 @@ _tef_log_status() {
             PASS) echo -ne "\033[1;32m${status}\033[0m" >&0 ;;
             FAIL) echo -ne "\033[1;31m${status}\033[0m" >&0 ;;
             RUN) echo -ne "\033[1;34m${status} \033[0m" >&0 ;;
+            MARK) echo -ne "\033[1;90m${status}\033[0m" >&0 ;;
             *) echo -n "$status" >&0 ;;
         esac
         echo " $TEF_PREFIX/$name" >&0
