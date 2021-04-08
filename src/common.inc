@@ -95,7 +95,7 @@ _tef_run_child() {
     local args=("$@")
     args[0]="${args[0]#./}" # tidy up
     local child="${args[0]}"
-    local logfile= rc= newlogs=
+    local logfile= rc=0 newlogs=
 
     if [ -d "$child" ]; then
         if [ -x "$child/$_tef_argv0_name" ]; then
@@ -123,12 +123,15 @@ _tef_run_child() {
         _tef_log_status RUN "$child"
         args[0]="./$1"
         TEF_PREFIX="$TEF_PREFIX/$child" "${args[@]}" &> "$logfile"
-        [ $? -eq 0 ] && _tef_log_status PASS "$child" || _tef_log_status FAIL "$child"
+        rc=$?
+        [ $rc -eq 0 ] && _tef_log_status PASS "$child" || _tef_log_status FAIL "$child"
     fi
+
+    return $rc
 }
 
 _tef_run() {
-    local child=
+    local child= failed=
 
     # no args, run all without args
     if [ $# -eq 0 ]; then
@@ -142,6 +145,7 @@ _tef_run() {
                         -print0 | sort -z)
         for child in "${children[@]}"; do
             _tef_run_child "$child"
+            [ $? -ne 0 ] && failed=1
         done
 
     # some args - run only the specified tests
@@ -167,6 +171,7 @@ _tef_run() {
             if [ -z "$postfix" ]; then
                 if [ -d "$prefix" -o -x "$prefix" ]; then
                     _tef_run_child "$prefix"
+                    [ $? -ne 0 ] && failed=1
                 else
                     echo "$prefix not dir/exec, skipping" >&2
                 fi
@@ -190,11 +195,14 @@ _tef_run() {
             if [ -d "$prefix" -o -x "$prefix" ]; then
                 arr=("$prefix" "${arr[@]}")
                 _tef_run_child "${arr[@]}"
+                [ $? -ne 0 ] && failed=1
             else
                 echo "$prefix not dir/exec, skipping" >&2
             fi
         done
     fi
+
+    [ -z "$failed" ]
 }
 
 #

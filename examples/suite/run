@@ -4,7 +4,7 @@ a0base=$(basename "$0")
 #tmpdir=$(mktemp -d) || exit 1
 #trap "rm -rf $tmpdir" EXIT
 tmpdir="$(pwd)/tmp"
-mkdir "$tmpdir" || exit 1
+mkdir -p "$tmpdir" || exit 1
 
 export TEF_LOGS="$tmpdir/logs"
 resultslog="$tmpdir/results"

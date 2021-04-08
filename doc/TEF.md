@@ -73,6 +73,24 @@ that is any `..` paths should be transcribed, `./` removed, etc. If the final
 result leads above CWD, it must be trimmed to stay in CWD, ie. by removing all
 leading `..` elements.
 
+## Exit codes
+
+If an executable fails (returns a non-0 exit code), the current "level" of
+the hierarchy is considered as failed and the runner must exit with a non-0
+exit code once all executables finish.
+
+This means that a failure anywhere will propagate upwards the hierarchy.
+
+Ie.
+```
+/a/b
+
+- runner executable 'builder' in 'b' runs executables 'c1', 'c2', 'c3'
+- 'c1' returns 0, 'c2' returns 2, 'c3' returns 0
+- 'builder' in 'b' returns 1
+- its parent in 'a' returns 1
+```
+
 ## Result reporting
 
 Result reporting is done by every runner (every recursion level).
@@ -163,7 +181,7 @@ error output. The format is undefined here.
 During normal and default operation, no output should be written to stdout or
 stderr.
 
-## Standard IO redirection and logging
+## Logging
 
 When executing any executable, the runner redirects both stdout and stderr
 to a log file.
