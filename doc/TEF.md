@@ -2,6 +2,21 @@
 
 Version 0.7
 
+// TODO: TEF_INTERACTIVE support
+//  - when present in env and non-empty and if no args are given to the runner,
+//    launch interactive $SHELL instead of running all tests
+//    - ie. 'runner /a/b/c' would execute 'c/runner' without args, which would
+//      spawn $SHELL
+//  - very useful for debugging when there's some state in setup/cleanup
+//    provided by parent runners
+
+// TODO: TEF_DEBUG_OUTPUT (?) support
+//  - when present in env and non-empty, do not redirect stdout/err of execs
+//  - this means all output of all runners / tests (all executables) will
+//    interleave with fd0 reported statuses
+//  - again, very useful for debug runs of just a few tests + collecting all
+//    logs on the same console stream without having to read logs dir
+
 ## Unspecified/undefined behavior
 
 Anything outside this specification is implementation-dependent.
@@ -36,6 +51,11 @@ the current working directory (CWD):
 
 When called without CLI arguments, the behavior of the runner is undefined.
 
+// ^^^ revisit that, define it as 'runs maximum possible test set' or so,
+// the corner cases of ie. 'setup' vs 'run' executables and one running
+// the other because != basename(argv[0]) are .. corner cases, easy deviations
+// from the spec
+
 When called with arguments, the runner must execute exactly the files or
 directories specified by the arguments.
 
@@ -44,8 +64,7 @@ subdirectories. For example `a` or `a/b/c`.
 
 Before executing a file or a runner inside a directory, the topmost level
 of the path in the argument is stripped and the result is passed to the
-executable/runner. If this would result in the argument being empty, it is
-omitted.
+executable/runner.
 
 For example:
 ```
@@ -68,10 +87,16 @@ current directory, ie.
 - it runs 'b', passing 'c/d' as an argument to it
 ```
 
-All arguments need to be normalized and fully resolved prior to any evaluation,
-that is any `..` paths should be transcribed, `./` removed, etc. If the final
-result leads above CWD, it must be trimmed to stay in CWD, ie. by removing all
-leading `..` elements.
+// any leading slashes should be removed (if they exist)
+// the first path element (until / or end of string) should be examined:
+// - if it has zero length,
+// - if it contains '.' or '..',
+// it is invalid and the entire argument must be skipped, error optionally logged
+// -- TODO in Optional.md - merging must stop on invalid cli argument
+//
+// the runner must not parse the path beyond the first element
+// (it must stop at the first '/' or end of string)
+
 
 ## Exit codes
 

@@ -80,3 +80,8 @@
 - look for EINTR of every syscall used, make an INTR-safe wrapper
   for each one of them
   - alarm can interrupt anywhere
+
+- pipe support for tef_mklog (?)
+  - instead of creating logfile to be used by runner that called tef_mklog,
+    provide writing to log automatically
+  - could abstract TEF_DEBUG_OUTPUT functionality so runner doesn't have to care
