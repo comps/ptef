@@ -1,3 +1,0 @@
-#!/bin/bash
-argv0=$(basename "$0")
-ptef-runner -a "$argv0" "argecho/foo bar"

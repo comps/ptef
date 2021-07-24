@@ -1,3 +1,0 @@
-#!/bin/bash
-echo "running as $0 in $(basename $PWD)"
-exit 0

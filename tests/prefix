@@ -1,0 +1,98 @@
+#!/bin/bash
+
+. testlib.sh
+
+
+function mkfile {
+	local suffix="${1:+.$1}"
+	cat <<-EOF
+	#!/bin/bash
+	if env | grep -q PTEF_PREFIX; then echo "prefix: \$PTEF_PREFIX"
+	else echo "prefix unset"
+	fi > exec_log${suffix}
+	EOF
+}
+
+
+function sanity {
+	mkfile > executable
+	chmod +x executable
+	PTEF_PREFIX=/prefix assert_ptef_runner > "$tmpdir/runner_out"
+	assert_grep '^prefix: /prefix/executable$' exec_log
+}
+
+function notset {
+	mkfile > executable
+	chmod +x executable
+	assert_ptef_runner > "$tmpdir/runner_out"
+	assert_grep '^prefix: /executable$' exec_log
+}
+
+function empty {
+	mkfile > executable
+	chmod +x executable
+	PTEF_PREFIX= assert_ptef_runner > "$tmpdir/runner_out"
+	assert_grep '^prefix: /executable$' exec_log
+}
+
+function dir_sanity {
+	mkdir subd
+	mkfile > subd/ptef-runner
+	chmod +x subd/ptef-runner
+	PTEF_PREFIX=/prefix assert_ptef_runner > "$tmpdir/runner_out"
+	assert_grep '^prefix: /prefix/subd$' subd/exec_log
+}
+
+function dir_notset {
+	mkdir subd
+	mkfile > subd/ptef-runner
+	chmod +x subd/ptef-runner
+	assert_ptef_runner > "$tmpdir/runner_out"
+	assert_grep '^prefix: /subd$' subd/exec_log
+}
+
+function dir_empty {
+	mkdir subd
+	mkfile > subd/ptef-runner
+	chmod +x subd/ptef-runner
+	PTEF_PREFIX= assert_ptef_runner > "$tmpdir/runner_out"
+	assert_grep '^prefix: /subd$' subd/exec_log
+}
+
+function dir_space {
+	mkdir subd
+	mkfile > subd/ptef-runner
+	chmod +x subd/ptef-runner
+	PTEF_PREFIX="/pre fix" assert_ptef_runner > "$tmpdir/runner_out"
+	assert_grep '^prefix: /pre fix/subd$' subd/exec_log
+}
+
+function dir_noslash {
+	mkdir subd
+	mkfile > subd/ptef-runner
+	chmod +x subd/ptef-runner
+	PTEF_PREFIX="prefix" assert_ptef_runner > "$tmpdir/runner_out"
+	assert_grep '^prefix: prefix/subd$' subd/exec_log
+}
+
+function dir_endslash {
+	mkdir subd
+	mkfile > subd/ptef-runner
+	chmod +x subd/ptef-runner
+	PTEF_PREFIX="/prefix/" assert_ptef_runner > "$tmpdir/runner_out"
+	assert_grep '^prefix: /prefix//subd$' subd/exec_log
+}
+
+
++ sanity
++ notset
++ empty
++ dir_sanity
++ dir_notset
++ dir_empty
++ dir_space
++ dir_noslash
++ dir_endslash
+
+
+run_tests "$@"

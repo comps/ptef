@@ -1,4 +1,0 @@
-#!/bin/bash
-argv0=$(basename "$0")
-rm -rf testlogs
-PTEF_LOGS=$PWD/testlogs/subtestlogs ptef-runner -a "$argv0"

@@ -1,0 +1,166 @@
+#!/bin/bash
+
+. testlib.sh
+
+
+function mkfile {
+	local suffix="${1:+.$1}"
+	cat <<-EOF
+	#!/bin/bash
+	echo -e "argv0: \$0\\nargc: \$#\\nargv: \$@" > exec_log${suffix}
+	EOF
+}
+function mk2execs {
+	mkfile > exec1
+	mkfile > exec2
+	chmod +x exec1 exec2
+}
+function mk3execs {
+	mkfile > exec1
+	mkfile > exec2
+	mkfile > exec3
+	chmod +x exec1 exec2 exec3
+}
+
+
+# Test that the runner runs all executables in CWD when no args are given
+function no_args {
+	mk2execs
+	assert_ptef_runner "$@" > "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+}
+
+# Test that the runenr executes only the executable specified as arg
+function one_arg {
+	mk2execs
+	assert_ptef_runner "$@" exec1 > "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+	assert_nogrep '/exec2' "$tmpdir/runner_out"
+	assert_ptef_runner "$@" exec2 > "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+	assert_nogrep '/exec1' "$tmpdir/runner_out"
+}
+
+# Test that the runner can deal with arguments containing whitespace
+function one_arg_with_spaces {
+	mk2execs
+	mv exec1 "ex ec1"
+	assert_ptef_runner "$@" "ex ec1" > "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/ex ec1$' "$tmpdir/runner_out"
+	assert_nogrep '/exec2' "$tmpdir/runner_out"
+	assert_nogrep '/ex$' "$tmpdir/runner_out"
+	assert_nogrep '/ec1' "$tmpdir/runner_out"
+}
+
+# Test that the runner can process more than one argument
+function multiple_args {
+	mk3execs
+	assert_ptef_runner "$@" exec1 exec2 > "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+	assert_nogrep '/exec3' "$tmpdir/runner_out"
+	assert_ptef_runner "$@" exec1 exec3 > "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec3$' "$tmpdir/runner_out"
+	assert_nogrep '/exec2' "$tmpdir/runner_out"
+}
+
+# Test that no executables are run when an empty zero-length argument is given
+# (runner does not default to arg-less run)
+function zero_length_arg {
+	mk2execs
+	assert_ptef_runner "$@" '' > "$tmpdir/runner_out"
+	assert_nogrep "$@" '' "$tmpdir/runner_out"
+	assert_ptef_runner "$@" '' '' > "$tmpdir/runner_out"
+	assert_nogrep '' "$tmpdir/runner_out"
+}
+
+# Test that zero-length arg is skipped amongst other arguments
+function zero_length_arg_skip {
+	mk2execs
+	assert_ptef_runner "$@" exec1 '' exec2 > "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+}
+
+# Test that the runner throws an error on a spec-defined invalid argument
+# and ignores it
+function invalid_arg {
+	mk2execs
+	ptef-runner "$@" '.' >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || true
+	assert_grep 'arg failed sanity check: \.$' "$tmpdir/runner_err"
+	assert_nogrep '' "$tmpdir/runner_out"
+	ptef-runner "$@" '..' >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || true
+	assert_grep 'arg failed sanity check: \.\.$' "$tmpdir/runner_err"
+	assert_nogrep '' "$tmpdir/runner_out"
+}
+
+# Test that the runner skips and invalid argument
+function invalid_arg_skip {
+	mk2execs
+	ptef-runner "$@" exec1 '.' exec2 >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || true
+	assert_grep 'arg failed sanity check' "$tmpdir/runner_err"
+	assert_grep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+}
+
++ no_args
++ one_arg
++ one_arg_with_spaces
++ multiple_args
++ zero_length_arg
++ zero_length_arg_skip
++ invalid_arg
++ invalid_arg_skip
+
+
+# run all tests also with argument merging disabled
+function no_args_nomerge { no_args -m "$@"; }
+function one_arg_nomerge { one_arg -m "$@"; }
+function one_arg_with_spaces_nomerge { one_arg_with_spaces -m "$@"; }
+function multiple_args_nomerge { multiple_args -m "$@"; }
+function zero_length_arg_nomerge { zero_length_arg -m "$@"; }
+function zero_length_arg_skip_nomerge { zero_length_arg_skip -m "$@"; }
+function invalid_arg_nomerge { invalid_arg -m "$@"; }
+function invalid_arg_skip_nomerge { invalid_arg_skip -m "$@"; }
+
++ no_args_nomerge
++ one_arg_nomerge
++ one_arg_with_spaces_nomerge
++ multiple_args_nomerge
++ zero_length_arg_nomerge
++ zero_length_arg_skip_nomerge
++ invalid_arg_nomerge
++ invalid_arg_skip_nomerge
+
+
+# Test that argument merging works as expected
+function merged_args {
+	mkfile 1 > exec1
+	mkfile 2 > exec2
+	chmod +x exec1 exec2
+	assert_ptef_runner "$@" exec1/arg1 exec1/arg2 > "$tmpdir/runner_out"
+	assert_grep '^argc: 2$' exec_log.1
+	assert_grep '^argv: arg1 arg2$' exec_log.1
+	assert_ptef_runner "$@" exec1/arg1 exec1/arg2 exec2 > "$tmpdir/runner_out"
+	assert_grep '^argv: arg1 arg2$' exec_log.1
+	assert_grep '^argc: 0$' exec_log.2
+	assert_ptef_runner "$@" exec1/arg1 '' exec1/arg2 > "$tmpdir/runner_out"
+	assert_grep '^argc: 1$' exec_log.1
+	assert_grep '^argv: arg2$' exec_log.1  # last execution overrides the log
+}
+function nonmerged_args {
+	mkfile 1 > exec1
+	mkfile 2 > exec2
+	chmod +x exec1 exec2
+	assert_ptef_runner "$@" -m exec1/arg1 exec1/arg2 > "$tmpdir/runner_out"
+	assert_grep '^argc: 1$' exec_log.1
+	assert_grep '^argv: arg2$' exec_log.1  # last execution
+}
+
++ merged_args
++ nonmerged_args
+
+
+run_tests "$@"

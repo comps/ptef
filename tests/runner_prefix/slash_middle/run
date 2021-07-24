@@ -1,3 +1,0 @@
-#!/bin/bash
-argv0=$(basename "$0")
-PTEF_PREFIX=pre/fix ptef-runner -a "$argv0"
