@@ -92,6 +92,10 @@
     - so that parent runners don't have to support log creation
 
 - mention in PTEF.md that a non-empty PTEF_PREFIX must start with a '/'
+  - not really; this could be a requirement for external inputs, but
+    the runner implementation is always simpler if it doesn't have to
+    check for '^/' and throw an error, it's simpler if it can just prepend
+    the prefix regardless of what it is
 
 - mention in PTEF.md (or elsewhere) that runner implementations should not
   use the PTEF_* env variable namespace for out-of-spec features as this
@@ -142,8 +146,15 @@
     whereas /some/test will pass no arguments
   - if 'test' is a runner, it should execute no tests, it should not
     default to executing all tests
+  - IOW: zero-length arg MUST be ignored (skipped), alone or amongst other
+    args, but the runner should run as if argument(s) were given, it must not
+    default to an arg-less run
   - useful for testing a parent execution chain without actually running
     anything in the leaf directory
+
+- document argument sanity checking
+  - these MUST trigger a non-fatal error and be ignored
+    - path elements equal to '.' and '..', for simplicity and safety
 
 - PTEF_IGNORE_FILES, newline-separated
   - document it in PTEF.md

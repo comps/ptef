@@ -20,9 +20,6 @@ static char *sane_arg(char *a)
 {
     while (*a == '/')
         a++;
-    // empty is invalid
-    if (a[0] == '\0')
-        return NULL;
     // '.' or '..' are invalid
     // probably more efficient than 4 strcmp's
     if (a[0] == '.') {
@@ -51,6 +48,10 @@ int for_each_arg(int argc, char **argv, char *basename, int jobs)
 
     char *prefix = NULL;
     for (int i = 0; i < argc; i++) {
+        // no-op
+        if (argv[i][0] == '\0')
+            continue;
+
         char *sane = sane_arg(argv[i]);
         if (!sane) {
             ERROR_FMT("arg failed sanity check: %s\n", argv[i]);
@@ -116,6 +117,8 @@ int for_each_merged_arg(int argc, char **argv, char *basename, int jobs)
     for (int i = 0; i < argc; i++) {
         char *sane = sane_arg(argv[i]);
 
+        // this also takes care of a no-op '' arg, eg. argv[i][0] == '\0'
+        // by strchr() returning NULL and a later !slash aborting merging
         char *slash = NULL;
         if (sane)
            slash = strchr(sane, '/');
@@ -135,6 +138,10 @@ int for_each_merged_arg(int argc, char **argv, char *basename, int jobs)
                 merged[merged_idx] = NULL;
             }
         }
+
+        // no-op
+        if (argv[i][0] == '\0')
+            continue;
 
         if (!sane) {
             ERROR_FMT("arg failed sanity check: %s\n", argv[i]);
