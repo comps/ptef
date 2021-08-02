@@ -35,16 +35,16 @@ static int report_main(WORD_LIST *status)
         builtin_error("not enough arguments");
         return 1;
     }
-    WORD_LIST *test = status->next;
-    if (!test) {
+    WORD_LIST *testname = status->next;
+    if (!testname) {
         builtin_error("not enough arguments");
         return 1;
     }
-    if (test->next) {
+    if (testname->next) {
         builtin_error("too many arguments");
         return 1;
     }
-    return !!ptef_report(status->word->word, test->word->word);
+    return !!ptef_report(status->word->word, testname->word->word);
 }
 
 //
@@ -80,13 +80,13 @@ static int mklog_bind_variable(char *name, int value)
     return !!v;
 }
 
-static int mklog_main(WORD_LIST *test)
+static int mklog_main(WORD_LIST *testname)
 {
-    if (!test) {
+    if (!testname) {
         builtin_error("not enough arguments");
         return 1;
     }
-    WORD_LIST *varname = test->next;
+    WORD_LIST *varname = testname->next;
     if (!varname) {
         builtin_error("not enough arguments");
         return 1;
@@ -95,7 +95,7 @@ static int mklog_main(WORD_LIST *test)
         builtin_error("too many arguments");
         return 1;
     }
-    int fd = ptef_mklog(test->word->word);
+    int fd = ptef_mklog(testname->word->word);
     if (fd == -1) {
         builtin_error("returned -1");
         return 1;
@@ -111,13 +111,13 @@ static int mklog_main(WORD_LIST *test)
 // builtin boilerplate
 //
 static char *report_help[] = {
-    "Reports STATUS for a test named TEST, prepending PTEF_PREFIX",
-    "to the TEST name, copying the report to PTEF_RESULTS_FD if defined.",
+    "Reports STATUS for a test named TESTNAME, prepending PTEF_PREFIX",
+    "to the TESTNAME, copying the report to PTEF_RESULTS_FD if defined.",
     "Outputs color if stdout is connected to a terminal.",
     NULL
 };
 static char *mklog_help[] = {
-    "Creates and opens a log storage for a test named TEST,",
+    "Creates and opens a log storage for a given TESTNAME,",
     "binds its file descriptor number to a variable named VARNAME.",
     NULL
 };
@@ -128,7 +128,7 @@ struct builtin ptef_report_struct = {
     report_main,
     BUILTIN_ENABLED,
     report_help,
-    "ptef_report STATUS TEST",
+    "ptef_report STATUS TESTNAME",
     NULL
 };
 struct builtin ptef_mklog_struct = {
@@ -136,6 +136,6 @@ struct builtin ptef_mklog_struct = {
     mklog_main,
     BUILTIN_ENABLED,
     mklog_help,
-    "ptef_mklog TEST VARNAME",
+    "ptef_mklog TESTNAME VARNAME",
     NULL
 };

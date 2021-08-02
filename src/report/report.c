@@ -122,7 +122,7 @@ static char *status_rewrites[][2] = {
 
 __asm__(".symver ptef_report_v0, ptef_report@@VERS_0");
 __attribute__((used))
-int ptef_report_v0(char *status, char *name)
+int ptef_report_v0(char *status, char *testname)
 {
     char *status_pretty = status;
 
@@ -146,7 +146,7 @@ int ptef_report_v0(char *status, char *name)
 
     // write to stdout
     size_t len;
-    char *line = format_line(status_pretty, name, &len);
+    char *line = format_line(status_pretty, testname, &len);
     if (!line)
         goto err;
 
@@ -164,7 +164,7 @@ int ptef_report_v0(char *status, char *name)
                     goto err;
             } else {
                 free(line);
-                line = format_line(status, name, &len);
+                line = format_line(status, testname, &len);
                 if (!line)
                     goto err;
                 if (write_safe_locked(fd, line, len) == -1)

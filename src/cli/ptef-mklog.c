@@ -17,9 +17,9 @@
 static void print_help(void)
 {
     fprintf(stderr,
-            "usage: ptef-mklog TEST\n"
+            "usage: ptef-mklog TESTNAME\n"
             "\n"
-            "Creates and opens a log storage for a test named TEST, relaying\n"
+            "Creates and opens a log storage for a given TESTNAME, relaying\n"
             "stdin to the log storage until EOF is encountered.\n");
 }
 

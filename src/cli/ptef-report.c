@@ -16,10 +16,10 @@
 static void print_help(void)
 {
     fprintf(stderr,
-            "usage: ptef-report STATUS TEST\n"
+            "usage: ptef-report STATUS TESTNAME\n"
             "\n"
-            "Reports STATUS for a test named TEST, prepending PTEF_PREFIX\n"
-            "to the TEST name, copying the report to PTEF_RESULTS_FD if defined.\n"
+            "Reports STATUS for a given TESTNAME, prepending PTEF_PREFIX\n"
+            "to the TESTNAME, copying the report to PTEF_RESULTS_FD if defined.\n"
             "Outputs color if stdout is connected to a terminal.\n");
 }
 
