@@ -136,9 +136,18 @@
   - useful for testing a parent execution chain without actually running
     anything in the leaf directory
 
+- when outlining arguments in PTEF.md, write them generically
+  - a runner can either run argument-less or with arguments, whether those
+    are passed as CLI, function arguments, or in a similar way
+
 - document argument sanity checking
   - these MUST trigger a non-fatal error and be ignored
     - path elements equal to '.' and '..', for simplicity and safety
+
+- have an additional section about CLI arguments
+  - a CLI runner MAY have additional optional nonstandard arguments
+  - a CLI runner SHOULD ignore the first occurence of '--', for compatibility
+    with parsers which accept optional arguments
 
 - PTEF_IGNORE_FILES, newline-separated
   - document it in PTEF.md
