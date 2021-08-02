@@ -1,0 +1,4 @@
+#!/bin/bash
+argv0=$(basename "$0")
+LD_PRELOAD="$TEST_BINDIR/errno/wrap.so" \
+	"$TEST_BINDIR/cli/ptef-runner" -a "$argv0" "$@"
