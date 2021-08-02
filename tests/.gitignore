@@ -5,6 +5,7 @@ tmpdir
 
 bin/bash/bash-builtins.sh
 bin/bash/bash-builtins.so
+bin/python/ptef.py
 bin/cli/libptef.so
 bin/cli/ptef-mklog
 bin/cli/ptef-report
