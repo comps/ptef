@@ -81,6 +81,8 @@ static bool is_exec(int parentfd, char *name)
     if ((ret = faccessat(parentfd, name, X_OK, 0)) == -1) {
         if (errno != EACCES && errno != ENOENT)
             PERROR_FMT("faccessat %s", name);
+        else
+            errno = 0;
         return false;
     }
     return true;
@@ -125,8 +127,10 @@ find_execs(struct exec_entry ***entries, char *basename, char **ignored)
         // even though GNU readdir(3) provides dent->d_type which would save us
         // one fstatat() syscall here, it is not POSIX *and* does not resolve
         // symlinks, so we have to use fstatat() anyway
-        if (fstatat_type(cwdfd, dent->d_name, &enttype) == -1)
+        if (fstatat_type(cwdfd, dent->d_name, &enttype) == -1) {
+            errno = 0;
             continue;
+        }
         if (enttype == EXEC_TYPE_INVALID)
             continue;
 

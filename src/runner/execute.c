@@ -272,9 +272,12 @@ int execute(char *file, enum exec_entry_type typehint, char **argv,
     while ((child = waitpid_safe(-1, &wstatus, WNOHANG)) > 0)
         if (finish_job(child, state, WEXITSTATUS(wstatus)) == -1)
             return -1;
-    if (child == -1 && errno != ECHILD) {
-        PERROR("waitpid WNOHANG");
-        return -1;
+    if (child == -1) {
+        if (errno != ECHILD) {
+            PERROR("waitpid WNOHANG");
+            return -1;
+        }
+        errno = 0;
     }
 
     // duplicate filename for storage in pid<->testname map array

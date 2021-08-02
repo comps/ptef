@@ -46,9 +46,12 @@ static int open_log(int dirfd, char *testname)
 
     // unlink (remove) the oldest log if it exists
     *fromnr = '9';
-    if (unlinkat(dirfd, from, 0) == -1 && errno != ENOENT) {
-        PERROR_FMT("unlinkat %s", from);
-        goto err;
+    if (unlinkat(dirfd, from, 0) == -1) {
+        if (errno != ENOENT) {
+            PERROR_FMT("unlinkat %s", from);
+            goto err;
+        }
+        errno = 0;
     }
 
     // rotate everything one iteration
@@ -57,9 +60,12 @@ static int open_log(int dirfd, char *testname)
     do { \
         *fromnr = fromnum; \
         *tonr = tonum; \
-        if (renameat(dirfd, from, dirfd, to) == -1 && errno != ENOENT) { \
-            PERROR_FMT("rename %s to %s", from, to); \
-            goto err; \
+        if (renameat(dirfd, from, dirfd, to) == -1) { \
+            if (errno != ENOENT) { \
+                PERROR_FMT("rename %s to %s", from, to); \
+                goto err; \
+            } \
+            errno = 0; \
         } \
     } while (0)
     MOVE('8','9');
@@ -76,9 +82,12 @@ static int open_log(int dirfd, char *testname)
     // re-use the already-allocated 'to' by replacing '.2.log' with '.log'
     // 'from' already has '.1.log' here
     strcpy(to+testname_len, ".log");
-    if (renameat(dirfd, to, dirfd, from) == -1 && errno != ENOENT) {
-        PERROR_FMT("rename %s to %s", to, from);
-        goto err;
+    if (renameat(dirfd, to, dirfd, from) == -1) {
+        if (errno != ENOENT) {
+            PERROR_FMT("rename %s to %s", to, from);
+            goto err;
+        }
+        errno = 0;
     }
 
     // create and open a new log
@@ -115,17 +124,23 @@ static int mkpath(int srcfd, char *path)
         }
         pos = memcpy_append(pos, start, end-start+1);
         *pos = '\0';
-        if (mkdirat(srcfd, buff, 0755) == -1 && errno != EEXIST) {
-            PERROR_FMT("mkdirat %s", buff);
-            goto err;
+        if (mkdirat(srcfd, buff, 0755) == -1) {
+            if (errno != EEXIST) {
+                PERROR_FMT("mkdirat %s", buff);
+                goto err;
+            }
+            errno = 0;
         }
         start = end+1;
     }
     if (*start != '\0') {
         strcpy(pos, start);
-        if (mkdirat(srcfd, buff, 0755) == -1 && errno != EEXIST) {
-            PERROR_FMT("mkdirat %s", buff);
-            goto err;
+        if (mkdirat(srcfd, buff, 0755) == -1) {
+            if (errno != EEXIST) {
+                PERROR_FMT("mkdirat %s", buff);
+                goto err;
+            }
+            errno = 0;
         }
     }
 
@@ -144,6 +159,7 @@ static int open_create_dir(char *name)
             PERROR_FMT("open %s", name);
             return -1;
         }
+        errno = 0;
         if (mkdir(name, 0755) == -1) {
             PERROR_FMT("mkdir %s", name);
             return -1;
