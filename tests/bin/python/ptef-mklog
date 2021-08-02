@@ -1,0 +1,6 @@
+#!/usr/bin/python3
+import sys, os
+libdir = os.path.join(os.environ['TEST_BINDIR'], 'python')
+sys.path.append(libdir)
+import ptef
+ptef.mklog(sys.argv[1])

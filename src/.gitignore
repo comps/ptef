@@ -3,7 +3,6 @@
 *.la
 *.so
 *.so.*
-__pycache__
 
 cli/ptef-mklog
 cli/ptef-report

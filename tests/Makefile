@@ -11,7 +11,8 @@ build: bin/ttee bin_clean
 	$(MAKE) -C ../src clean && \
 	$(MAKE) -C ../src && \
 	cp -v ../src/cli/ptef-{runner,report,mklog} ../src/lib/*.so bin/cli/. && \
-	cp -v ../src/bash/bash-builtins.{so,sh} bin/bash/.
+	cp -v ../src/bash/bash-builtins.{so,sh} bin/bash/. && \
+	cp -v ../src/python/ptef.py bin/python/.
 
 .PHONY: run
 run:
@@ -23,6 +24,7 @@ bin_clean:
 	rm -f bin/cli/{ptef-{runner,report,mklog},libptef.so}
 	rm -f bin/{ptef-{runner,report,mklog},libptef.so}
 	rm -f bin/bash/bash-builtins.{so,sh}
+	rm -f bin/python/ptef.py
 
 .PHONY: clean
 clean: bin_clean
