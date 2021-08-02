@@ -1,0 +1,2 @@
+#!/bin/bash
+strace -v -f -- "$TEST_BINDIR/cli/ptef-report" "$@"

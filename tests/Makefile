@@ -28,6 +28,6 @@ bin_clean:
 
 .PHONY: clean
 clean: bin_clean
-	rm -f valgrind.log results-{cli,valgrind,bash,python}.log
+	rm -f valgrind.log results-{cli,valgrind,strace,bash,python}.log
 	rm -f bin/ttee
 	rm -rf logs testdir tmpdir
