@@ -78,15 +78,5 @@ int main(int argc, char **argv)
     if (!argv0)
         argv0 = basename(argv[0]);
 
-    switch (ptef_runner(argc-optind, argv+optind, argv0, jobs, nomerge)) {
-        // success
-        case 0:
-            return 0;
-        // internal error
-        case -1:
-            return 1;
-        // test error
-        default:
-            return 2;
-    }
+    return !!ptef_runner(argc-optind, argv+optind, argv0, jobs, nomerge);
 }
