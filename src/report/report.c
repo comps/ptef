@@ -124,6 +124,8 @@ __asm__(".symver ptef_report_v0, ptef_report@@VERS_0");
 __attribute__((used))
 int ptef_report_v0(char *status, char *testname)
 {
+    int orig_errno = errno;
+
     char *status_pretty = status;
 
     bool use_color;
@@ -174,6 +176,7 @@ int ptef_report_v0(char *status, char *testname)
     }
 
     free(line);
+    errno = orig_errno;
     return 0;
 
 err:

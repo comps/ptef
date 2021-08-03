@@ -211,6 +211,8 @@ __asm__(".symver ptef_mklog_v0, ptef_mklog@@VERS_0");
 __attribute__((used))
 int ptef_mklog_v0(char *testname)
 {
+    int orig_errno = errno;
+
     int logsfd;
 
     char *ptef_logs = getenv_defined("PTEF_LOGS");
@@ -224,5 +226,9 @@ int ptef_mklog_v0(char *testname)
 
     int fd = open_log(logsfd, testname);
     close(logsfd);
+
+    if (fd != -1)
+        errno = orig_errno;
+
     return fd;
 }

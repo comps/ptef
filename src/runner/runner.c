@@ -1,4 +1,4 @@
-//#define _POSIX_C_SOURCE 200809L
+#include <errno.h>
 
 #include "common.h"
 
@@ -11,10 +11,20 @@ int ptef_runner_v0(int argc, char **argv, char *basename, int jobs, int nomerge)
     if (jobs < 1)
         jobs = 1;
 
-    if (argc <= 0)
-        return for_each_exec(basename, jobs);
-    if (nomerge)
-        return for_each_arg(argc, argv, basename, jobs);
-    else
-        return for_each_merged_arg(argc, argv, basename, jobs);
+    int orig_errno = errno;
+
+    int rc;
+    if (argc <= 0) {
+        rc = for_each_exec(basename, jobs);
+    } else {
+        if (nomerge)
+            rc = for_each_arg(argc, argv, basename, jobs);
+        else
+            rc = for_each_merged_arg(argc, argv, basename, jobs);
+    }
+
+    if (rc != -1)
+        errno = orig_errno;
+
+    return rc;
 }
