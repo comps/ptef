@@ -49,9 +49,7 @@ static int unlock(int fd)
 static bool is_terminal(int fd)
 {
     struct termios tos;
-    int rc = tcgetattr(fd, &tos);
-    errno = 0;
-    return !rc;
+    return !tcgetattr(fd, &tos);
 }
 
 static ssize_t write_safe_locked(int fd, const void *buf, size_t count)
