@@ -9,9 +9,14 @@ version=$(sed 's/^v//' <<<"$tag")
 
 rm -rf .rpmbuild
 mkdir -p .rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-tar --transform "s/^/ptef-${version}\//" \
-	-cvzf ".rpmbuild/SOURCES/ptef-${version}.tar.gz" *
+
+mkdir ".rpmbuild/ptef-$version"
+cp -a * ".rpmbuild/ptef-$version/."
+tar -cvzf ".rpmbuild/SOURCES/ptef-$version.tar.gz" \
+	-C .rpmbuild "ptef-$version"
+
 cp .copr/ptef.spec .rpmbuild/SPECS/.
+
 # hardcode version/release, don't use rpm macros, they would
 # be missing when this SRPM is actually built elsewhere
 sed "s/PTEF_VERSION/$version/g;s/PTEF_RELEASE/$release/g" \
