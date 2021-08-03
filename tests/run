@@ -65,7 +65,7 @@ function run_arg {
 if [ "$#" -gt 0 ]; then
 	variants=("$@")
 else
-	variants=(/cli /valgrind /errno /bash /python)
+	variants=(/cli /valgrind /bash /python)
 fi
 
 for variant in "${variants[@]}"; do
