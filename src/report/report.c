@@ -120,7 +120,7 @@ static char *status_rewrites[][2] = {
 // don't use STDOUT_FILENO as the standard specifies numbers
 #define TERMINAL_FD 1
 
-__asm__(".symver ptef_report_v0, ptef_report@@VERS_0");
+__asm__(".symver ptef_report_v0, ptef_report@@VERS_0.7");
 __attribute__((used))
 int ptef_report_v0(char *status, char *testname)
 {

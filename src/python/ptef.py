@@ -1,6 +1,6 @@
 import typing, ctypes, sys, os
 
-libptef = ctypes.CDLL("libptef.so", use_errno=True)
+libptef = ctypes.CDLL("libptef.so.0", use_errno=True)
 
 def runner(argv: list = None, basename: str = None, jobs: int = 1,
            nomerge: bool = False) -> None:

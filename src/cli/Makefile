@@ -9,13 +9,13 @@ ptef-report.o: ptef-report.c
 ptef-mklog.o: ptef-mklog.c
 
 ptef-runner: ptef-runner.o ../helpers/*.o
-	$(CC) -L../lib $(CFLAGS) -o $@ $^ -lptef
+	$(CC) -L../lib $(CFLAGS) -o $@ $^ -l:libptef.so.0
 
 ptef-report: ptef-report.o
-	$(CC) -L../lib $(CFLAGS) -o $@ $^ -lptef
+	$(CC) -L../lib $(CFLAGS) -o $@ $^ -l:libptef.so.0
 
 ptef-mklog: ptef-mklog.o ../helpers/*.o
-	$(CC) -L../lib $(CFLAGS) -o $@ $^ -lptef
+	$(CC) -L../lib $(CFLAGS) -o $@ $^ -l:libptef.so.0
 
 .PHONY: clean
 clean:

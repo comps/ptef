@@ -1,4 +1,4 @@
-VERS_0 {
+VERS_0.7 {
   global: ptef_runner; ptef_report; ptef_mklog;
   local: *;
 };

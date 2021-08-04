@@ -3,19 +3,19 @@
 testdir
 tmpdir
 
-bin/bash/bash-builtins.sh
-bin/bash/bash-builtins.so
+bin/bash/builtins.sh
+bin/bash/libptef-bash.so*
 bin/python/ptef.py
-bin/cli/libptef.so
+bin/cli/libptef.so*
 bin/cli/ptef-mklog
 bin/cli/ptef-report
 bin/cli/ptef-runner
-bin/libptef.so
+bin/libptef.so*
 bin/ptef-mklog
 bin/ptef-report
 bin/ptef-runner
 bin/ttee
-bin/valgrind/cli/libptef.so
+bin/valgrind/cli/libptef.so*
 bin/valgrind/cli/ptef-mklog
 bin/valgrind/cli/ptef-report
 bin/valgrind/cli/ptef-runner
