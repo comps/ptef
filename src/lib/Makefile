@@ -1,4 +1,6 @@
-.PHONY: all
+include ../common.mk
+
+.PHONY: all install clean
 all: libptef.so
 
 CFLAGS ?= -O2 -flto -Wall -g
@@ -10,7 +12,11 @@ libptef.so.0: ../helpers/*.o ../runner/*.o ../report/*.o ../mklog/*.o
 libptef.so: libptef.so.0
 	ln -s $< $@
 
-.PHONY: clean
+install:
+	install -d "$(DESTDIR)$(libdir)"
+	install -m755 libptef.so.0 "$(DESTDIR)$(libdir)/."
+	cp -df libptef.so "$(DESTDIR)$(libdir)/."
+
 clean:
 	rm -f libptef.so.0
 	rm -f libptef.so

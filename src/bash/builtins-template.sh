@@ -14,7 +14,7 @@ if [ "${BASH_VERSINFO[0]}" -lt 4 -o "${BASH_VERSINFO[0]}" -eq 4 -a "${BASH_VERSI
 	return 1
 fi
 
-LIBPTEF_BASH="${LIBPTEF_BASH:-/usr/lib64/libptef-bash.so}"
+LIBPTEF_BASH="${LIBPTEF_BASH:-TEMPLATE_LIBDIR/libptef-bash.so}"
 [ "${LIBPTEF_BASH::1}" != "/" ] && LIBPTEF_BASH="$PWD/$LIBPTEF_BASH"
 
 enable -f "$LIBPTEF_BASH" \

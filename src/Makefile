@@ -1,33 +1,19 @@
-.PHONY: all
-all: lib cli bash python
+include common.mk
 
-.PHONY: helpers runner report mklog lib cli bash python
-helpers:
-	@$(MAKE) -C helpers
-runner:
-	@$(MAKE) -C runner
-report:
-	@$(MAKE) -C report
-mklog:
-	@$(MAKE) -C mklog
+# the order matters here;
+# - runner/report/mklog need helpers
+# - lib needs runner/report/mklog
+# - cli/bash/python need lib
+# and rather than writing long and hacky Makefile to allow parallel build,
+# just have this simple sequential list
+SUBDIRS := helpers runner report mklog lib cli bash python
 
-lib: helpers runner report mklog
-	@$(MAKE) -C lib
+.PHONY: all install clean
+all:
+	@set -e; for subdir in $(SUBDIRS); do $(MAKE) -C $$subdir; done
 
-cli: lib
-	@$(MAKE) -C cli
-bash: lib
-	@$(MAKE) -C bash
-python: lib
-	@$(MAKE) -C python
+install:
+	@set -e; for subdir in $(SUBDIRS); do $(MAKE) -C $$subdir install; done
 
-.PHONY: clean
 clean:
-	@$(MAKE) -C helpers clean
-	@$(MAKE) -C runner clean
-	@$(MAKE) -C report clean
-	@$(MAKE) -C mklog clean
-	@$(MAKE) -C lib clean
-	@$(MAKE) -C cli clean
-	@$(MAKE) -C bash clean
-	@$(MAKE) -C python clean
+	@set -e; for subdir in $(SUBDIRS); do $(MAKE) -C $$subdir clean; done
