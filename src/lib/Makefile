@@ -10,7 +10,7 @@ libptef.so.0: ../helpers/*.o ../runner/*.o ../report/*.o ../mklog/*.o
 	$(CC) -shared -fPIC -Wl,--version-script=libptef.map $(CFLAGS) -o $@ $^
 
 libptef.so: libptef.so.0
-	ln -s $< $@
+	ln -sf $< $@
 
 install:
 	install -d "$(DESTDIR)$(libdir)"

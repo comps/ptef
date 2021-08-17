@@ -21,7 +21,8 @@ static void print_help(void)
     fprintf(stderr,
             "usage: ptef-runner [OPTIONS] [TEST]...\n"
             "\n"
-            "  -a BASE  argv0 basename, overriding autodetection\n"
+            "  -a BASE  runner basename, overriding autodetection from basename(argv[0])\n"
+            "  -A BASE  set and export PTEF_BASENAME, overriding even -a\n"
             "  -j NR    number of parallel jobs (tests)\n"
             "  -i IGN   set PTEF_IGNORE_FILES to IGN, export it\n"
             "  -v       set PTEF_NOLOGS and export it\n"
@@ -40,10 +41,17 @@ int main(int argc, char **argv)
     int nomerge = 0;
 
     int c;
-    while ((c = getopt(argc, argv, "a:j:i:vmh")) != -1) {
+    while ((c = getopt(argc, argv, "a:A:j:i:vmh")) != -1) {
         switch (c) {
             case 'a':
                 argv0 = optarg;
+                break;
+            case 'A':
+                if (setenv("PTEF_BASENAME", optarg, 1) == -1) {
+                    PERROR("setenv");
+                    return 1;
+                }
+                argv0 = optarg;  // avoid unnecessary basename() later
                 break;
             case 'j':
                 jobs = atoi(optarg);

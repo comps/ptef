@@ -3,6 +3,7 @@
 #include <sys/types.h>
 
 #include <ptef.h>
+#include <ptef_helpers.h>
 
 // for passing file type between the directory scanner and executing
 // function when running without args (when scanning a directory),

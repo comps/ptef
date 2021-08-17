@@ -4,6 +4,8 @@
 *.so
 *.so.*
 
+bash/builtins.sh
+
 cli/ptef-mklog
 cli/ptef-report
 cli/ptef-runner

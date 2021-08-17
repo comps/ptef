@@ -11,9 +11,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include <ptef.h>
-#include <ptef_helpers.h>
-
 #include "common.h"
 
 // transform sep-separated string into malloc'd char**

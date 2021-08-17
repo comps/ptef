@@ -11,9 +11,6 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 
-#include <ptef.h>
-#include <ptef_helpers.h>
-
 #include "common.h"
 
 // retry on EINTR
@@ -27,10 +24,17 @@ static pid_t waitpid_safe(pid_t pid, int *wstatus, int options)
     return ret;
 }
 
-static _Noreturn void execute_child(char **argv, char *dir)
+static _Noreturn void execute_child(char *basename, char **argv, char *dir)
 {
+    int logfd = -1;
     char *tmp = NULL;
     int errout = -1;
+
+    // always export the runner basename, don't overwrite
+    if (setenv("PTEF_BASENAME", basename, 0) == -1) {
+        PERROR("setenv(PTEF_BASENAME, ..)");
+        goto err;
+    }
 
     // if we're descending into subdir, use the directory name,
     // else use the executable name
@@ -41,7 +45,6 @@ static _Noreturn void execute_child(char **argv, char *dir)
     // open a log file, duplicate it to stderr
     // - this has to be done prior to prefix adjustment below
     //   as ptef_mklog() already appends the test name and .log
-    int logfd;
     if (!ptef_nologs) {
         if ((logfd = ptef_mklog(testname)) == -1) {
             PERROR_FMT("ptef_mklog(%s)", testname);
@@ -259,7 +262,7 @@ int execute(char *file, enum exec_entry_type typehint, char **argv,
             break;
         case EXEC_TYPE_DIR:
             child_dir = file;
-            argv[0] = basename;  // argv0 of the runner
+            argv[0] = basename;  // PTEF_BASENAME or argv0 of the runner
             break;
         default:
             ERROR_FMT("invalid exec type %d\n", typehint);
@@ -291,7 +294,7 @@ int execute(char *file, enum exec_entry_type typehint, char **argv,
         case -1:
             return -1;
         case 0:
-            execute_child(argv, child_dir);
+            execute_child(basename, argv, child_dir);
             break;
         default:
             if (start_job(child, name_duped, state) == -1)

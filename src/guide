@@ -149,6 +149,19 @@
   - a CLI runner SHOULD ignore the first occurence of '--', for compatibility
     with parsers which accept optional arguments
 
+- explicitly mention in PTEF.md argv0 passing and PTEF_BASENAME
+  - if PTEF_BASENAME exists, use it as a filename identifying a subrunner
+  - if it doesn't, you MAY take other sources (user input) for consideration
+  - else default to basename(argv[0])
+  - ...
+  - also mention (unrelated) that a runner SHOULD run executables and subrunners
+    with their filenames (or paths leading to filenames) as argv[0],
+    like a sensible common program doing execve()
+  - ...
+  - maybe mention that all this comes from the fact that interpreted executables
+    cannot read their own argv[0] when execve()'d with a non-default one,
+    due to documented execve() limitations
+
 - PTEF_IGNORE_FILES, newline-separated
   - document it in PTEF.md
     - mention that this list extends the argv0 basename ignore to additional

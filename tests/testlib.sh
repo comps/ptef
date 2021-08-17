@@ -46,7 +46,7 @@ function _run_test {
 	(
 		set -e
 		unset PTEF_PREFIX PTEF_LOGS PTEF_RESULTS_FD PTEF_NOLOGS \
-			PTEF_COLOR PTEF_IGNORE_FILES
+			PTEF_COLOR PTEF_IGNORE_FILES PTEF_BASENAME
 		tmpdir="$PWD/tmpdir"
 		cd testdir
 		set -x

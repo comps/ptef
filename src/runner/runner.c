@@ -5,13 +5,18 @@
 // true if everything PASSed, false on error or FAIL
 __asm__(".symver ptef_runner_v0, ptef_runner@@VERS_0.7");
 __attribute__((used))
-int ptef_runner_v0(int argc, char **argv, char *basename, int jobs, int nomerge)
+int ptef_runner_v0(int argc, char **argv, char *default_basename, int jobs,
+                   int nomerge)
 {
     // sanitize
     if (jobs < 1)
         jobs = 1;
 
     int orig_errno = errno;
+
+    char *basename = getenv_defined("PTEF_BASENAME");
+    if (!basename)
+        basename = default_basename;
 
     int rc;
     if (argc <= 0) {
