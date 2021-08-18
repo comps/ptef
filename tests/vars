@@ -1,0 +1,141 @@
+#!/bin/bash
+
+. testlib.sh
+
+
+function mkfile {
+	local suffix="${1:+.$1}"
+	cat <<-EOF
+	#!/bin/bash
+	echo -e "argv0: \$0\\nargc: \$#\\nargv: \$@" > exec_log${suffix}
+	EOF
+}
+
+
+# Other variables (PTEF_PREFIX / PTEF_LOGS / ..) are tested elsewhere
+
+
+# Test that an open file descriptor passed via PTEF_RESULTS_FD receives
+# the same results as stdout
+function ptef_results_fd {
+	mkfile > executable
+	chmod +x executable
+	(
+		exec {test_fd}>"$tmpdir/result_log"
+		PTEF_RESULTS_FD="$test_fd" \
+			assert_ptef_runner > "$tmpdir/runner_out"
+	)
+	assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/result_log"
+}
+
+# Test that PTEF_NOLOGS results in executable stderr not being redirected
+# and prevents logs from being created
+function ptef_nologs {
+	cat > executable <<-EOF
+	#!/bin/bash
+	echo this is stderr >&2
+	EOF
+	chmod +x executable
+	ptef-runner >"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
+	assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/runner_out"
+	assert_grep '^this is stderr$' logs/executable.log
+	assert_nogrep '^this is stderr$' "$tmpdir/runner_err"
+	rm -rf logs
+	PTEF_NOLOGS=1 ptef-runner \
+		>"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
+	assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/runner_out"
+	[ ! -d logs ]
+	assert_grep '^this is stderr$' "$tmpdir/runner_err"
+}
+
+# Test that cli -v option exports PTEF_NOLOGS and the runner honors it
+function ptef_nologs_opt {
+	cat > executable <<-EOF
+	#!/bin/bash
+	if env | grep -q PTEF_NOLOGS; then echo "nologs: \$PTEF_NOLOGS"
+	else echo "nologs unset"
+	fi > exec_log
+	EOF
+	echo 'echo this is stderr >&2' >> executable
+	chmod +x executable
+	ptef-runner -v >"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
+	assert_grep '^nologs: 1$' exec_log
+	assert_grep '^this is stderr$' "$tmpdir/runner_err"
+}
+
+# Test that PTEF_COLOR controls result color output on both non-terminal
+# and terminal-based stdout
+function ptef_color {
+	mkfile > executable
+	chmod +x executable
+	local colorpass=$'\e\[1;32mPASS\e\[0m'
+	# output to file + no var = no color
+	assert_ptef_runner >"$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/runner_out"
+	# output to file + var 0 = no color
+	PTEF_COLOR=0 assert_ptef_runner >"$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/runner_out"
+	# output to file + var 1 = color
+	PTEF_COLOR=1 assert_ptef_runner >"$tmpdir/runner_out"
+	assert_grep "^$colorpass[[:space:]]\+/executable$" "$tmpdir/runner_out"
+	# output to terminal + no var = color
+	TEST_RUNNER_WRAPPER=ttee \
+		assert_ptef_runner >"$tmpdir/runner_out"
+	assert_grep "^$colorpass[[:space:]]\+/executable$" "$tmpdir/runner_out"
+	# output to terminal + var 0 = no color
+	TEST_RUNNER_WRAPPER=ttee \
+		PTEF_COLOR=0 assert_ptef_runner >"$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/runner_out"
+	# output to terminal + var 1 = color
+	TEST_RUNNER_WRAPPER=ttee \
+		PTEF_COLOR=1 assert_ptef_runner >"$tmpdir/runner_out"
+	assert_grep "^$colorpass[[:space:]]\+/executable$" "$tmpdir/runner_out"
+}
+
+# Test that PTEF_IGNORE_FILES skips newline-separated executable names
+function ptef_ignore_files {
+	mkfile > exec1
+	mkfile > exec2
+	chmod +x exec1 exec2
+	PTEF_IGNORE_FILES=exec1 assert_ptef_runner > "$tmpdir/runner_out"
+	assert_nogrep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+	PTEF_IGNORE_FILES=$'exec1\nexec2' assert_ptef_runner > "$tmpdir/runner_out"
+	assert_nogrep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+	assert_nogrep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+	# try with leading/trailing empty arg
+	PTEF_IGNORE_FILES=$'\nexec1\nexec2' assert_ptef_runner > "$tmpdir/runner_out"
+	assert_nogrep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+	assert_nogrep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+	PTEF_IGNORE_FILES=$'exec1\nexec2\n' assert_ptef_runner > "$tmpdir/runner_out"
+	assert_nogrep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+	assert_nogrep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+}
+
+# Test that cli -i option exports PTEF_IGNORE_FILES and the runner honors it
+function ptef_ignore_files_opt {
+	cat > exec1 <<-EOF
+	#!/bin/bash
+	if env | grep -q PTEF_IGNORE_FILES; then echo "ignore: \$PTEF_IGNORE_FILES"
+	else echo "ignore unset"
+	fi > exec_log
+	EOF
+	mkfile > exec2
+	chmod +x exec1 exec2
+	assert_ptef_runner -i exec2 > "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+	assert_nogrep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+}
+
+
++ ptef_results_fd
++ ptef_nologs
++ ptef_nologs_opt
++ ptef_color
++ ptef_ignore_files
++ ptef_ignore_files_opt
+
+
+run_tests "$@"

@@ -1,5 +1,3 @@
-
-
 export PATH="$PWD/bin:$PATH"
 export LD_LIBRARY_PATH="$PWD/bin"
 export TEST_BINDIR="$PWD/bin"
@@ -11,6 +9,40 @@ export TEST_BINDIR="$PWD/bin"
 #	"$@"
 #	{ set -x; } 2>/dev/null
 #}
+
+function make_arg_printer {
+	local suffix="${1:+.$1}"
+	cat <<-EOF
+	#!/bin/bash
+	{ echo "argv0: \$0"
+	  echo "nargc: \$#"
+	  echo "argv: \$@"
+	} > exec_log${suffix}
+	EOF
+}
+
+function make_var_printer {
+	local varname="$1"
+	local suffix="${2:+.$2}"
+	cat <<-EOF
+	#!/bin/bash
+	if env | grep -q $varname; then echo "\$$varname"
+	else echo unset
+	fi > exec_log${suffix}
+	EOF
+
+}
+
+function assert_contents {
+	local content=$(<"$2")
+	[ "$content" = "$1" ] || {
+		{
+			echo "assert_contents failed, ${@: -1} contains:"
+			echo "$content"
+			return 1
+		} 1>&2 2>/dev/null
+	}
+}
 
 function assert_grep {
 	grep "$@" >&2 || {
@@ -32,7 +64,7 @@ function assert_nogrep {
 }
 
 function assert_ptef_runner {
-	ptef-runner "$@" 2>"$tmpdir/runner_err"
+	$TEST_RUNNER_WRAPPER ptef-runner "$@" 2>"$tmpdir/runner_err"
 	! grep '' "$tmpdir/runner_err" >&2
 }
 

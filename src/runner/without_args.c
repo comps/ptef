@@ -18,8 +18,8 @@ char **str_to_array(char *input, char sep)
 {
     // str len and separator cnt
     size_t len = 0, cnt = 0;
-    char *tmp = input;
-    while (*tmp++ != '\0') {
+    char *tmp;
+    for (tmp = input; *tmp != '\0'; tmp++) {
         len++;
         if (*tmp == sep)
             cnt++;
