@@ -4,11 +4,7 @@
 
 
 function mkfile {
-	local suffix="${1:+.$1}"
-	cat <<-EOF
-	#!/bin/bash
-	echo -e "argv0: \$0\\nargc: \$#\\nargv: \$@" > exec_log${suffix}
-	EOF
+	make_arg_printer "$@"
 }
 
 

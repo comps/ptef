@@ -4,13 +4,7 @@
 
 
 function mkfile {
-	local suffix="${1:+.$1}"
-	cat <<-EOF
-	#!/bin/bash
-	if env | grep -q PTEF_PREFIX; then echo "prefix: \$PTEF_PREFIX"
-	else echo "prefix unset"
-	fi > exec_log${suffix}
-	EOF
+	make_var_printer PTEF_PREFIX "$@"
 }
 
 
@@ -19,7 +13,7 @@ function sanity {
 	mkfile > executable
 	chmod +x executable
 	PTEF_PREFIX=/prefix assert_ptef_runner > "$tmpdir/runner_out"
-	assert_grep '^prefix: /prefix/executable$' exec_log
+	assert_contents '/prefix/executable' exec_log
 }
 
 # Test with PTEF_PREFIX unset, runner should default to empty
@@ -27,7 +21,7 @@ function notset {
 	mkfile > executable
 	chmod +x executable
 	assert_ptef_runner > "$tmpdir/runner_out"
-	assert_grep '^prefix: /executable$' exec_log
+	assert_contents '/executable' exec_log
 }
 
 # Test with PTEF_PREFIX set, but empty, result should be the same as when unset
@@ -35,7 +29,7 @@ function empty {
 	mkfile > executable
 	chmod +x executable
 	PTEF_PREFIX= assert_ptef_runner > "$tmpdir/runner_out"
-	assert_grep '^prefix: /executable$' exec_log
+	assert_contents '/executable' exec_log
 }
 
 # Test basic PTEF_PREFIX sanity when used with a subdir runner, the directory
@@ -45,7 +39,7 @@ function dir_sanity {
 	mkfile > subd/ptef-runner
 	chmod +x subd/ptef-runner
 	PTEF_PREFIX=/prefix assert_ptef_runner > "$tmpdir/runner_out"
-	assert_grep '^prefix: /prefix/subd$' subd/exec_log
+	assert_contents '/prefix/subd' subd/exec_log
 }
 
 # Test unset PTEF_PREFIX with a subdir runner, runner should default to it
@@ -55,7 +49,7 @@ function dir_notset {
 	mkfile > subd/ptef-runner
 	chmod +x subd/ptef-runner
 	assert_ptef_runner > "$tmpdir/runner_out"
-	assert_grep '^prefix: /subd$' subd/exec_log
+	assert_contents '/subd' subd/exec_log
 }
 
 # Test with PTEF_PREFIX set, but empty, with a subdir runner, result should
@@ -65,7 +59,7 @@ function dir_empty {
 	mkfile > subd/ptef-runner
 	chmod +x subd/ptef-runner
 	PTEF_PREFIX= assert_ptef_runner > "$tmpdir/runner_out"
-	assert_grep '^prefix: /subd$' subd/exec_log
+	assert_contents '/subd' subd/exec_log
 }
 
 # Test PTEF_PREFIX containing whitespaces, runner should treat them the same as
@@ -75,7 +69,7 @@ function dir_space {
 	mkfile > subd/ptef-runner
 	chmod +x subd/ptef-runner
 	PTEF_PREFIX="/pre fix" assert_ptef_runner > "$tmpdir/runner_out"
-	assert_grep '^prefix: /pre fix/subd$' subd/exec_log
+	assert_contents '/pre fix/subd' subd/exec_log
 }
 
 # Test with PTEF_PREFIX set, but without any slash - this is nonstandard, but
@@ -85,7 +79,7 @@ function dir_noslash {
 	mkfile > subd/ptef-runner
 	chmod +x subd/ptef-runner
 	PTEF_PREFIX="prefix" assert_ptef_runner > "$tmpdir/runner_out"
-	assert_grep '^prefix: prefix/subd$' subd/exec_log
+	assert_contents 'prefix/subd' subd/exec_log
 }
 
 # Test PTEF_PREFIX with a trailing slash and a subdir runner, the prefix should
@@ -95,7 +89,7 @@ function dir_endslash {
 	mkfile > subd/ptef-runner
 	chmod +x subd/ptef-runner
 	PTEF_PREFIX="/prefix/" assert_ptef_runner > "$tmpdir/runner_out"
-	assert_grep '^prefix: /prefix//subd$' subd/exec_log
+	assert_contents '/prefix//subd' subd/exec_log
 }
 
 

@@ -4,11 +4,7 @@
 
 
 function mkfile {
-	local suffix="${1:+.$1}"
-	cat <<-EOF
-	#!/bin/bash
-	echo -e "argv0: \$0\\nargc: \$#\\nargv: \$@" > exec_log${suffix}
-	EOF
+	make_arg_printer "$@"
 }
 
 
@@ -34,7 +30,7 @@ function ptef_results_fd {
 function ptef_nologs {
 	cat > executable <<-EOF
 	#!/bin/bash
-	echo this is stderr >&2
+	echo "this is stderr" >&2
 	EOF
 	chmod +x executable
 	ptef-runner >"$tmpdir/runner_out" 2>"$tmpdir/runner_err"

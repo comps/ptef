@@ -4,14 +4,8 @@
 
 
 function mkfile {
-	local suffix="${1:+.$1}"
-	cat <<-EOF
-	#!/bin/bash
-	if env | grep -q PTEF_LOGS; then echo "logs: \$PTEF_LOGS"
-	else echo "logs unset"
-	fi > exec_log${suffix}
-	echo "stderr output" >&2
-	EOF
+	make_var_printer PTEF_LOGS "$@"
+	echo 'echo "stderr output" >&2'
 }
 
 
@@ -20,20 +14,20 @@ function notset_file {
 	mkfile > executable
 	chmod +x executable
 	assert_ptef_runner > "$tmpdir/runner_out"
-	assert_grep '^logs unset$' exec_log
+	assert_contents 'unset' exec_log
 	[ -d logs ]
 	[ -f logs/executable.log ]
-	assert_grep '^stderr output$' logs/executable.log
+	assert_contents 'stderr output' logs/executable.log
 }
 function notset_dir {
 	mkdir subd
 	mkfile > subd/ptef-runner
 	chmod +x subd/ptef-runner
 	assert_ptef_runner > "$tmpdir/runner_out"
-	assert_grep '^logs unset$' subd/exec_log
+	assert_contents 'unset' subd/exec_log
 	[ -d logs ]
 	[ -f logs/subd.log ]
-	assert_grep '^stderr output$' logs/subd.log
+	assert_contents 'stderr output' logs/subd.log
 }
 
 # Test that an empty PTEF_LOGS is treated as unset
@@ -41,20 +35,20 @@ function empty_file {
 	mkfile > executable
 	chmod +x executable
 	PTEF_LOGS= assert_ptef_runner > "$tmpdir/runner_out"
-	assert_grep '^logs: $' exec_log
+	assert_contents '' exec_log
 	[ -d logs ]
 	[ -f logs/executable.log ]
-	assert_grep '^stderr output$' logs/executable.log
+	assert_contents 'stderr output' logs/executable.log
 }
 function empty_dir {
 	mkdir subd
 	mkfile > subd/ptef-runner
 	chmod +x subd/ptef-runner
 	PTEF_LOGS= assert_ptef_runner > "$tmpdir/runner_out"
-	assert_grep '^logs: $' subd/exec_log
+	assert_contents '' subd/exec_log
 	[ -d logs ]
 	[ -f logs/subd.log ]
-	assert_grep '^stderr output$' logs/subd.log
+	assert_contents 'stderr output' logs/subd.log
 }
 
 # Test that PTEF_LOGS is used and works with absolute paths
@@ -63,20 +57,20 @@ function absolute_file {
 	chmod +x executable
 	mkdir testlogs
 	PTEF_LOGS="$PWD/testlogs" assert_ptef_runner > "$tmpdir/runner_out"
-	assert_grep "^logs: $PWD/testlogs$" exec_log
+	assert_contents "$PWD/testlogs" exec_log
 	[ ! -d logs ]
 	[ -f testlogs/executable.log ]
-	assert_grep '^stderr output$' testlogs/executable.log
+	assert_contents 'stderr output' testlogs/executable.log
 }
 function absolute_dir {
 	mkdir subd
 	mkfile > subd/ptef-runner
 	chmod +x subd/ptef-runner
 	PTEF_LOGS="$PWD/testlogs" assert_ptef_runner > "$tmpdir/runner_out"
-	assert_grep "^logs: $PWD/testlogs$" subd/exec_log
+	assert_contents "$PWD/testlogs" subd/exec_log
 	[ ! -d logs ]
 	[ -f testlogs/subd.log ]
-	assert_grep '^stderr output$' testlogs/subd.log
+	assert_contents 'stderr output' testlogs/subd.log
 }
 
 # Test that PTEF_LOGS can be relative (and is adjusted according to prefix)
@@ -85,20 +79,20 @@ function relative_file {
 	chmod +x executable
 	mkdir testlogs
 	PTEF_LOGS=testlogs assert_ptef_runner > "$tmpdir/runner_out"
-	assert_grep '^logs: testlogs$' exec_log
+	assert_contents 'testlogs' exec_log
 	[ ! -d logs ]
 	[ -f testlogs/executable.log ]
-	assert_grep '^stderr output$' testlogs/executable.log
+	assert_contents 'stderr output' testlogs/executable.log
 }
 function relative_dir {
 	mkdir subd
 	mkfile > subd/ptef-runner
 	chmod +x subd/ptef-runner
 	PTEF_LOGS=testlogs assert_ptef_runner > "$tmpdir/runner_out"
-	assert_grep '^logs: \.\./testlogs$' subd/exec_log
+	assert_contents '../testlogs' subd/exec_log
 	[ ! -d logs ]
 	[ -f testlogs/subd.log ]
-	assert_grep '^stderr output$' testlogs/subd.log
+	assert_contents 'stderr output' testlogs/subd.log
 }
 
 # Test that path inside PTEF_LOGS is controlled by PTEF_PREFIX and
@@ -109,9 +103,9 @@ function absolute_prefix {
 	mkdir testlogs
 	PTEF_PREFIX=/a/b/c PTEF_LOGS="$PWD/testlogs" \
 		assert_ptef_runner > "$tmpdir/runner_out"
-	assert_grep "^logs: $PWD/testlogs$" exec_log
+	assert_contents "$PWD/testlogs" exec_log
 	[ -f testlogs/a/b/c/executable.log ]
-	assert_grep '^stderr output$' testlogs/a/b/c/executable.log
+	assert_contents 'stderr output' testlogs/a/b/c/executable.log
 }
 function relative_prefix {
 	mkfile > executable
@@ -120,9 +114,9 @@ function relative_prefix {
 	PTEF_PREFIX=/a/b/c PTEF_LOGS=testlogs \
 		assert_ptef_runner > "$tmpdir/runner_out"
 	# path to testlogs is based on real fs path, not PTEF_PREFIX
-	assert_grep '^logs: testlogs$' exec_log
+	assert_contents 'testlogs' exec_log
 	[ -f testlogs/a/b/c/executable.log ]
-	assert_grep '^stderr output$' testlogs/a/b/c/executable.log
+	assert_contents 'stderr output' testlogs/a/b/c/executable.log
 }
 
 # Test that the PTEF_LOGS directory itself is mkdir'd
@@ -163,10 +157,10 @@ function local_logs_prefix {
 	mkfile > executable
 	chmod +x executable
 	PTEF_PREFIX=/a/b/c assert_ptef_runner > "$tmpdir/runner_out"
-	assert_grep '^logs unset$' exec_log
+	assert_contents 'unset' exec_log
 	[ -d logs ]
 	[ -f logs/executable.log ]
-	assert_grep '^stderr output$' logs/executable.log
+	assert_contents 'stderr output' logs/executable.log
 }
 
 # Test that only stderr is redirected, stdout remains unaltered

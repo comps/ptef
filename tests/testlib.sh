@@ -15,7 +15,7 @@ function make_arg_printer {
 	cat <<-EOF
 	#!/bin/bash
 	{ echo "argv0: \$0"
-	  echo "nargc: \$#"
+	  echo "argc: \$#"
 	  echo "argv: \$@"
 	} > exec_log${suffix}
 	EOF
@@ -27,7 +27,7 @@ function make_var_printer {
 	cat <<-EOF
 	#!/bin/bash
 	if env | grep -q $varname; then echo "\$$varname"
-	else echo unset
+	else echo "unset"
 	fi > exec_log${suffix}
 	EOF
 
