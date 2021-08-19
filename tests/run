@@ -10,14 +10,11 @@ while [ "$#" -gt 0 ]; do
 done
 
 failed=
-function err { echo -e "\nERROR: $@\n" >&2; }
+function err { echo -e "\nERROR: $@\n" >&2; failed=1; }
 
 export PATH="$PWD/bin:$PATH"
 export LD_LIBRARY_PATH="$PWD/bin"
 export TEST_BINDIR="$PWD/bin"
-
-exec {TEST_VALGRIND_FD}>valgrind.log
-export TEST_VALGRIND_FD
 
 function run_arg {
 	local test="${1#/}" binary=
@@ -39,6 +36,11 @@ function run_arg {
 		subtest=()
 	fi
 
+	if [ "$variant" = "valgrind" ]; then
+		exec {TEST_VALGRIND_FD}>valgrind.log
+		export TEST_VALGRIND_FD
+	fi
+
 	local results_log="results-${variant}.log" results_fd= rc=
 	exec {results_fd}>"$results_log"
 	PTEF_RESULTS_FD="$results_fd" ptef-report RUN "$variant"
@@ -53,6 +55,10 @@ function run_arg {
 		PTEF_RESULTS_FD="$results_fd" ptef-report FAIL "$variant"
 	fi
 	exec {results_fd}>&-
+	if [ -n "$TEST_VALGRIND_FD" ]; then
+		exec {TEST_VALGRIND_FD}>&-
+		unset TEST_VALGRIND_FD
+	fi
 
 	# strip initial prefix from the results, for diffing
 	# - note that this produced empty 'RUN ' and 'PASS ' results

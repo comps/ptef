@@ -144,7 +144,9 @@ static int open_create_dir(char *name)
             PERROR_FMT("open %s", name);
             return -1;
         }
-        if (mkdir(name, 0755) == -1) {
+        // if we lost a race for creating the directory (EEXIST),
+        // just continue on, no big deal, the dir is created now
+        if (mkdir(name, 0755) == -1 && errno != EEXIST) {
             PERROR_FMT("mkdir %s", name);
             return -1;
         }

@@ -100,6 +100,31 @@ function invalid_arg_skip {
 	assert_grep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
 }
 
+# Test that the first occurence of '--' is skipped
+function double_dash_skip {
+	mkfile 1 > '--'
+	mkfile 2 > exec1
+	chmod +x -- -- exec1
+	assert_ptef_runner "$@" -- exec1 > "$tmpdir/runner_out"
+	assert_nogrep '^PASS[[:space:]]\+/--$' "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+	[ ! -f exec_log.1 ]
+	[ -f exec_log.2 ]
+}
+
+# Test that error is printed to stderr when trying to run a non-executable file
+# given as argument
+# (The error is from execve() which comes late in the process)
+function nonexecutable {
+	mkfile > nonexec
+	ptef-runner "$@" nonexec >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || true
+	# platforms without O_CLOEXEC should have it inside logs/
+	assert_grep 'ptef error .* Permission denied' "$tmpdir/runner_err" || \
+		assert_grep 'ptef error .* Permission denied' logs/nonexec.log
+	# since the fail happens after fork(), it should emit a FAIL result
+	assert_grep '^FAIL[[:space:]]\+/nonexec$' "$tmpdir/runner_out"
+}
+
 + no_args
 + one_arg
 + one_arg_with_spaces
@@ -108,6 +133,8 @@ function invalid_arg_skip {
 + zero_length_arg_skip
 + invalid_arg
 + invalid_arg_skip
++ double_dash_skip
++ nonexecutable
 
 
 # run all tests also with argument merging disabled
@@ -119,6 +146,8 @@ function zero_length_arg_nomerge { zero_length_arg -m "$@"; }
 function zero_length_arg_skip_nomerge { zero_length_arg_skip -m "$@"; }
 function invalid_arg_nomerge { invalid_arg -m "$@"; }
 function invalid_arg_skip_nomerge { invalid_arg_skip -m "$@"; }
+function double_dash_skip_nomerge { double_dash_skip -m "$@"; }
+function nonexecutable_nomerge { nonexecutable -m "$@"; }
 
 + no_args_nomerge
 + one_arg_nomerge
@@ -128,6 +157,8 @@ function invalid_arg_skip_nomerge { invalid_arg_skip -m "$@"; }
 + zero_length_arg_skip_nomerge
 + invalid_arg_nomerge
 + invalid_arg_skip_nomerge
++ double_dash_skip_nomerge
++ nonexecutable_nomerge
 
 
 # Test that argument merging works as expected

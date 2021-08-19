@@ -7,12 +7,6 @@ function mkfile {
 	make_var_printer PTEF_BASENAME "$@"
 }
 
-function link_from_PATH {
-	local src=$(command -v "$1")
-	[ -e "$src" ] || return 1
-	ln -s "$src" $2
-}
-
 
 # Test that PTEF_BASENAME is set by a runner to basename(argv[0])
 function export_var_file {

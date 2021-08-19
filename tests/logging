@@ -140,7 +140,7 @@ function absolute_noent {
 	chmod +x executable
 	PTEF_LOGS="$PWD/a/b/c/testlogs" \
 		ptef-runner >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || true
-	assert_grep 'No such file or directory' "$tmpdir/runner_err"
+	assert_grep 'ptef error .* No such file or directory' "$tmpdir/runner_err"
 	[ ! -e a ]
 }
 function relative_noent {
@@ -148,7 +148,7 @@ function relative_noent {
 	chmod +x executable
 	PTEF_LOGS="a/b/c/testlogs" \
 		ptef-runner >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || true
-	assert_grep 'No such file or directory' "$tmpdir/runner_err"
+	assert_grep 'ptef error .* No such file or directory' "$tmpdir/runner_err"
 	[ ! -e a ]
 }
 

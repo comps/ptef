@@ -1,0 +1,111 @@
+#!/bin/bash
+
+. testlib.sh
+
+
+# Test that parallel runner execution runs all executables at once by doing
+# custom locking inside the executables, forcing them to complete in a specific
+# predetermined order
+function mkparafile {
+	local waitfor="$1" setto="$2"
+	cat <<-EOF
+	#!/bin/bash
+	for ((i = 0; i < 1000; i++)); do
+		content=\$(<statefile)
+		if [ "\$content" = "$waitfor" ]; then
+			echo "$setto" > statefile
+			exit 0
+		fi
+		sleep 0.1
+	done
+	exit 1
+	EOF
+}
+function parallel_jobs {
+	# ensure out-of-alpha-order locking
+	mkparafile 1 2 > exec_d
+	mkparafile 2 3 > exec_e
+	mkparafile 3 4 > exec_a
+	mkparafile 4 5 > exec_c
+	mkparafile 5 6 > exec_f
+	mkparafile 6 7 > exec_b
+	chmod +x exec_*
+	# since the runner executes in alpha order, 4 parallel jobs should
+	# be enough:
+	# a
+	# a b
+	# a b c
+	# a b c d
+	# a b c
+	# a b c e
+	# a b c
+	# b c
+	# b
+	# b f
+	# b
+	echo 1 > statefile
+	assert_ptef_runner -j 4 > "$tmpdir/runner_out"
+	# no need for runner_out order checking; executables do exit 1 if they
+	# fail to find expected value within some time
+	assert_grep '^PASS[[:space:]]\+/exec_a' "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec_b' "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec_c' "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec_d' "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec_e' "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec_f' "$tmpdir/runner_out"
+	local final=$(<statefile)
+	[ "$final" = "7" ]
+}
+
+# Test that the runner passes no extra open file descriptors to executables
+# (Expect fd 255 due to the executable being bash)
+function open_fds {
+	cat > executable <<-EOF
+	#!/bin/bash
+	exec list-fds > exec_log
+	EOF
+	chmod +x executable
+	assert_ptef_runner > "$tmpdir/runner_out"
+	valgrind_fd="${TEST_VALGRIND_FD:+$'\n'$TEST_VALGRIND_FD}"
+	assert_contents $'0\n1\n2'"$valgrind_fd" exec_log
+}
+
+# Test that the runner emits a RUN result when it runs an executable,
+# verify that this happens before the executable finishes
+function run_status {
+	cat > executable <<-EOF
+	#!/bin/bash
+	cat fifolock >&2
+	EOF
+	chmod +x executable
+	mkfifo fifolock
+	assert_ptef_runner > "$tmpdir/runner_out" &
+	local i=
+	for ((i = 0; i < 1000; i++)); do
+		[ -s "$tmpdir/runner_out" ] && break
+		sleep 0.1
+	done
+	cp "$tmpdir/runner_out" "$tmpdir/midrun_out"
+	echo > fifolock
+	wait
+	assert_contents $'RUN[\t ]*/executable' "$tmpdir/midrun_out"
+	#assert_grep '^RUN[[:space:]]\+/executable' "$tmpdir/midrun_out"
+	#local linecnt=$(wc -l "$tmpdir/midrun_out")
+	#[ "$linecnt" = "1" ]
+	assert_contents $'RUN[\t ]*/executable\nPASS[\t ]*/executable' \
+		"$tmpdir/runner_out"
+}
+
+# Test that the runner emits a MARK result in regular intervals
+function mark_status {
+	:
+}
+
+
++ parallel_jobs
++ open_fds
++ run_status
++ mark_status
+
+
+run_tests "$@"

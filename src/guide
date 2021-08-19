@@ -148,6 +148,8 @@
   - a CLI runner MAY have additional optional nonstandard arguments
   - a CLI runner SHOULD ignore the first occurence of '--', for compatibility
     with parsers which accept optional arguments
+  - if non-option arguments occur before '--', it is undefined whether the '--'
+    is treated as a valid argument or ignored
 
 - explicitly mention in PTEF.md argv0 passing and PTEF_BASENAME
   - if PTEF_BASENAME exists, use it as a filename identifying a subrunner

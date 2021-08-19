@@ -174,21 +174,6 @@ function alpha_order {
 	assert_grep '^0,00,01,1,11,2,A,B,a,b,$' exec_log
 }
 
-# Test that parallel runner execution runs all executables at once by doing
-# custom locking inside the executables, forcing them to complete in a specific
-# predetermined order
-#function parallel_jobs {
-#	local i=
-#	# create in random order, in case the filesystem has sequential dir log
-#	for i in a 1 0 00 11 01 B b 11 2 A; do
-#		mkalphafile "$i" > "$i"
-#		chmod +x "$i"
-#	done
-#	assert_ptef_runner > "$tmpdir/runner_out"
-#	echo >> exec_log
-#	assert_grep '^0,00,01,1,11,2,A,B,a,b,$' exec_log
-#}
-
 
 + file_exec
 + file_nonexec

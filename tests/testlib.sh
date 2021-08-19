@@ -10,6 +10,17 @@ export TEST_BINDIR="$PWD/bin"
 #	{ set -x; } 2>/dev/null
 #}
 
+function cmd_in_PATH {
+	local cmd=$(command -v "$1")
+	[ "${cmd::1}" = "/" ]
+}
+
+function link_from_PATH {
+	local src=$(command -v "$1")
+	[ -e "$src" ] || return 1
+	ln -s "$src" $2
+}
+
 function make_arg_printer {
 	local suffix="${1:+.$1}"
 	cat <<-EOF
@@ -35,7 +46,8 @@ function make_var_printer {
 
 function assert_contents {
 	local content=$(<"$2")
-	[ "$content" = "$1" ] || {
+	# support globbing
+	case "$content" in $1) true;; *) false;; esac || {
 		{
 			echo "assert_contents failed, ${@: -1} contains:"
 			echo "$content"
@@ -77,6 +89,7 @@ function _run_test {
 	rm -rf tmpdir && mkdir tmpdir || return 1
 	(
 		set -e
+		[ -n "$PTEF_RESULTS_FD" ] && exec {PTEF_RESULTS_FD}>&-
 		unset PTEF_PREFIX PTEF_LOGS PTEF_RESULTS_FD PTEF_NOLOGS \
 			PTEF_COLOR PTEF_IGNORE_FILES PTEF_BASENAME
 		tmpdir="$PWD/tmpdir"

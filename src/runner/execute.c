@@ -128,7 +128,7 @@ static _Noreturn void execute_child(char *basename, char **argv, char *dir)
         PERROR_FMT_FD(errout, "dup2(%d," DEFAULT_ERROR_FD_STR ")", logfd);
         goto err;
     }
-    if (fcntl(errout, F_SETFD, O_CLOEXEC) == -1) {
+    if (fcntl(errout, F_SETFD, FD_CLOEXEC) == -1) {
         PERROR_FD(errout, "fcntl(.., F_SETFD, O_CLOEXEC)");
         goto err;
     }
@@ -224,7 +224,7 @@ int destroy_exec_state(struct exec_state *state)
     pid_t child;
     int wstatus;
     // finish all jobs
-    while (state->running_jobs-- > 0) {
+    while (state->running_jobs > 0) {
         if ((child = waitpid_safe(-1, &wstatus, 0)) > 0) {
             // yes, this can repeatedly call finish_job() on error,
             // but what's the worst that can happen? .. we'd need to
