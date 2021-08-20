@@ -76,8 +76,16 @@ function assert_nogrep {
 }
 
 function assert_ptef_runner {
-	$TEST_RUNNER_WRAPPER ptef-runner "$@" 2>"$tmpdir/runner_err"
+	$TEST_WRAPPER ptef-runner "$@" 2>"$tmpdir/runner_err"
 	! grep '' "$tmpdir/runner_err" >&2
+}
+function assert_ptef_report {
+	$TEST_WRAPPER ptef-report "$@" 2>"$tmpdir/report_err"
+	! grep '' "$tmpdir/report_err" >&2
+}
+function assert_ptef_mklog {
+	$TEST_WRAPPER ptef-mklog "$@" 2>"$tmpdir/mklog_err"
+	! grep '' "$tmpdir/mklog_err" >&2
 }
 
 _added_tests=()

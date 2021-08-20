@@ -30,6 +30,8 @@ function run_arg {
 		ln -sf "$variant/$binary" "bin/$binary" || return 1
 	done
 
+	export TEST_VARIANT="$variant"
+
 	if [ -n "$subtest" ]; then
 		subtest=("$subtest")
 	else
@@ -74,6 +76,8 @@ else
 	variants=(/cli /valgrind /bash /python)
 fi
 
+rm -f valgrind.log
+
 for variant in "${variants[@]}"; do
 	run_arg "$variant"
 done
@@ -92,7 +96,7 @@ if [ -f results-reference.log ]; then
 	done
 fi
 
-if grep -q 'ERROR SUMMARY: [1-9] errors' valgrind.log; then
+if [ -f valgrind.log ] && grep -q 'ERROR SUMMARY: [1-9] errors' valgrind.log; then
 	err "found errors in valgrind.log"
 fi
 

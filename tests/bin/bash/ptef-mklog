@@ -1,5 +1,7 @@
 #!/bin/bash
 LIBPTEF_BASH="$TEST_BINDIR/bash/libptef-bash.so"
 . "$TEST_BINDIR/bash/builtins.sh"
-argv0=$(basename "$0")
-ptef_mklog "$@"
+set -e
+ptef_mklog "$@" log
+cat >&"$log"
+exec {log}>&-

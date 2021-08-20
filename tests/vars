@@ -69,24 +69,39 @@ function ptef_color {
 	# output to file + no var = no color
 	assert_ptef_runner >"$tmpdir/runner_out"
 	assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/runner_out"
+	assert_ptef_report PASS testname >"$tmpdir/report_out"
+	assert_contents $'PASS[\t ]*/testname' "$tmpdir/report_out"
 	# output to file + var 0 = no color
 	PTEF_COLOR=0 assert_ptef_runner >"$tmpdir/runner_out"
 	assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/runner_out"
+	PTEF_COLOR=0 assert_ptef_report PASS testname >"$tmpdir/report_out"
+	assert_contents $'PASS[\t ]*/testname' "$tmpdir/report_out"
 	# output to file + var 1 = color
 	PTEF_COLOR=1 assert_ptef_runner >"$tmpdir/runner_out"
 	assert_grep "^$colorpass[[:space:]]\+/executable$" "$tmpdir/runner_out"
+	PTEF_COLOR=1 assert_ptef_report PASS testname >"$tmpdir/report_out"
+	assert_contents "$colorpass"$'[\t ]*/testname' "$tmpdir/report_out"
 	# output to terminal + no var = color
-	TEST_RUNNER_WRAPPER=ttee \
+	TEST_WRAPPER=ttee \
 		assert_ptef_runner >"$tmpdir/runner_out"
 	assert_grep "^$colorpass[[:space:]]\+/executable$" "$tmpdir/runner_out"
+	TEST_WRAPPER=ttee \
+		assert_ptef_report PASS testname >"$tmpdir/report_out"
+	assert_contents "$colorpass"$'[\t ]*/testname' "$tmpdir/report_out"
 	# output to terminal + var 0 = no color
-	TEST_RUNNER_WRAPPER=ttee \
-		PTEF_COLOR=0 assert_ptef_runner >"$tmpdir/runner_out"
+	TEST_WRAPPER=ttee PTEF_COLOR=0 \
+		assert_ptef_runner >"$tmpdir/runner_out"
 	assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/runner_out"
+	TEST_WRAPPER=ttee PTEF_COLOR=0 \
+		assert_ptef_report PASS testname >"$tmpdir/report_out"
+	assert_contents $'PASS[\t ]*/testname' "$tmpdir/report_out"
 	# output to terminal + var 1 = color
-	TEST_RUNNER_WRAPPER=ttee \
-		PTEF_COLOR=1 assert_ptef_runner >"$tmpdir/runner_out"
+	TEST_WRAPPER=ttee PTEF_COLOR=1 \
+		assert_ptef_runner >"$tmpdir/runner_out"
 	assert_grep "^$colorpass[[:space:]]\+/executable$" "$tmpdir/runner_out"
+	TEST_WRAPPER=ttee PTEF_COLOR=1 \
+		assert_ptef_report PASS testname >"$tmpdir/report_out"
+	assert_contents "$colorpass"$'[\t ]*/testname' "$tmpdir/report_out"
 }
 
 # Test that PTEF_IGNORE_FILES skips newline-separated executable names

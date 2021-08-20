@@ -3,4 +3,9 @@ import sys, os
 libdir = os.path.join(os.environ['TEST_BINDIR'], 'python')
 sys.path.append(libdir)
 import ptef
-ptef.mklog(sys.argv[1])
+with ptef.mklog(sys.argv[1]) as log:
+    while True:
+        buf = sys.stdin.buffer.read1()
+        if len(buf) < 1:
+            break
+        log.write(buf)

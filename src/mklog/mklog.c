@@ -20,7 +20,7 @@ static int open_log(int dirfd, char *testname)
     // do log rotation (unlinkat(), renameat()) based on this dir fd
     // create the final new logfile via open() O_CREAT | O_WRONLY
     // return it as open fd
-    char tmpl_suffix[] = ".1.log";
+    char tmpl_suffix[] = ".log.X";
 
     size_t testname_len = strlen(testname);
 
@@ -40,9 +40,9 @@ static int open_log(int dirfd, char *testname)
         goto err;
     }
 
-    // offsets of the single-digit logrotated number
-    char *fromnr = from+testname_len+1;
-    char *tonr = to+testname_len+1;
+    // offsets of the single-digit logrotated number: testname + ".log." + 1
+    char *fromnr = from+testname_len+5;
+    char *tonr = to+testname_len+5;
 
     // unlink (remove) the oldest log if it exists
     *fromnr = '9';
@@ -72,10 +72,10 @@ static int open_log(int dirfd, char *testname)
     MOVE('1','2');
 #undef MOVE
 
-    // manually move .log to .1.log here
-    // re-use the already-allocated 'to' by replacing '.2.log' with '.log'
-    // 'from' already has '.1.log' here
-    strcpy(to+testname_len, ".log");
+    // manually move ".log" to ".log.1" here
+    // re-use the already-allocated "to" by trimming ".log.2" with ".log"
+    // "from" already has ".log.1" here
+    to[testname_len+4] = '\0';  // testname + ".log" + 1
     if (renameat(dirfd, to, dirfd, from) == -1 && errno != ENOENT) {
         PERROR_FMT("rename %s to %s", to, from);
         goto err;
