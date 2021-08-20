@@ -30,5 +30,5 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    return !!ptef_report(argv[1], argv[2]);
+    return !!ptef_report(argv[1], argv[2], 0);
 }

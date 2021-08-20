@@ -38,7 +38,7 @@ int main(int argc, char **argv)
 {
     char *argv0 = NULL;
     int jobs = 1;
-    int nomerge = 0;
+    int flags = 0;
 
     int c;
     while ((c = getopt(argc, argv, "a:A:j:i:vmh")) != -1) {
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
                 }
                 break;
             case 'm':
-                nomerge = 1;
+                flags |= PTEF_NOMERGE;
                 break;
             case 'h':
                 print_help();
@@ -86,5 +86,5 @@ int main(int argc, char **argv)
     if (!argv0)
         argv0 = basename(argv[0]);
 
-    return !!ptef_runner(argc-optind, argv+optind, argv0, jobs, nomerge);
+    return !!ptef_runner(argc-optind, argv+optind, argv0, jobs, flags);
 }

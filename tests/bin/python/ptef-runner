@@ -23,5 +23,8 @@ if args.i:
     os.environ['PTEF_IGNORE_FILES'] = args.i
 if args.v:
     os.environ['PTEF_NOLOGS'] = str(1)
+flags = 0
+if args.m:
+    flags |= ptef.NOMERGE
 ptef.runner(argv=args.rest, default_basename=args.a, jobs=args.j,
-            nomerge=args.m)
+            flags=flags)

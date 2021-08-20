@@ -2,8 +2,15 @@ import typing, ctypes, sys, os
 
 libptef = ctypes.CDLL("libptef.so.0", use_errno=True)
 
+# runner flags
+NOMERGE     = (1 << 0)
+
+# report flags
+NOLOCK      = (1 << 0)
+NOWAIT      = (1 << 1)
+
 def runner(argv: list = None, default_basename: str = None, jobs: int = 1,
-           nomerge: bool = False) -> None:
+           flags: int = 0) -> None:
     if argv is None:
         argv = []
     if default_basename is None:
@@ -15,7 +22,7 @@ def runner(argv: list = None, default_basename: str = None, jobs: int = 1,
                              (ctypes.c_char_p * argc)(*argv_bstrings),
                              ctypes.c_char_p(default_basename.encode('utf-8')),
                              ctypes.c_int(jobs),
-                             ctypes.c_int(nomerge))
+                             ctypes.c_int(flags))
     if rc == -1:
         errno = ctypes.get_errno()
         raise OSError(errno, os.strerror(errno), None)

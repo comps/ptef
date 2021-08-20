@@ -211,7 +211,7 @@ err:
 // create and open a log file for testname, return its fd
 __asm__(".symver ptef_mklog_v0, ptef_mklog@@VERS_0.7");
 __attribute__((used))
-int ptef_mklog_v0(char *testname)
+int ptef_mklog_v0(char *testname, int flags)
 {
     int orig_errno = errno;
 

@@ -44,7 +44,7 @@ static int report_main(WORD_LIST *status)
         builtin_error("too many arguments");
         return 1;
     }
-    return !!ptef_report(status->word->word, testname->word->word);
+    return !!ptef_report(status->word->word, testname->word->word, 0);
 }
 
 //
@@ -95,7 +95,7 @@ static int mklog_main(WORD_LIST *testname)
         builtin_error("too many arguments");
         return 1;
     }
-    int fd = ptef_mklog(testname->word->word);
+    int fd = ptef_mklog(testname->word->word, 0);
     if (fd == -1) {
         builtin_error("returned -1");
         return 1;

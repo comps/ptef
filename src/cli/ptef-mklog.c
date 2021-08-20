@@ -50,7 +50,7 @@ int main(int argc, char **argv)
     }
 
     int fd;
-    if ((fd = ptef_mklog(argv[1])) == -1)
+    if ((fd = ptef_mklog(argv[1], 0)) == -1)
         return 1;
 
     if (relay_input(fd) == -1) {

@@ -3,7 +3,7 @@ include ../common.mk
 .PHONY: all install clean
 all: libptef-bash.so builtins.sh
 
-CFLAGS ?= -O2 -Wall -g
+CFLAGS ?= -O2 -Wall -g -D_POSIX_C_SOURCE=200809
 CFLAGS += -I/usr/include/bash/include -I../include -L../lib
 
 libptef-bash.so: libptef-bash.c

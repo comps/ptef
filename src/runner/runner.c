@@ -6,7 +6,7 @@
 __asm__(".symver ptef_runner_v0, ptef_runner@@VERS_0.7");
 __attribute__((used))
 int ptef_runner_v0(int argc, char **argv, char *default_basename, int jobs,
-                   int nomerge)
+                   int flags)
 {
     // sanitize
     if (jobs < 1)
@@ -22,7 +22,7 @@ int ptef_runner_v0(int argc, char **argv, char *default_basename, int jobs,
     if (argc <= 0) {
         rc = for_each_exec(basename, jobs);
     } else {
-        if (nomerge)
+        if (flags & PTEF_NOMERGE)
             rc = for_each_arg(argc, argv, basename, jobs);
         else
             rc = for_each_merged_arg(argc, argv, basename, jobs);

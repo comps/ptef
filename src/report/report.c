@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include <ptef.h>
 #include <ptef_helpers.h>
 
 // in case we get interrupted by a signal
@@ -19,13 +20,24 @@ static int intr_safe_setlkw(int fd, struct flock *f)
 {
     while (fcntl(fd, F_SETLKW, f) == -1) {
         if (errno != EINTR) {
-            PERROR_FMT("fcntl(%d, F_SETLWK)", fd);
+            PERROR_FMT("fcntl(%d, F_SETLKW)", fd);
             return -1;
         }
     }
     return 0;
 }
-static int lock(int fd)
+static int setlk(int fd, struct flock *f)
+{
+    if (fcntl(fd, F_SETLKW, f) == -1) {
+        // POSIX allows both, unify them under EAGAIN
+        if (errno == EACCES)
+            errno = EAGAIN;
+        PERROR_FMT("fcntl(%d, F_SETLK)", fd);
+        return -1;
+    }
+    return 0;
+}
+static int lock(int fd, int flags)
 {
     struct flock f = {
         .l_type = F_WRLCK,
@@ -33,7 +45,7 @@ static int lock(int fd)
         .l_start = 0,
         .l_len = 0,
     };
-    return intr_safe_setlkw(fd, &f);
+    return flags & PTEF_NOWAIT ? setlk(fd, &f) : intr_safe_setlkw(fd, &f);
 }
 static int unlock(int fd)
 {
@@ -52,17 +64,23 @@ static bool is_terminal(int fd)
     return !tcgetattr(fd, &tos);
 }
 
-static ssize_t write_safe_locked(int fd, const void *buf, size_t count)
+static ssize_t
+write_safe_locked(int fd, const void *buf, size_t count, int flags)
 {
     int write_errno;
     ssize_t rc;
-    if (lock(fd) == -1)
-        return -1;
-    if ((rc = write_safe(fd, buf, count)) == -1)
-        PERROR_FMT("write_safe(%d, ..)", fd);
-    write_errno = errno;
-    unlock(fd);
-    errno = write_errno;
+    if (flags & PTEF_NOLOCK) {
+        if ((rc = write_safe(fd, buf, count)) == -1)
+            PERROR_FMT("write_safe(%d, ..)", fd);
+    } else {
+        if (lock(fd, flags) == -1)
+            return -1;
+        if ((rc = write_safe(fd, buf, count)) == -1)
+            PERROR_FMT("write_safe(%d, ..)", fd);
+        write_errno = errno;
+        unlock(fd);
+        errno = write_errno;
+    }
     return rc;
 }
 
@@ -122,7 +140,7 @@ static char *status_rewrites[][2] = {
 
 __asm__(".symver ptef_report_v0, ptef_report@@VERS_0.7");
 __attribute__((used))
-int ptef_report_v0(char *status, char *testname)
+int ptef_report_v0(char *status, char *testname, int flags)
 {
     int orig_errno = errno;
 
@@ -152,7 +170,7 @@ int ptef_report_v0(char *status, char *testname)
     if (!line)
         goto err;
 
-    if (write_safe_locked(TERMINAL_FD, line, len) == -1)
+    if (write_safe_locked(TERMINAL_FD, line, len, flags) == -1)
         goto err;
 
     // duplicate write to PTEF_RESULTS_FD
@@ -162,14 +180,14 @@ int ptef_report_v0(char *status, char *testname)
         if (fd > 0) {
             if (status_pretty == status) {
                 // black'n'white line already formatted
-                if (write_safe_locked(fd, line, len) == -1)
+                if (write_safe_locked(fd, line, len, flags) == -1)
                     goto err;
             } else {
                 free(line);
                 line = format_line(status, testname, &len);
                 if (!line)
                     goto err;
-                if (write_safe_locked(fd, line, len) == -1)
+                if (write_safe_locked(fd, line, len, flags) == -1)
                     goto err;
             }
         }

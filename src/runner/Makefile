@@ -3,7 +3,7 @@ include ../common.mk
 .PHONY: all install clean
 all: runner.o common.o execute.o with_args.o without_args.o
 
-CFLAGS ?= -O2 -flto -Wall -g
+CFLAGS ?= -O2 -flto -Wall -g -D_POSIX_C_SOURCE=200809
 CFLAGS += -I../include -I../helpers -fPIC
 
 runner.o: runner.c
