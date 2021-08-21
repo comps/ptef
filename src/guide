@@ -16,6 +16,9 @@
   before the result is written
   - this is for consistency; both in reporting and return codes
     (PTEF_NOWAIT must return EAGAIN if at least one fails locking)
+  - stdout MUST succeed locking before a locking attempt at PTEF_RESULTS_FD
+    is made - this is to prevent deadlocks with two runners locking both
+    fds in opposing order
 
 - adjust PTEF.md to say that invalid (insane) arg must stop arg merging and the
   runner with exit with non-0 without running anything beyond the invalid arg

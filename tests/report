@@ -42,9 +42,7 @@ function locking_results_fd {
 	wait
 	# ptef-report should have timed out
 	assert_contents '' "$tmpdir/results_fd_out"
-	# the standard requires both locks to succeed before reporting,
-	# so stdout should be empty too
-	#assert_contents '' "$tmpdir/report_out"
+	assert_contents '' "$tmpdir/report_out"
 }
 
 # Test that ptef_report exits with 2 (EAGAIN) when an output is locked
@@ -66,7 +64,7 @@ function locking_nowait {
 	assert_contents '' "$tmpdir/report_err"
 	# ptef-report should have exited without writing out results
 	assert_contents '' "$tmpdir/results_fd_out"
-	#assert_contents '' "$tmpdir/report_out"
+	assert_contents '' "$tmpdir/report_out"
 	assert_contents '2' "$tmpdir/report_exitval"
 }
 

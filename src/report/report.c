@@ -40,6 +40,8 @@ static int setlk(int fd, struct flock *f)
 }
 static int lock(int fd, int flags)
 {
+    if (flags & PTEF_NOLOCK)
+        return 0;
     struct flock f = {
         .l_type = F_WRLCK,
         .l_whence = SEEK_SET,
@@ -50,6 +52,8 @@ static int lock(int fd, int flags)
 }
 static int unlock(int fd)
 {
+    if (fd == -1)
+        return -1;
     struct flock f = {
         .l_type = F_UNLCK,
         .l_whence = SEEK_SET,
@@ -63,26 +67,6 @@ static bool is_terminal(int fd)
 {
     struct termios tos;
     return !tcgetattr(fd, &tos);
-}
-
-static ssize_t
-write_safe_locked(int fd, const void *buf, size_t count, int flags)
-{
-    int write_errno;
-    ssize_t rc;
-    if (flags & PTEF_NOLOCK) {
-        if ((rc = write_safe(fd, buf, count)) == -1)
-            PERROR_FMT("write_safe(%d, ..)", fd);
-    } else {
-        if (lock(fd, flags) == -1)
-            return -1;
-        if ((rc = write_safe(fd, buf, count)) == -1)
-            PERROR_FMT("write_safe(%d, ..)", fd);
-        write_errno = errno;
-        unlock(fd);
-        errno = write_errno;
-    }
-    return rc;
 }
 
 // allocate and return a line buffer
@@ -145,6 +129,9 @@ int ptef_report_v0(char *status, char *testname, int flags)
 {
     int orig_errno = errno;
 
+    int ptef_results_fd_fd = -1;
+    char *line = NULL;
+
     char *status_pretty = status;
 
     bool use_color;
@@ -165,40 +152,57 @@ int ptef_report_v0(char *status, char *testname, int flags)
         }
     }
 
+    // lock stdout / PTEF_RESULTS_FD
+    if (lock(TERMINAL_FD, flags) == -1)
+        goto err;
+    char *ptef_results_fd = getenv_defined("PTEF_RESULTS_FD");
+    if (ptef_results_fd) {
+        ptef_results_fd_fd = atoi(ptef_results_fd);
+        if (ptef_results_fd_fd == 0 && *ptef_results_fd != '0') {
+            ERROR_FMT("atoi(%s) failed conversion", ptef_results_fd);
+            goto err;
+        }
+        if (lock(ptef_results_fd_fd, flags) == -1)
+            goto err;
+    }
+
     // write to stdout
     size_t len;
-    char *line = format_line(status_pretty, testname, &len);
+    line = format_line(status_pretty, testname, &len);
     if (!line)
         goto err;
 
-    if (write_safe_locked(TERMINAL_FD, line, len, flags) == -1)
+    if (write_safe(TERMINAL_FD, line, len) == -1)
         goto err;
 
     // duplicate write to PTEF_RESULTS_FD
-    char *ptef_results_fd = getenv_defined("PTEF_RESULTS_FD");
     if (ptef_results_fd) {
-        int fd = atoi(ptef_results_fd);
-        if (fd > 0) {
-            if (status_pretty == status) {
-                // black'n'white line already formatted
-                if (write_safe_locked(fd, line, len, flags) == -1)
-                    goto err;
-            } else {
-                free(line);
-                line = format_line(status, testname, &len);
-                if (!line)
-                    goto err;
-                if (write_safe_locked(fd, line, len, flags) == -1)
-                    goto err;
-            }
+        if (status_pretty == status) {
+            // black'n'white line already formatted
+            if (write_safe(ptef_results_fd_fd, line, len) == -1)
+                goto err;
+        } else {
+            free(line);
+            line = format_line(status, testname, &len);
+            if (!line)
+                goto err;
+            if (write_safe(ptef_results_fd_fd, line, len) == -1)
+                goto err;
         }
     }
 
+    unlock(TERMINAL_FD);
+    unlock(ptef_results_fd_fd);
     free(line);
     errno = orig_errno;
     return 0;
 
 err:
+    // preserve errno that got us here (to err) through unlock/free
+    orig_errno = errno;
+    unlock(TERMINAL_FD);
+    unlock(ptef_results_fd_fd);
     free(line);
+    errno = orig_errno;
     return -1;
 }
