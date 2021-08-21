@@ -1,0 +1,99 @@
+#!/bin/bash
+
+. testlib.sh
+
+
+# PTEF_* flags for ptef_report are abstracted as CLI options by wrappers
+# in bin/, so we can treat all variants as CLI
+
+# also, PTEF_COLOR for ptef_report is tested in 'vars'
+
+
+# Test that ptef_report locks stdout when writing a result to it
+function locking_stdout {
+	touch "$tmpdir/report_out"
+	mkfifo "$tmpdir/lockfifo"
+	hold-lock "$tmpdir/lockfifo" >"$tmpdir/report_out" &
+	# wait for hold-lock to lock report_out
+	cat "$tmpdir/lockfifo"
+	timeout 1 assert_ptef_report PASS testname \
+		>"$tmpdir/report_out" || true
+	# make hold-lock finish
+	cat "$tmpdir/lockfifo"
+	wait
+	# ptef-report should have timed out
+	assert_contents '' "$tmpdir/report_out"
+}
+
+# Test that ptef_report locks PTEF_RESULTS_FD descriptor when writing a result
+# to it, independently of stdout
+function locking_results_fd {
+	touch "$tmpdir/results_fd_out"
+	local fd=
+	exec {fd}>"$tmpdir/results_fd_out"
+	mkfifo "$tmpdir/lockfifo"
+	hold-lock "$tmpdir/lockfifo" >&"$fd" &
+	# wait for hold-lock to lock report_out
+	cat "$tmpdir/lockfifo"
+	PTEF_RESULTS_FD="$fd" TEST_WRAPPER="timeout 1" \
+		assert_ptef_report PASS testname >"$tmpdir/report_out" || true
+	# make hold-lock finish
+	cat "$tmpdir/lockfifo"
+	wait
+	# ptef-report should have timed out
+	assert_contents '' "$tmpdir/results_fd_out"
+	# the standard requires both locks to succeed before reporting,
+	# so stdout should be empty too
+	#assert_contents '' "$tmpdir/report_out"
+}
+
+# Test that ptef_report exits with 2 (EAGAIN) when an output is locked
+# and PTEF_NOWAIT is passed
+function locking_nowait {
+	touch "$tmpdir/results_fd_out"
+	local fd=
+	exec {fd}>"$tmpdir/results_fd_out"
+	mkfifo "$tmpdir/lockfifo"
+	hold-lock "$tmpdir/lockfifo" >&"$fd" &
+	# wait for hold-lock to lock report_out
+	cat "$tmpdir/lockfifo"
+	PTEF_RESULTS_FD="$fd" timeout 1 ptef-report -n PASS testname \
+		>"$tmpdir/report_out" 2>"$tmpdir/report_err" \
+			|| echo $? >"$tmpdir/report_exitval"
+	# make hold-lock finish
+	cat "$tmpdir/lockfifo"
+	wait
+	assert_contents '' "$tmpdir/report_err"
+	# ptef-report should have exited without writing out results
+	assert_contents '' "$tmpdir/results_fd_out"
+	#assert_contents '' "$tmpdir/report_out"
+	assert_contents '2' "$tmpdir/report_exitval"
+}
+
+# Test that ptef_report ignores any locking when PTEF_NOLOCK is passed
+function locking_nolock {
+	touch "$tmpdir/results_fd_out"
+	local fd=
+	exec {fd}>"$tmpdir/results_fd_out"
+	mkfifo "$tmpdir/lockfifo"
+	hold-lock "$tmpdir/lockfifo" >&"$fd" &
+	# wait for hold-lock to lock report_out
+	cat "$tmpdir/lockfifo"
+	PTEF_RESULTS_FD="$fd" TEST_WRAPPER="timeout 1" \
+		assert_ptef_report -N PASS testname >"$tmpdir/report_out" || true
+	# make hold-lock finish
+	cat "$tmpdir/lockfifo"
+	wait
+	# ptef-report should have reported to both outputs, ignoring lock
+	assert_contents $'PASS[\t ]*/testname' "$tmpdir/results_fd_out"
+	assert_contents $'PASS[\t ]*/testname' "$tmpdir/report_out"
+}
+
+
++ locking_stdout
++ locking_results_fd
++ locking_nowait
++ locking_nolock
+
+
+run_tests "$@"

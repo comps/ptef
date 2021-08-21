@@ -27,17 +27,19 @@ def runner(argv: list = None, default_basename: str = None, jobs: int = 1,
         errno = ctypes.get_errno()
         raise OSError(errno, os.strerror(errno), None)
 
-def report(status: str, testname: str) -> None:
+def report(status: str, testname: str, flags: int = 0) -> None:
     ctypes.set_errno(0)
     rc = libptef.ptef_report(ctypes.c_char_p(status.encode('utf-8')),
-                             ctypes.c_char_p(testname.encode('utf-8')))
+                             ctypes.c_char_p(testname.encode('utf-8')),
+                             ctypes.c_int(flags))
     if rc == -1:
         errno = ctypes.get_errno()
         raise OSError(errno, os.strerror(errno), None)
 
-def mklog(testname: str) -> typing.BinaryIO:
+def mklog(testname: str, flags: int = 0) -> typing.BinaryIO:
     ctypes.set_errno(0)
-    fd = libptef.ptef_mklog(ctypes.c_char_p(testname.encode('utf-8')))
+    fd = libptef.ptef_mklog(ctypes.c_char_p(testname.encode('utf-8')),
+                            ctypes.c_int(flags))
     if fd == -1:
         errno = ctypes.get_errno()
         raise OSError(errno, os.strerror(errno), None)

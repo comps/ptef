@@ -102,9 +102,6 @@ function mark_status {
 }
 
 
-# TODO: ptef_report locking flags
-
-
 + parallel_jobs
 + open_fds
 + run_status

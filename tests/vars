@@ -16,11 +16,9 @@ function mkfile {
 function ptef_results_fd {
 	mkfile > executable
 	chmod +x executable
-	(
-		exec {test_fd}>"$tmpdir/result_log"
-		PTEF_RESULTS_FD="$test_fd" \
-			assert_ptef_runner > "$tmpdir/runner_out"
-	)
+	exec {test_fd}>"$tmpdir/result_log"
+	PTEF_RESULTS_FD="$test_fd" \
+		assert_ptef_runner > "$tmpdir/runner_out"
 	assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/runner_out"
 	assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/result_log"
 }

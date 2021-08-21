@@ -133,7 +133,7 @@ int main(int argc, char **argv)
     if (logfd == -1 && logfile) {
         if ((logfd = open(logfile, logflags, 0644)) == -1) {
             PERROR_FMT("open: %s", logfile);
-            goto err;
+            return 1;
         }
     }
 

@@ -28,11 +28,12 @@ static int intr_safe_setlkw(int fd, struct flock *f)
 }
 static int setlk(int fd, struct flock *f)
 {
-    if (fcntl(fd, F_SETLKW, f) == -1) {
+    if (fcntl(fd, F_SETLK, f) == -1) {
         // POSIX allows both, unify them under EAGAIN
         if (errno == EACCES)
             errno = EAGAIN;
-        PERROR_FMT("fcntl(%d, F_SETLK)", fd);
+        if (errno != EAGAIN)
+            PERROR_FMT("fcntl(%d, F_SETLK)", fd);
         return -1;
     }
     return 0;

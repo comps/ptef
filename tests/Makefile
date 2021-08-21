@@ -1,11 +1,9 @@
 .PHONY: all
 all: build
 
-bin/ttee: bin/ttee.c
-bin/list-fds: bin/list-fds.c
-
 .PHONY: build
-build: bin/ttee bin/list-fds bin_clean
+build: bin_clean
+	$(MAKE) -C bin && \
 	$(MAKE) -C ../src clean && \
 	CFLAGS="-Wall -O0 -g3" $(MAKE) -C ../src && \
 	cp -v ../src/cli/ptef-{runner,report,mklog} ../src/lib/libptef.so.0 bin/valgrind/cli/. && \
@@ -29,6 +27,6 @@ bin_clean:
 
 .PHONY: clean
 clean: bin_clean
+	$(MAKE) -C bin clean
 	rm -f valgrind.log results-{cli,valgrind,strace,bash,python}.log
-	rm -f bin/ttee bin/list-fds
 	rm -rf logs testdir tmpdir

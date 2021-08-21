@@ -12,6 +12,11 @@
         a single process
       - the limitation is waitpid() unable to wait for an array of pids
 
+- mention in PTEF.md that *both* stdout and PTEF_RESULTS_FD need to be locked
+  before the result is written
+  - this is for consistency; both in reporting and return codes
+    (PTEF_NOWAIT must return EAGAIN if at least one fails locking)
+
 - adjust PTEF.md to say that invalid (insane) arg must stop arg merging and the
   runner with exit with non-0 without running anything beyond the invalid arg
   **or running anything beyond the bad arg**

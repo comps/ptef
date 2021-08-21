@@ -1,5 +1,7 @@
+#include <errno.h>
 #include <unistd.h>
 #include <bash/builtins.h>
+#include <bash/builtins/bashgetopt.h>
 #include <bash/variables.h>
 #include <bash/arrayfunc.h>
 #include <bash/externs.h>
@@ -9,6 +11,7 @@
 #include <ptef.h>
 
 extern void builtin_error();
+extern void builtin_usage();
 
 //
 // runner
@@ -29,8 +32,32 @@ extern void builtin_error();
 // report
 //
 
-static int report_main(WORD_LIST *status)
+static int report_main(WORD_LIST *arglist)
 {
+    int flags = 0;
+
+    reset_internal_getopt();
+
+    int c;
+    while ((c = internal_getopt(arglist, "Nnh")) != -1) {
+        switch (c) {
+            case 'N':
+                flags |= PTEF_NOLOCK;
+                break;
+            case 'n':
+                flags |= PTEF_NOWAIT;
+                break;
+            case GETOPT_HELP:
+                builtin_usage();
+                return 0;
+            default:
+                builtin_usage();
+                return 1;
+        }
+    }
+    arglist = loptend;
+
+    WORD_LIST *status = arglist;
     if (!status) {
         builtin_error("not enough arguments");
         return 1;
@@ -44,7 +71,13 @@ static int report_main(WORD_LIST *status)
         builtin_error("too many arguments");
         return 1;
     }
-    return !!ptef_report(status->word->word, testname->word->word, 0);
+
+    int ret = ptef_report(status->word->word, testname->word->word, flags);
+    if (ret == -1 &&
+            flags & PTEF_NOWAIT && ~flags & PTEF_NOLOCK && errno == EAGAIN)
+        return 2;
+    else
+        return !!ret;
 }
 
 //
