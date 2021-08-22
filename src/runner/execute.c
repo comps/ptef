@@ -166,8 +166,9 @@ err:
 
 static int start_job(pid_t pid, char *name, struct exec_state *state)
 {
-    if (ptef_report("RUN", name, 0) == -1)
-        return -1;
+    if (~state->runner_flags & PTEF_NORUN)
+        if (ptef_report("RUN", name, 0) == -1)
+            return -1;
     // find a (guaranteed) free slot in pid-to-name map and use it up
     struct pid_to_name *map = state->map;
     int i;
@@ -203,12 +204,13 @@ static int finish_job(pid_t pid, struct exec_state *state, int exitcode)
 
 // allocate enough for exec_state itself + for all the pid-to-name
 // mappings we'll ever need (there won't be more than maxjobs children)
-struct exec_state *create_exec_state(int maxjobs)
+struct exec_state *create_exec_state(int maxjobs, int runner_flags)
 {
     struct exec_state *state;
     state = malloc(sizeof(struct exec_state)
                    + sizeof(struct pid_to_name) * maxjobs);
     if (state != NULL) {
+        state->runner_flags = runner_flags;
         state->max_jobs = maxjobs;
         state->running_jobs = 0;
         struct pid_to_name empty = { -1, NULL };

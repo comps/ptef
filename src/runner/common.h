@@ -31,12 +31,13 @@ struct pid_to_name {
 };
 // used across repeated execute() calls to track state
 struct exec_state {
+    int runner_flags;
     int max_jobs;
     int running_jobs;
     struct pid_to_name map[];
 };
 
-struct exec_state *create_exec_state(int jobs);
+struct exec_state *create_exec_state(int jobs, int runner_flags);
 int destroy_exec_state(struct exec_state *state);
 int execute(char *exe, enum exec_entry_type typehint, char **argv,
             char *basename, struct exec_state *state);
@@ -45,8 +46,9 @@ int setup_mark(int interval, struct sigaction *sigold,
                struct itimerval *timerold);
 void teardown_mark(struct sigaction *sigold, struct itimerval *timerold);
 
-int for_each_arg(int argc, char **argv, char *basename, int jobs);
+int for_each_arg(int argc, char **argv, char *basename, int jobs, int flags);
 
-int for_each_merged_arg(int argc, char **argv, char *basename, int jobs);
+int for_each_merged_arg(int argc, char **argv, char *basename, int jobs,
+                        int flags);
 
-int for_each_exec(char *basename, int jobs);
+int for_each_exec(char *basename, int jobs, int flags);

@@ -4,6 +4,7 @@ libptef = ctypes.CDLL("libptef.so.0", use_errno=True)
 
 # runner flags
 NOMERGE     = (1 << 0)
+NORUN       = (1 << 1)
 
 # report flags
 NOLOCK      = (1 << 0)

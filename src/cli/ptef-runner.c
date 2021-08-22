@@ -28,6 +28,7 @@ static void print_help(void)
             "  -i IGN   set PTEF_IGNORE_FILES to IGN, export it\n"
             "  -v       set PTEF_NOLOGS and export it\n"
             "  -m       don't merge arguments of subrunners (always pass 1 arg)\n"
+            "  -r       don't emit the RUN status\n"
             "\n"
             "Executes the PTEF runner logic from CWD, executing executables\n"
             "and traversing subdirectories.\n"
@@ -43,7 +44,7 @@ int main(int argc, char **argv)
     int flags = 0;
 
     int c;
-    while ((c = getopt(argc, argv, "a:A:j:k:i:vmh")) != -1) {
+    while ((c = getopt(argc, argv, "a:A:j:k:i:vmrh")) != -1) {
         switch (c) {
             case 'a':
                 argv0 = optarg;
@@ -83,6 +84,9 @@ int main(int argc, char **argv)
                 break;
             case 'm':
                 flags |= PTEF_NOMERGE;
+                break;
+            case 'r':
+                flags |= PTEF_NORUN;
                 break;
             case 'h':
                 print_help();

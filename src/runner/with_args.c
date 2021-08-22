@@ -30,10 +30,10 @@ static char *sane_arg(char *a)
     return a;
 }
 
-int for_each_arg(int argc, char **argv, char *basename, int jobs)
+int for_each_arg(int argc, char **argv, char *basename, int jobs, int flags)
 {
     struct exec_state *state;
-    if ((state = create_exec_state(jobs)) == NULL) {
+    if ((state = create_exec_state(jobs, flags)) == NULL) {
         PERROR("create_exec_state");
         return -1;
     }
@@ -88,12 +88,13 @@ err:
     return -1;
 }
 
-int for_each_merged_arg(int argc, char **argv, char *basename, int jobs)
+int for_each_merged_arg(int argc, char **argv, char *basename, int jobs,
+                        int flags)
 {
     char **merged;
     struct exec_state *state;
 
-    if ((state = create_exec_state(jobs)) == NULL) {
+    if ((state = create_exec_state(jobs, flags)) == NULL) {
         PERROR("create_exec_state");
         return -1;
     }
