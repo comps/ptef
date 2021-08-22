@@ -180,10 +180,10 @@ err:
     return -1;
 }
 
-int for_each_exec(char *basename, int jobs, int flags)
+int for_each_exec(char *basename, int jobs)
 {
     struct exec_state *state;
-    if ((state = create_exec_state(jobs, flags)) == NULL) {
+    if ((state = create_exec_state(jobs)) == NULL) {
         PERROR("create_exec_state");
         return -1;
     }

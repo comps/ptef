@@ -26,12 +26,12 @@ int ptef_runner_v0(int argc, char **argv, char *default_basename, int jobs,
 
     int rc;
     if (argc <= 0) {
-        rc = for_each_exec(basename, jobs, flags);
+        rc = for_each_exec(basename, jobs);
     } else {
         if (flags & PTEF_NOMERGE)
-            rc = for_each_arg(argc, argv, basename, jobs, flags);
+            rc = for_each_arg(argc, argv, basename, jobs);
         else
-            rc = for_each_merged_arg(argc, argv, basename, jobs, flags);
+            rc = for_each_merged_arg(argc, argv, basename, jobs);
     }
 
     if (mark_interval > 0)

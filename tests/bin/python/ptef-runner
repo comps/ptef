@@ -13,7 +13,6 @@ parser.add_argument('-k', type=int, default=0)
 parser.add_argument('-i')
 parser.add_argument('-v', action='store_true')
 parser.add_argument('-m', action='store_true')
-parser.add_argument('-r', action='store_true')
 parser.add_argument('rest', nargs=argparse.REMAINDER)
 args = parser.parse_args()
 if len(args.rest) > 0 and args.rest[0] == '--':
@@ -28,8 +27,6 @@ if args.v:
 flags = 0
 if args.m:
     flags |= ptef.NOMERGE
-if args.r:
-    flags |= ptef.NORUN
 
 ptef.runner(argv=args.rest, default_basename=args.a, jobs=args.j,
             mark_interval=args.k, flags=flags)

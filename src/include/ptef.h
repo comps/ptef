@@ -3,7 +3,6 @@
 
 // runner flags
 #define PTEF_NOMERGE    (1 << 0)
-#define PTEF_NORUN      (1 << 1)
 
 // report flags
 #define PTEF_NOLOCK     (1 << 0)
