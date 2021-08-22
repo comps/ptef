@@ -11,6 +11,10 @@
       - thus also do not start more than one instance of the runner in
         a single process
       - the limitation is waitpid() unable to wait for an array of pids
+  - regular MARK printout is done via periodic SIGALRM, not using
+    POSIX timers (as they require linking libpthread + librt)
+    - make sure SIGALRM is blocked using sigprocmask(2) or pthread_sigmask(3)
+      in all threads other than the one executing ptef_runner
 
 - mention in PTEF.md that *both* stdout and PTEF_RESULTS_FD need to be locked
   before the result is written

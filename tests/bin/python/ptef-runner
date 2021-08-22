@@ -8,7 +8,8 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-a')
 parser.add_argument('-A')
-parser.add_argument('-j', type=int, default=1)
+parser.add_argument('-j', type=int, default=0)
+parser.add_argument('-k', type=int, default=0)
 parser.add_argument('-i')
 parser.add_argument('-v', action='store_true')
 parser.add_argument('-m', action='store_true')
@@ -28,4 +29,4 @@ if args.m:
     flags |= ptef.NOMERGE
 
 ptef.runner(argv=args.rest, default_basename=args.a, jobs=args.j,
-            flags=flags)
+            mark_interval=args.k, flags=flags)

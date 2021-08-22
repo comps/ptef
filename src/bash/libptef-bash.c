@@ -39,13 +39,16 @@ static int report_main(WORD_LIST *arglist)
     reset_internal_getopt();
 
     int c;
-    while ((c = internal_getopt(arglist, "Nnh")) != -1) {
+    while ((c = internal_getopt(arglist, "Nnrh")) != -1) {
         switch (c) {
             case 'N':
                 flags |= PTEF_NOLOCK;
                 break;
             case 'n':
                 flags |= PTEF_NOWAIT;
+                break;
+            case 'r':
+                flags |= PTEF_RAWNAME;
                 break;
             case GETOPT_HELP:
                 builtin_usage();

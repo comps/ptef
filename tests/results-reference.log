@@ -181,6 +181,8 @@ RUN /report/locking_nowait
 PASS /report/locking_nowait
 RUN /report/locking_nolock
 PASS /report/locking_nolock
+RUN /report/rawname
+PASS /report/rawname
 PASS /report
 RUN /vars
 RUN /vars/ptef_results_fd

@@ -20,6 +20,7 @@ static void print_help(void)
             "\n"
             "  -N  don't lock when writing a result\n"
             "  -n  don't wait for lock, return 2 if somebody else holds it\n"
+            "  -r  raw testname, report it as-is, without prefix\n"
             "\n"
             "Reports STATUS for a given TESTNAME, prepending PTEF_PREFIX\n"
             "to the TESTNAME, copying the report to PTEF_RESULTS_FD if defined.\n"
@@ -31,13 +32,16 @@ int main(int argc, char **argv)
     int flags = 0;
 
     int c;
-    while ((c = getopt(argc, argv, "Nnh")) != -1) {
+    while ((c = getopt(argc, argv, "Nnrh")) != -1) {
         switch (c) {
             case 'N':
                 flags |= PTEF_NOLOCK;
                 break;
             case 'n':
                 flags |= PTEF_NOWAIT;
+                break;
+            case 'r':
+                flags |= PTEF_RAWNAME;
                 break;
             case 'h':
                 print_help();

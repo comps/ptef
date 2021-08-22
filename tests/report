@@ -87,11 +87,21 @@ function locking_nolock {
 	assert_contents $'PASS[\t ]*/testname' "$tmpdir/report_out"
 }
 
+# Test that PTEF_RAWNAME outputs testname as-is, unchanged
+function rawname {
+	assert_ptef_report -r PASS testname >"$tmpdir/report_out"
+	assert_contents $'PASS[\t ]*testname' "$tmpdir/report_out"
+	PTEF_PREFIX=/prefix \
+		assert_ptef_report -r PASS testname >"$tmpdir/report_out"
+	assert_contents $'PASS[\t ]*testname' "$tmpdir/report_out"
+}
+
 
 + locking_stdout
 + locking_results_fd
 + locking_nowait
 + locking_nolock
++ rawname
 
 
 run_tests "$@"

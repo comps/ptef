@@ -178,8 +178,10 @@ format and may optionally include a timezone and/or nanosecond information.
 
 Ie.
 ```
-MARK 2021-04-07T08:15:46+02:00
-MARK 2021-04-07T08:20:36,909601272+02:00
+MARK 1970-04-07T08:10:20
+MARK 1970-04-07T08:10:20+01:00
+MARK 1970-04-07T04:10:20,909601272-0300
+MARK 1970-04-07T07:10:20Z
 ```
 
 The runner may also output this result while an executable is running (ie. from

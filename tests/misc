@@ -98,7 +98,21 @@ function run_status {
 
 # Test that the runner emits a MARK result in regular intervals
 function mark_status {
-	:
+	# runs below 1sec shouldn't trigger a (delayed) 1sec MARK
+	cat > executable <<-EOF
+	#!/bin/bash
+	exit 0
+	EOF
+	chmod +x executable
+	assert_ptef_runner -k 1 > "$tmpdir/runner_out"
+	assert_nogrep '^MARK[[:space:]]' "$tmpdir/runner_out"
+	# whereas runs over 1sec should
+	cat > executable <<-EOF
+	#!/bin/bash
+	sleep 2
+	EOF
+	assert_ptef_runner -k 1 > "$tmpdir/runner_out"
+	assert_grep '^MARK[[:space:]][^/]' "$tmpdir/runner_out"
 }
 
 

@@ -13,6 +13,11 @@ void perror_fd(int fd, const char *func, char *fileline, char *msg);
 #define PERROR_FD(fd, msg) perror_fd(fd, __func__, FILELINE, msg)
 #define PERROR(msg) PERROR_FD(DEFAULT_ERROR_FD, msg)
 
+// format-less, for simple static messages
+void error_fd(int fd, const char *func, char *fileline, char *msg);
+#define ERROR_FD(fd, msg) error_fd(fd, __func__, FILELINE, msg)
+#define ERROR(msg) ERROR_FD(DEFAULT_ERROR_FD, msg)
+
 // dprintf-based, prefix msg with details
 #define ERROR_FMT_FD(fd, fmt, ...) \
     do { \

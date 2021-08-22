@@ -70,7 +70,7 @@ static bool is_terminal(int fd)
 }
 
 // allocate and return a line buffer
-static char *format_line(char *status, char *name, size_t *len)
+static char *format_line(char *status, char *name, size_t *len, int flags)
 {
     size_t status_len = strlen(status);
     size_t name_len = strlen(name);
@@ -78,13 +78,16 @@ static char *format_line(char *status, char *name, size_t *len)
     // status, ' ', name, '\n', '\0'
     size_t line_len = status_len + name_len + 3;
 
-    char *ptef_prefix = getenv_defined("PTEF_PREFIX");
+    char *ptef_prefix;
     size_t ptef_prefix_len = 0;
-    if (ptef_prefix) {
-        ptef_prefix_len = strlen(ptef_prefix);
-        line_len += ptef_prefix_len + 1;  // incl. '/' suffix
-    } else {
-        line_len += 1;  // just the leading '/'
+    if (~flags & PTEF_RAWNAME) {
+        ptef_prefix = getenv_defined("PTEF_PREFIX");
+        if (ptef_prefix) {
+            ptef_prefix_len = strlen(ptef_prefix);
+            line_len += ptef_prefix_len + 1;  // incl. '/' suffix
+        } else {
+            line_len += 1;  // just the leading '/'
+        }
     }
 
     char *line = malloc(line_len);
@@ -96,9 +99,11 @@ static char *format_line(char *status, char *name, size_t *len)
     char *part = line;
     part = memcpy_append(part, status, status_len);
     *part++ = ' ';
-    if (ptef_prefix)
-        part = memcpy_append(part, ptef_prefix, ptef_prefix_len);
-    *part++ = '/';
+    if (~flags & PTEF_RAWNAME) {
+        if (ptef_prefix)
+            part = memcpy_append(part, ptef_prefix, ptef_prefix_len);
+        *part++ = '/';
+    }
     part = memcpy_append(part, name, name_len);
     *part++ = '\n';
     *part = '\0';
@@ -168,7 +173,7 @@ int ptef_report_v0(char *status, char *testname, int flags)
 
     // write to stdout
     size_t len;
-    line = format_line(status_pretty, testname, &len);
+    line = format_line(status_pretty, testname, &len, flags);
     if (!line)
         goto err;
 
@@ -183,7 +188,7 @@ int ptef_report_v0(char *status, char *testname, int flags)
                 goto err;
         } else {
             free(line);
-            line = format_line(status, testname, &len);
+            line = format_line(status, testname, &len, flags);
             if (!line)
                 goto err;
             if (write_safe(ptef_results_fd_fd, line, len) == -1)

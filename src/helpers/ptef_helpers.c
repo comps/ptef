@@ -26,6 +26,23 @@ void perror_fd(int fd, const char *func, char *fileline, char *msg)
     errno = orig_errno;
 }
 
+// same thing, but for errors which aren't errno-based
+void error_fd(int fd, const char *func, char *fileline, char *msg)
+{
+    int orig_errno = errno;
+    char prefix[] = "ptef error in ";
+    struct iovec iov[] = {
+        { prefix, sizeof(prefix)-1 },
+        { (void*)func, strlen(func) },
+        { "@", 1 },
+        { fileline, strlen(fileline) },
+        { msg, strlen(msg) },
+        { "\n", 1 },
+    };
+    writev(fd, (struct iovec *)iov, sizeof(iov)/sizeof(*iov));
+    errno = orig_errno;
+}
+
 // free the block if realloc fails
 void *realloc_safe(void *ptr, size_t size)
 {
