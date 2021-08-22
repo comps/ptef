@@ -45,7 +45,8 @@ function run_arg {
 
 	local results_log="results-${variant}.log" results_fd= rc=
 	exec {results_fd}>"$results_log"
-	PTEF_RESULTS_FD="$results_fd" ptef-report RUN "$variant"
+	[ -n "$PTEF_RUN" ] && \
+		PTEF_RESULTS_FD="$results_fd" ptef-report RUN "$variant"
 	PTEF_PREFIX="/$variant" \
 		PTEF_LOGS="$PWD/logs" \
 		PTEF_RESULTS_FD="$results_fd" \

@@ -70,16 +70,16 @@ function open_fds {
 	assert_contents $'0\n1\n2'"$valgrind_fd" exec_log
 }
 
-# Test that the runner emits a RUN result when it runs an executable,
-# verify that this happens before the executable finishes
-function run_status {
+# Test that the runner emits a RUN result when it runs an executable
+# before the executable finishes
+function run_before_pass {
 	cat > executable <<-EOF
 	#!/bin/bash
 	cat fifolock >&2
 	EOF
 	chmod +x executable
 	mkfifo fifolock
-	assert_ptef_runner > "$tmpdir/runner_out" &
+	PTEF_RUN=1 assert_ptef_runner > "$tmpdir/runner_out" &
 	local i=
 	for ((i = 0; i < 1000; i++)); do
 		[ -s "$tmpdir/runner_out" ] && break
@@ -89,9 +89,6 @@ function run_status {
 	echo > fifolock
 	wait
 	assert_contents $'RUN[\t ]*/executable' "$tmpdir/midrun_out"
-	#assert_grep '^RUN[[:space:]]\+/executable' "$tmpdir/midrun_out"
-	#local linecnt=$(wc -l "$tmpdir/midrun_out")
-	#[ "$linecnt" = "1" ]
 	assert_contents $'RUN[\t ]*/executable\nPASS[\t ]*/executable' \
 		"$tmpdir/runner_out"
 }
@@ -118,7 +115,7 @@ function mark_status {
 
 + parallel_jobs
 + open_fds
-+ run_status
++ run_before_pass
 + mark_status
 
 

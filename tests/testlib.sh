@@ -99,7 +99,7 @@ function _run_test {
 		set -e
 		[ -n "$PTEF_RESULTS_FD" ] && exec {PTEF_RESULTS_FD}>&-
 		unset PTEF_PREFIX PTEF_LOGS PTEF_RESULTS_FD PTEF_NOLOGS \
-			PTEF_COLOR PTEF_IGNORE_FILES PTEF_BASENAME
+			PTEF_COLOR PTEF_IGNORE_FILES PTEF_BASENAME PTEF_RUN
 		tmpdir="$PWD/tmpdir"
 		cd testdir
 		set -x
@@ -111,7 +111,7 @@ function run_tests {
 	local _tst= _tests=
 	[ "$#" -gt 0 ] && _tests=("$@") || _tests=("${_added_tests[@]}")
 	for _tst in "${_tests[@]}"; do
-		ptef-report RUN "$_tst"
+		[ -n "$PTEF_RUN" ] && ptef-report RUN "$_tst"
 		# this must not be inside 'if', otherwise set -e will not
 		# work in the subshell
 		_run_test "$_tst"

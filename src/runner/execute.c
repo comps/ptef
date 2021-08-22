@@ -166,8 +166,9 @@ err:
 
 static int start_job(pid_t pid, char *name, struct exec_state *state)
 {
-    if (ptef_report("RUN", name, 0) == -1)
-        return -1;
+    if (getenv_defined("PTEF_RUN"))
+        if (ptef_report("RUN", name, 0) == -1)
+            return -1;
     // find a (guaranteed) free slot in pid-to-name map and use it up
     struct pid_to_name *map = state->map;
     int i;

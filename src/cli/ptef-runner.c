@@ -27,6 +27,7 @@ static void print_help(void)
             "  -k SECS  enable MARK status, emit it every SECS seconds\n"
             "  -i IGN   set PTEF_IGNORE_FILES to IGN, export it\n"
             "  -v       set PTEF_NOLOGS and export it\n"
+            "  -r       set PTEF_RUN and export it\n"
             "  -m       don't merge arguments of subrunners (always pass 1 arg)\n"
             "\n"
             "Executes the PTEF runner logic from CWD, executing executables\n"
@@ -43,7 +44,7 @@ int main(int argc, char **argv)
     int flags = 0;
 
     int c;
-    while ((c = getopt(argc, argv, "a:A:j:k:i:vmh")) != -1) {
+    while ((c = getopt(argc, argv, "a:A:j:k:i:vrmh")) != -1) {
         switch (c) {
             case 'a':
                 argv0 = optarg;
@@ -77,6 +78,12 @@ int main(int argc, char **argv)
                 break;
             case 'v':
                 if (setenv("PTEF_NOLOGS", "1", 1) == -1) {
+                    PERROR("setenv");
+                    return 1;
+                }
+                break;
+            case 'r':
+                if (setenv("PTEF_RUN", "1", 1) == -1) {
                     PERROR("setenv");
                     return 1;
                 }

@@ -24,6 +24,8 @@
     is made - this is to prevent deadlocks with two runners locking both
     fds in opposing order
 
+- document in PTEF.md the PTEF_RUN env var
+
 - adjust PTEF.md to say that invalid (insane) arg must stop arg merging and the
   runner with exit with non-0 without running anything beyond the invalid arg
   **or running anything beyond the bad arg**
