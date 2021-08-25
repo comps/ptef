@@ -82,22 +82,27 @@ function zero_length_arg_skip {
 # Test that the runner throws an error on a spec-defined invalid argument
 # and ignores it
 function invalid_arg {
+	local ret=0
 	mk2execs
-	ptef-runner "$@" '.' >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || true
+	ptef-runner "$@" '.' >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
 	assert_grep 'arg failed sanity check: \.$' "$tmpdir/runner_err"
 	assert_nogrep '' "$tmpdir/runner_out"
-	ptef-runner "$@" '..' >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || true
+	[ "$ret" -ne 0 ]
+	ptef-runner "$@" '..' >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
 	assert_grep 'arg failed sanity check: \.\.$' "$tmpdir/runner_err"
 	assert_nogrep '' "$tmpdir/runner_out"
+	[ "$ret" -ne 0 ]
 }
 
 # Test that the runner skips and invalid argument
 function invalid_arg_skip {
+	local ret=0
 	mk2execs
-	ptef-runner "$@" exec1 '.' exec2 >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || true
+	ptef-runner "$@" exec1 '.' exec2 >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
 	assert_grep 'arg failed sanity check' "$tmpdir/runner_err"
 	assert_grep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
 	assert_grep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+	[ "$ret" -ne 0 ]
 }
 
 # Test that the first occurence of '--' is skipped
@@ -116,13 +121,16 @@ function double_dash_skip {
 # given as argument
 # (The error is from execve() which comes late in the process)
 function nonexecutable {
+	local ret=0
 	mkfile > nonexec
-	ptef-runner "$@" nonexec >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || true
+	ptef-runner "$@" nonexec >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
 	# platforms without O_CLOEXEC should have it inside logs/
 	assert_grep 'ptef error .* Permission denied' "$tmpdir/runner_err" || \
 		assert_grep 'ptef error .* Permission denied' logs/nonexec.log
 	# since the fail happens after fork(), it should emit a FAIL result
 	assert_grep '^FAIL[[:space:]]\+/nonexec$' "$tmpdir/runner_out"
+	# .. and it as a parent should exit successfully
+	[ "$ret" -eq 0 ]
 }
 
 + no_args

@@ -33,10 +33,26 @@
   - what about missing executables? .. permission denied?
     - should a runner continue (skip bad) or abort completely ?
   --> leave as-is, skip insane args, make them abort merging, don't exit
+      - this is to keep consistency with other errors that can happen during
+        runtime; ie. permission denied on an executable will not abort the
+        whole run
+  --> treat invalid arguments as an error (print it out, exit with non-0)
 
-  --> document/clarify that runner should, in all cases, skip the failing
-      executable, treat it as an error (finish with non-0 in the end),
-      and continue on
+- document argument sanity checking
+  - these MUST trigger a non-fatal error and be ignored
+    - path elements equal to '.' and '..', for simplicity and safety
+
+- have an additional section about CLI arguments
+  - a CLI runner MAY have additional optional nonstandard arguments ("options")
+  - a CLI runner SHOULD ignore the first occurence of '--', for compatibility
+    with parsers which accept optional arguments
+  - if non-option arguments occur before '--', it is undefined whether the '--'
+    is treated as a valid argument or ignored
+
+- document in PTEF.md that any runner error SHOULD be reported to the user
+  - via the runner exit code (if possible)
+  - or via tef_report (ie. errors in child after fork)
+  - or via stderr messages
 
 - adjust PTEF.md w.r.t. terminal detection
   - don't check terminal colors, it's really nonstandard
@@ -99,8 +115,8 @@
   use the PTEF_* env variable namespace for out-of-spec features as this
   may lead to name clashes with future spec versions
 
-- mention in PTEF.md that log rotation should go from .log to .1.log,
-  without .0.log
+- mention in PTEF.md that log rotation should go from .log to .log.1,
+  without .log.0
   - also mention that the rotated logs must use only a single digit
 
 - adjust PTEF.md - do not propagate failures upwards
@@ -153,17 +169,8 @@
 - when outlining arguments in PTEF.md, write them generically
   - a runner can either run argument-less or with arguments, whether those
     are passed as CLI, function arguments, or in a similar way
-
-- document argument sanity checking
-  - these MUST trigger a non-fatal error and be ignored
-    - path elements equal to '.' and '..', for simplicity and safety
-
-- have an additional section about CLI arguments
-  - a CLI runner MAY have additional optional nonstandard arguments
-  - a CLI runner SHOULD ignore the first occurence of '--', for compatibility
-    with parsers which accept optional arguments
-  - if non-option arguments occur before '--', it is undefined whether the '--'
-    is treated as a valid argument or ignored
+  --> no, runner is always CLI, ptef_runner() is just a convenient way to
+      IMPLEMENT a runner, ptef_runner() itself is not a runner
 
 - explicitly mention in PTEF.md argv0 passing and PTEF_BASENAME
   - if PTEF_BASENAME exists, use it as a filename identifying a subrunner
@@ -221,11 +228,6 @@
 
 
 ----
-
-- MARK result
-  - done using alarm(2)
-  - make sure any other code is interrupt-safe (ie. waitpid) and re-tries what it was doing
-    if interrupted by a signal
 
 - look for EINTR of every syscall used, make an INTR-safe wrapper
   for each one of them

@@ -43,6 +43,7 @@ int for_each_arg(int argc, char **argv, char *basename, int jobs)
     // [2] is NULL terminator
     char *arg[3] = { NULL };
 
+    int argerror = 0;
     char *prefix = NULL;
     for (int i = 0; i < argc; i++) {
         // no-op
@@ -52,6 +53,7 @@ int for_each_arg(int argc, char **argv, char *basename, int jobs)
         char *sane = sane_arg(argv[i]);
         if (!sane) {
             ERROR_FMT("arg failed sanity check: %s\n", argv[i]);
+            argerror = EINVAL;
             continue;
         }
 
@@ -79,6 +81,9 @@ int for_each_arg(int argc, char **argv, char *basename, int jobs)
         free(prefix);
         prefix = NULL;
     }
+
+    if (argerror)
+        goto err;
 
     return destroy_exec_state(state);
 
@@ -110,6 +115,7 @@ int for_each_merged_arg(int argc, char **argv, char *basename, int jobs)
 
     char *prefix = NULL;
     ptrdiff_t prefix_len = 0;
+    int argerror = 0;
 
     for (int i = 0; i < argc; i++) {
         char *sane = sane_arg(argv[i]);
@@ -142,6 +148,7 @@ int for_each_merged_arg(int argc, char **argv, char *basename, int jobs)
 
         if (!sane) {
             ERROR_FMT("arg failed sanity check: %s\n", argv[i]);
+            argerror = EINVAL;
             continue;
         }
 
@@ -171,6 +178,9 @@ int for_each_merged_arg(int argc, char **argv, char *basename, int jobs)
     if (prefix)
         if (execute(prefix, EXEC_TYPE_UNKNOWN, merged, basename, state) == -1)
             goto err;
+
+    if (argerror)
+        goto err;
 
     free(prefix);
     free(merged);
