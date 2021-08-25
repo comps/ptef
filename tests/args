@@ -94,14 +94,14 @@ function invalid_arg {
 	[ "$ret" -ne 0 ]
 }
 
-# Test that the runner skips and invalid argument
+# Test that the runner aborts on invalid argument and executes no further args
 function invalid_arg_skip {
 	local ret=0
 	mk2execs
 	ptef-runner "$@" exec1 '.' exec2 >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
 	assert_grep 'arg failed sanity check' "$tmpdir/runner_err"
 	assert_grep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
-	assert_grep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+	assert_nogrep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
 	[ "$ret" -ne 0 ]
 }
 

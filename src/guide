@@ -26,17 +26,9 @@
 
 - document in PTEF.md the PTEF_RUN env var
 
-- adjust PTEF.md to say that invalid (insane) arg must stop arg merging and the
-  runner with exit with non-0 without running anything beyond the invalid arg
-  **or running anything beyond the bad arg**
-  - this greatly simplifies merging algo
-  - what about missing executables? .. permission denied?
-    - should a runner continue (skip bad) or abort completely ?
-  --> leave as-is, skip insane args, make them abort merging, don't exit
-      - this is to keep consistency with other errors that can happen during
-        runtime; ie. permission denied on an executable will not abort the
-        whole run
-  --> treat invalid arguments as an error (print it out, exit with non-0)
+- don't mention in PTEF.md anything about how to behave when internal errors
+  (internal to the runner) happen; ie. non-sane argument passed by user
+  - that's up to the implementation
 
 - document argument sanity checking
   - these MUST trigger a non-fatal error and be ignored
