@@ -4,6 +4,9 @@
   - ie. runner is *not* thread safe with itself, but it should be safe to use in a bigger
     threaded program, though note:
     - writes to stdout, locked by F_WRLCK
+      - is per-process, not per-fd; the runner will unlock any locks on stdout
+        and on PTEF_RESULTS_FD
+      - other threads MUST NOT lock stdout/PTEF_RESULTS_FD
     - writes to stderr on error, unsafely (not locked)
     - managers forks with PID tracking and will report as error (on stderr)
       any collected children that aren't its own, so DO NOT start any background
@@ -16,208 +19,27 @@
     - make sure SIGALRM is blocked using sigprocmask(2) or pthread_sigmask(3)
       in all threads other than the one executing ptef_runner
 
-- mention in PTEF.md that *both* stdout and PTEF_RESULTS_FD need to be locked
-  before the result is written
-  - this is for consistency; both in reporting and return codes
-    (PTEF_NOWAIT must return EAGAIN if at least one fails locking)
-  - stdout MUST succeed locking before a locking attempt at PTEF_RESULTS_FD
-    is made - this is to prevent deadlocks with two runners locking both
-    fds in opposing order
+- TODO: remove PTEF_IGNORE_FILES, turn it into runner -i arg
+  - only for the current level
+  - change ptef_runner() arg to be char **ignore, NULL-terminated
+    - do newline-to-char** conversion in the CLI ptef-runner.c
+    - have native list [] interface in ptef.py
+    - don't care about bash, it uses CLI runner
+  - add an example under examples/ showing off how to 'find .' a custom list
+    of executables and pass it via xargs to ptef-runner
+    - use 'xargs -a $tmpfile' to preserve stdin
+    - sort it alphabetically, but in reverse, to show the posibilities,
+      also include hidden executables, also skip some exec name
 
-- document in PTEF.md the PTEF_RUN env var
+- TODO: PTEF_NOROTATE flag to mklog
+  - and getopt to cli and bash ptef-mklog
+  - and flag in ptef.py
+  - and some test(s)
 
-- don't mention in PTEF.md anything about how to behave when internal errors
-  (internal to the runner) happen; ie. non-sane argument passed by user
-  - that's up to the implementation
-
-- document argument sanity checking
-  - these MUST trigger a non-fatal error and be ignored
-    - path elements equal to '.' and '..', for simplicity and safety
-
-- have an additional section about CLI arguments
-  - a CLI runner MAY have additional optional nonstandard arguments ("options")
-  - a CLI runner SHOULD ignore the first occurence of '--', for compatibility
-    with parsers which accept optional arguments
-  - if non-option arguments occur before '--', it is undefined whether the '--'
-    is treated as a valid argument or ignored
-
-- document in PTEF.md that any runner error SHOULD be reported to the user
-  - via the runner exit code (if possible)
-  - or via tef_report (ie. errors in child after fork)
-  - or via stderr messages
-
-- adjust PTEF.md w.r.t. terminal detection
-  - don't check terminal colors, it's really nonstandard
-  - simply: if terminal, assume it supports >=16 colors, else no colors
-
-- re-do fd0 handling in PTEF.md
-  - use stdout instead of fd 0, rely on executables not being too noisy,
-    maybe mention that this stdout result reporting may be unrealiable
-    for machine parsing (due to possibly noisy execs)
-  - leave PTEF_RESULTS_FD as-is, color-less, for reliable reporting
-  - when executing, redirect only stderr to log, leave stdout on console
-
-- add to PTEF.md a section mentioning RFC2119 (must, should, etc. language)
-  - Background & Rationale
-  - The Core Idea
-    - any executable can be a runner
-  - Argument-less and argument-given run
-    - path specification, examples, path merging
-  - ...
-  - Big "examples.md" document
-    - passing parameters to executable via a trailing /something
-    - one executable reporting multiple results
-    - virtual hierarchies, LTP, ...
-    - writing custom runners using the building blocks
-      - ie. runners that always skip 'setup' 'run' 'cleanup' minus their own
-        argv0
-
-- when rewriting PTEF.md, aim it at somebody actually implementing it
-  - section for runner, section for report, section for mklog
-  - specify only the minimum required functionality
-    - ie. don't mention colors for report at all, only "one or more whitespaces"
-      between status and test name
-  - then add the extra stuff in additional per-feature section(s)
-    - ie. automatic use of color if a terminal is detected, can be overriden
-      with PTEF_COLOR
-
-- note for parallel execution - what about argument merging?
-  - should 'a/b a/c' run a twice wi 'b' and 'c' ?
-  - should merging be always disabled for parallel exec?
-  - should a new parallel job start only if the currently-examined
-    executable is != from the already running?
-    - would limit each exec to only one instance
-  - can we combine them?
-    - if merging is disabled, run multiple jobs even for the same exec
-    - if merging is enabled, run one job with multiple args for the one exec
-
-- mention in PTEF.md that PTEF_LOGS directory:
-  - MUST be created if it doesn't exist
-  - its parents SHOULD NOT be created (error condition caused instead)
-  - paths inside PTEF_LOGS however SHOULD be created incl. parents
-    - so that parent runners don't have to support log creation
-
-- mention in PTEF.md that a non-empty PTEF_PREFIX must start with a '/'
-  - not really; this could be a requirement for external inputs, but
-    the runner implementation is always simpler if it doesn't have to
-    check for '^/' and throw an error, it's simpler if it can just prepend
-    the prefix regardless of what it is
-
-- mention in PTEF.md (or elsewhere) that runner implementations should not
-  use the PTEF_* env variable namespace for out-of-spec features as this
-  may lead to name clashes with future spec versions
-
-- mention in PTEF.md that log rotation should go from .log to .log.1,
-  without .log.0
-  - also mention that the rotated logs must use only a single digit
-
-- adjust PTEF.md - do not propagate failures upwards
-  - as a runner, if an executable fails, only record the FAIL result,
-    do not exit with non-zero
-  - exit with non-zero only if the logic internal to the runner fails
-    (ie. command not found)
-  - provide rationale in Rationale.md
-    - propagating requires extra boilerplate code - tracking overall
-      failed=1 state
-    - propagating provides little real value - yes, external logic can
-      check exit code of the topmost runner, but it might as well grep
-      result.log for ^FAIL
-      - relying on fail propagation is bug-prone; a runner might fail to
-        exit non-0 due to it being a rare condition, causing the whole
-        run to be considered successful despite FAILs in result.log
-    - reporting runner status separately (via exit code) lets us
-      differentiate between failure in the runner itself (maybe it has
-      its own test code) and any sub-runners
-      - this could also be done by ie. an ERROR status (exit code 2), but
-        it would bring extra requirements on exit code into the spec
-    - external auto-waiving logic would need to be parent-aware and waive
-      any parents of failed children if all children are either PASS or
-      have known issues
-      - this again makes us unable to distinguish a genuine FAIL in the
-        parent runner logic and a FAIL due to one of its children FAILing
+- TODO: test for -- arg first occurence
 
 - add example showing how to post-process results
   - see ospp-kickstart-test-suite
-
-- mention in PTEF.md that symbolic links should always be followed
-  - both symlinks to executable files *and* symlinks to subdirectories
-
-- mention in PTEF.md that result readers MUST be able to deal with unknown
-  statuses like RUN, SKIP, WAIVE, etc. (ignoring / skipping them if they're
-  not interesting to the reader)
-  - they MUST NOT consider unknown status an error
-
-- document zero-length arg in PTEF.md
-  - specifying /some/test/ will run 'test' with one empty "" argument
-    whereas /some/test will pass no arguments
-  - if 'test' is a runner, it should execute no tests, it should not
-    default to executing all tests
-  - IOW: zero-length arg MUST be ignored (skipped), alone or amongst other
-    args, but the runner should run as if argument(s) were given, it must not
-    default to an arg-less run
-  - useful for testing a parent execution chain without actually running
-    anything in the leaf directory
-
-- when outlining arguments in PTEF.md, write them generically
-  - a runner can either run argument-less or with arguments, whether those
-    are passed as CLI, function arguments, or in a similar way
-  --> no, runner is always CLI, ptef_runner() is just a convenient way to
-      IMPLEMENT a runner, ptef_runner() itself is not a runner
-
-- explicitly mention in PTEF.md argv0 passing and PTEF_BASENAME
-  - if PTEF_BASENAME exists, use it as a filename identifying a subrunner
-  - if it doesn't, you MAY take other sources (user input) for consideration
-  - else default to basename(argv[0])
-  - ...
-  - also mention (unrelated) that a runner SHOULD run executables and subrunners
-    with their filenames (or paths leading to filenames) as argv[0],
-    like a sensible common program doing execve()
-  - ...
-  - maybe mention that all this comes from the fact that interpreted executables
-    cannot read their own argv[0] when execve()'d with a non-default one,
-    due to documented execve() limitations
-
-- PTEF_IGNORE_FILES, newline-separated
-  - document it in PTEF.md
-    - mention that this list extends the argv0 basename ignore to additional
-      executable names
-  - this makes more sense if the use case is to ignore 'build' and 'cleanup'
-    executables while doing 'run'
-  - it's file names, incl. special files - directories
-    - ie. 'foo' in 'foo/run' for subrunners
-  - ONLY for arg-less operation
-
-- PTEF_COLOR
-  - unset or empty: auto, 0: never, 1: always
-  - document in PTEF.md
-
-- PTEF_NOLOGS
-  - do not create log files, do not redirect stderr
-  - useful for debugging as everything will be printed on the console
-  - runner must still propagate PTEF_LOGS and adjust to any subrunners
-    in case they want to override PTEF_NOLOGS
-    - so PTEF_NOLOGS really only prevents .log creation + stderr redirect
-
-- when documenting PTEF.md, show algorithm examples, ie. runner:
-    define argv0 as
-      basename(argv[0])
-    define execute(path,args) as
-      if path is directory
-        launch path/argv0, passing it args
-      else if path is executable regular file
-        launch path, passing it args
-    if arguments were given
-      for each argument, from first to last
-        split it into part1,part2 on the first '/' occurence
-        do execute(part1,part2)
-    else
-      for each file in CWD that isn't argv0
-        execute(file)
-
-- mention in PTEF.md that a runner MUST have at least 0, 1 and 2
-  file descriptors open when being started
-  - this is to guarantee dup() above 2
-
 
 ----
 

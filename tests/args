@@ -183,6 +183,8 @@ function merged_args {
 	assert_ptef_runner "$@" exec1/arg1 '' exec1/arg2 > "$tmpdir/runner_out"
 	assert_grep '^argc: 1$' exec_log.1
 	assert_grep '^argv: arg2$' exec_log.1  # last execution overrides the log
+	# TODO: run with exec1 (no slash) two times, to make sure it is run twice
+	#       and no merging occurs
 }
 function nonmerged_args {
 	mkfile 1 > exec1

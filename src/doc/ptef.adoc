@@ -1,0 +1,644 @@
+= POSIX-inspired Test Execution Framework
+:toc:
+:numbered:
+
+This is the PTEF specification, a document outlining standard behavior of PTEF
+runner implementations. Its primary purpose is to actually define what PTEF
+is - a POSIX-compatible interface for test execution - and, in doing so,
+standardize the inputs/outputs and behavior of programs implementing PTEF.
+
+This document assumes the reader is familiar with basic concepts of PTEF and is
+meant to refine and clarify the concepts, serving as an authoritative reference
+for developers implementing PTEF. +
+It chooses to trade readability for strict, unabiguous language.
+
+[[execution-and-recursion]]
+== Execution and recursion
+
+[NOTE]
+--
+A _runner_ is any executable file or process implementing this specification,
+fully or partially.
+
+An _executable_ is any executable (runnable) file, either a runner or any
+other file, ie. an actual test.
+--
+
+[[running-without-arguments]]
+=== Running without arguments
+
+When running without arguments, a runner must search the current working
+directory (CWD) for files and directories and process them in an alphanumerical
+order according to the current locale.
+
+* Special files `.` and `..` must be ignored, the search must be limited
+  to CWD only
+* Any hidden files (beginning with `.`) must be ignored
+* Any non-executable files (as indicated by `access(2)`) must be ignored
+* A file matching a name specified by a `PTEF_BASENAME` environment variable
+  must be ignored
+* Any directories without an executable file matching the name from the
+  `PTEF_BASENAME` variable must be ignored
+
+[[ptef-basename-default]]
+If the `PTEF_BASENAME` variable is not defined or is empty, the runner should
+default to basename (as implemented by `basename(3)`) of the first element of
+the `argv` array of the runner, eg. `basename(argv[0])`. +
+The runner must however guarantee a non-empty `PTEF_BASENAME` variable present
+in the environment of any executables it executes.
+
+Any symbolic links in CWD (to files or directories) are resolved and properties
+of their destinations are used for these checks.
+
+[NOTE]
+--
+The above search should thus result in a sorted list of:
+
+* executable files in CWD that are not `PTEF_BASENAME`
+* execuable files in subdirectories of CWD that are `PTEF_BASENAME`
+
+If `PTEF_BASENAME` is `run` (from `basename("./run")`), the sorted list could
+be:
+
+----
+aaa
+bbb/run
+ccc/run
+ddd
+----
+--
+
+The runner must then execute files that matched the above filtering criteria,
+passing any inherited environment to them (such as by using `execve(2)`).
+An exception to this are PTEF-specific environment variables that are subject
+to alteration per this specification.
+
+Any executables in CWD must be executed in CWD (without `chdir(2)`). +
+Any executables in subdirectories of CWD must be executed inside the
+directories that contain them (CWD must be changed prior to execution).
+
+[[test-exit-code-handling]]
+If an error condition occurs in the runner (either internal to runner logic,
+or a syscall failing), the runner should output an error message on standard
+error output and must exit with a non-zero status. +
+The runner should not exit with a non-zero status solely due to an executable
+returning a non-zero status. This is not considered an error condition.
+
+[[running-with-arguments]]
+=== Running with arguments
+
+When user-provided command line arguments are present, they must be processed
+and used instead of searching CWD
+(<<running-without-arguments,described above>>).
+
+For each argument:
+
+* If it is empty (eg. its first byte is a string terminator), it is silently
+  skipped without an error
+* If it is equal to `--` and this is the first occurence of an `--` argument,
+  it is silently skipped without an error
+* Any leading forward slashes are removed (trimmed)
+* The argument is split into a "left" portion of non-slash characters up to,
+  but excluding, a next forward slash, and a "right" portion of any
+  characters after, and excluding, that slash
+** If the argument contains no forward slash, the "left" portion is equal
+   to the argument itself and the "right" portion is considered undefined
+* If the left portion is `.` or `..`, the argument is considered invalid,
+  further arguments must be ignored, and an error condition must be triggered.
+  This condition is left up to the implementation.
+
+The runner then takes the "left" portion and executes it as if it was an
+executable name in CWD, *without* further sanity checking or filtering that
+would be otherwise performed for a CWD directory search.
+
+If the "right" portion is undefined, no further arguments are passed for
+the execution. Otherwise, a single argument equal to the "right" portion
+is passed.
+
+[NOTE]
+--
+For example, an argument of `///left/right/with/path` would evaluate the
+"left" portion to be `left` and the "right" portion to be `right/with/path`.
+--
+
+[NOTE]
+--
+There is a difference between a runner started with no arguments and a runner
+started with a single empty argument. The former scans CWD for executables,
+the latter is, essentially, a no-op. +
+External logic can thus easily verify runner sanity by passing a single empty
+argument as the runner is guaranteed to not execute any tests (though it may
+still perform out-of-spec sanity checks, setup, cleanup, etc.).
+
+The `--` argument skip is for compatibility with runners using `getopt(3)` style
+option arguments.
+
+Also note that `left` and `left/` arguments are different - the former specifies
+an executable named `left` to be run without arguments, the latter states to
+run it with a single empty argument.
+--
+
+If the `PTEF_BASENAME` environment variable is unset or empty, the runner must
+ensure that it is present in the environment of executed executables,
+<<ptef-basename-default,defined using the same method as for a run without
+arguments>>.
+
+Runner exit code handling is also the same <<test-exit-code-handling,as in the
+argument-less case>>.
+
+
+[[result-reporting]]
+== Result reporting
+
+[[result-format]]
+=== Result format
+
+When an executed executable finishes, it returns a numerical exit code. A runner
+must collect this code and report it as a _result_.
+
+A _result_ is a single line consisting of
+
+. a _status_, a string of any non-whitespace, usually uppercased, characters
+. one or more tabs (ASCII `0x09`) or spaces (ASCII `0x20`)
+. a _test name_, a string of any non-newline characters
+. a newline character (ASCII `0x0a`), terminating the line
+
+[NOTE]
+--
+For example
+
+----
+STATUS    test name here
+----
+--
+
+A zero exit code must be assigned a status of `PASS`, a non-zero exit code
+must be a status of `FAIL`.
+
+[NOTE]
+--
+Any external code processing PTEF result lines must be able to deal with any
+non-whitespace string as status, not just `PASS` and `FAIL`. This specification
+intentionally invites custom user-defined statuses such as `SKIP`, `WAIVE`,
+`IGN`, etc. +
+Therefore, any external code should filter out any result lines with statuses
+it doesn't know how to parse.
+--
+
+In case of an executable in CWD, a test name is equal to the file name of
+the executable. +
+In case of an executable inside a directory (named after `PTEF_BASENAME`),
+the directory name becomes the test name.
+
+[[ptef-prefix]]
+=== Test name prefix
+
+When creating a result line, the value of the `PTEF_PREFIX` variable must be
+prepended to a test name, separated from it by a forward slash.
+If the variable is unset, it should be treated as empty.
+
+Independently, whenever a runner runs an executable, it must append the
+test name to `PTEF_PREFIX` present in the environment of the executable,
+separated by a forward slash.
+If the variable is unset, it should be treated as empty.
+
+[NOTE]
+--
+If the current `PTEF_PREFIX` is `/prefix` and there is a test named `testname`
+(regardless if that is an executable in CWD called `testname` or an executable
+named after `PTEF_BASENAME` present in a directory named `testname`), the
+result will look like
+
+----
+PASS /prefix/testname
+----
+
+and the executable would see `PTEF_PREFIX` equal to `/prefix/testname` in its
+environment.
+
+If the current `PTEF_PREFIX` is empty or unset, it would look like
+
+----
+PASS /testname
+----
+
+and the executable would see `PTEF_PREFIX` as `/testname`.
+--
+
+[[reporting-to-stdout]]
+=== Reporting to standard output
+
+Result lines must be written to standard output (file descriptor number 1).
+
+A runner may color the output if the standard output is attached to a terminal
+(`tcgetattr(3)` doesn't fail with `ENOTTY`). Specific colors are not defined
+here.
+
+[[report-stdout-locking]]
+Prior to writing a result line, the standard output should be locked for
+writing using a POSIX advisory record lock (`fcntl(fd, F_SETLKW, ..)`) with
+a maximum range of bytes (`.l_whence = SEEK_SET`, `.l_start = 0`, `.l_len = 0`).
+
+[[ptef-results-fd]]
+=== Reporting to a dedicated results file descriptor
+
+If the `PTEF_RESULTS_FD` variable is set and non-empty, it defines a numerical
+file descriptor to which the runner must write the result line in addition
+to standard output. This output must never be colored.
+
+This file descriptor should also be locked <<report-stdout-locking,in the same
+way as standard output>>. If a runner chooses to do so, it must first hold
+a successfully acquired lock for standard output *before* it attempts locking
+`PTEF_RESULTS_FD`, to prevent a deadlock.
+
+
+[[logging]]
+== Logging
+
+A runner must redirect the standard error output of any executables it runs
+to log files, one log file per executable. The name of this log file must be
+the same as the executable file name, with `.log` appended at the end. +
+Standard (non-error) output must not be redirected in any way.
+
+If the log file already exists, the runner must ensure its previous content
+is discarded (by truncating or removing/creating the file).
+
+Log files must be created in a directory named `logs` located in CWD.
+
+[[logging-ptef-logs]]
+=== Logging in a separate hierarchy
+
+If the `PTEF_LOGS` environment variable is defined and non-empty, it specifies
+an alternate location for log files. In this case, a runner must not create or
+use the `logs` directory in CWD.
+
+If the location doesn't exist or is not a directory, the runner must treat this
+as an error condition.
+
+Inside the log location, the runner must recursively create a directory path
+equal to the value of `PTEF_PREFIX`, if it doesn't exist already. The actual
+log file is then placed inside the leaf directory of this path.
+
+[NOTE]
+--
+If `PTEF_LOGS` is `/log/location`, `PTEF_PREFIX` is `/example/prefix`, and
+the test name is `testname`, the full path to the log file would be
+
+----
+/log/location/example/prefix/testname.log
+----
+--
+
+The runner must further ensure that `PTEF_LOGS` present in an environment
+of an executable is modified to always point to the same log location as the one
+used by the current runner. +
+If `PTEF_LOGS` is an absolute path, no action is necessary. If it is a relative
+path and the executable is inside a subdirectory of CWD, the runner must
+prepend `../` to the `PTEF_LOGS` present in the environment of the executable.
+
+
+[[recommended-extensions]]
+== Recommended extensions
+
+A runner should implement each of these features. If it does, it must follow
+the specification of each feature it implements, as described below.
+
+[[ptef-run]]
+=== Reporting when an executable is run (`PTEF_RUN`)
+
+If the `PTEF_RUN` environment variable is set and non-empty, the runner must
+emit, prior to running an executable, a result with `RUN` as the status and
+the same test name that would be later used for `PASS` or `FAIL` when reporting
+exit status of the executable.
+
+[NOTE]
+--
+For example (`RUN` is reported first, then the executable runs, then it
+finishes successfully, and finally `PASS` is reported):
+
+----
+RUN   /prefix/some/test
+PASS  /prefix/some/test
+----
+--
+
+[[ptef-color]]
+=== Overriding color output of reported results (`PTEF_COLOR`)
+
+If the `PTEF_COLOR` environment variable is defined and non-empty, it overrides
+the standard output terminal autodetection logic, forcing the standard output
+reporting to be either
+
+* always with colors if the variable is set to `1`
+* always without colors if the variable set to any other non-empty value,
+  ie. `0`
+
+If the runner does not support color in its output, it should ignore this
+variable.
+
+[[ptef-nologs]]
+=== Avoiding standard error output log redirect (`PTEF_NOLOGS`)
+
+If the `PTEF_NOLOGS` environment variable is set and non-empty, the runner must
+not redirect the standard error output of executables it runs to log files,
+leaving it connected to the current runner's standard error output.
+
+[NOTE]
+--
+This is very useful for quick debugging if any executables (tests) are
+configured to print verbose output on stderr, such as `set -x` for bash scripts.
+--
+
+The runner may still create log directories and even log files for test names
+as if it was about to redirect the output.
+
+[[ptef-ignore-files]]
+=== Skipping additional files during CWD search (`PTEF_IGNORE_FILES`)
+
+If the `PTEF_IGNORE_FILES` environment variable is set and non-empty, it
+specifies additional newline-separated file names that must be skipped
+by the runner when searching CWD for executables.
+
+[NOTE]
+--
+For example setting it to `exec1\nexec2` (where `\n` is ASCII `0x0a`) will
+prevent any runner on any hierarchy level below the current one from running
+either `exec1` or `exec2`, even if those files are executable.
+
+This may be useful for integrating with build systems and other recursive
+non-PTEF runners that have executables with known names present on multiple
+levels of a hierarchy.
+--
+
+The variable is only valid when running without arguments and must be ignored
+when running with arguments.
+
+[[additional-extensions]]
+== Additional extensions
+
+A runner may choose to implement any of these features. If it does, it must
+follow the specification of each feature it implements, as described below.
+
+[[mark-status]]
+=== Keep-alive reported results (the `MARK` status)
+
+When requested by a user, a runner must regularly output a result line with
+a `MARK` status, in user-specified intervals. The _test name_ of this line
+must be an ISO 8601 formatted timestamp containing at least a year, a month,
+a day, an hour, a minute and a second.
+
+[NOTE]
+--
+It is expected that the user will instruct only the root-level runner (top of
+a hierarchy) to produce `MARK` status lines, as a simple form of "keep alive"
+messages, potentially for an external logic.
+--
+
+[NOTE]
+--
+For example
+
+----
+MARK 1970-04-07T08:10:20
+MARK 1970-04-07T08:10:20+01:00
+MARK 1970-04-07T04:10:20,909601272-0300
+MARK 1970-04-07T07:10:20Z
+----
+--
+
+[[parallel-execution]]
+=== Parallel execution of executables
+
+When instructed by a user, a runner must run executables in parallel. This
+applies both when running with and without arguments.
+
+The runner must further allow the user to restrict the maximum amount of
+executables running at any time, or "jobs".
+
+[NOTE]
+--
+This applies to executables in CWD only, the parallelism doesn't propagate
+throughout a hierarchy unless the user independently instructs multiple levels
+of the hierarchy to run in parallel.
+--
+
+[[argument-merging]]
+=== Argument merging
+
+A runner may choose to, without disclosing this to the user, coalesce successive
+arguments sharing a common "left" portion (executable name) and then run this
+executable only once, passing it multiple arguments ("right" portions), instead
+of running the executable multiple times, each time with a single argument.
+
+If this "argument merging" happens, the runner must guarantee that arguments
+are passed in the same order as without merging, eg. that a different "left"
+potion aborts a merge. +
+Similarly, if an argument triggers an error condition due to its format, all
+previous arguments must be executed, as they would be in a case without merging.
+
+[NOTE]
+--
+A runner run with `foo/arg1 foo/arg2 bar/arg1 foo/arg3` would actually execute
+
+----
+./foo arg1 arg2
+./bar arg1
+./foo arg3
+----
+
+instead of a non-merged run
+
+----
+./foo arg1
+./foo arg2
+./bar arg1
+./foo arg3
+----
+--
+
+A runner using this feature by default must allow the user to disable it.
+
+[NOTE]
+--
+Argument merging may modify the behavior of parallel execution - depending
+on the implementation, a single executable run with multiple arguments might
+count as one "job", whereas it would count as multiple if run without merging.
+--
+
+[[log-rotation]]
+=== Log file rotation
+
+Instead of discarding previous log file contents, a runner may choose to,
+without disclosing this to the user, rename the log file instead.
+
+This rename must follow a specific file naming scheme
+
+* `exec.log` to `exec.log.1`
+* `exec.log.1` to `exec.log.2`
+* ...
+* `exec.log.8` to `exec.log.9`
+
+A runner using this feature by default must allow the user to disable it.
+
+
+[[clarifications]]
+== Clarifications
+
+[[posix-version]]
+=== POSIX version
+
+The oldest version a runner can rely on being available is POSIX.1-2008.
+Earlier POSIX versions are not supported.
+
+[[posix-functions-and-syscall-naming]]
+=== POSIX functions and syscall naming
+
+Unless otherwise specified, references to library functions or syscalls refer
+to functionality provided by those functions or syscalls, not to their
+identifier names. Ie. a reference to `access(2)` permits the use of other
+POSIX-standard syscalls that provide the same function, such as `faccessat(2)`.
+
+[[stdio-sanity]]
+=== Standard IO sanity
+
+A runner may rely on file descriptors 0, 1 and 2 to be open. When run with any
+of these closed, runner behavior is undefined.
+
+A runner can therefore rely on `dup(2)` returning 3 or higher.
+
+
+[[rationale]]
+== Rationale
+
+=== Failure of an executable shouldn't fail the runner
+
+While it may be obvious for a runner to return non-zero exit code if at least
+one of its executables returns non-zero (propagating failure upwards), there
+are notable drawbacks to doing so.
+
+* It requires rarely-used code paths which may not be well tested and thus
+  a failure might go unnoticed
+** This is a real issue for programming languages which don't explicitly require
+   the caller to collect exit status, such as bash, in contrast to frameworks
+   that do, such as `waitpid(2)`
+* It provides little actual value
+** It is convenient, but grepping a file created with `PTEF_RESULTS_FD` for
+   `^FAIL` is not much harder
+* Failure of a test suite is a complex state
+** A single `FAIL` result is only one of failure states - a suite may consider
+   a custom `SKIP` status in a production run a failure, or it might compare
+   the full list of `PASS` results to a reference and fail if one or more
+   results are missing
+* External result-waiving logic would not work
+** If there's only one `FAIL` for a specific test, post-processing can be
+   applied to a `PTEF_RESULTS_FD` created file, auto-waiving known ``FAIL``s.
+** If this would propagate to parents, the waiving logic would be significantly
+   more complex and imprecise (see below)
+* It loses information, making runner error indistinguishable from exec failure
+** An internal runner error would otherwise get its own result (reported by the
+   runner's parent), allowing the user to distinguish it from an executable
+   returning non-zero, whereas by propagating failure, a runner error may be
+   hidden
+
+These factors contributed to the decision of making a runner not propagate
+the non-zero exit code upwards and only report a `FAIL`, exiting successfully
+if no error condition has occured.
+
+See <<test-exit-code-handling,exit code handling in previous chapters>>.
+
+=== The existence of `PTEF_BASENAME`
+
+Earlier versions of this specification required the runner to simply search
+for `basename(argv[0])` in any subdirectories and execute anything found.
+This proved to be sufficient as long as any subrunners were always in
+subdirectories, as `execve(2)` would always result in a `basename(argv[0])`
+equal to the parent runner, *even for interpreted scripts*.
+
+This is because the script filename is given to an interpreter as `argv[1]`
+so the interpreter can make it appear as `$0` (bash), `sys.argv[0]` (python),
+etc.
+
+Subrunners in CWD must have, by implication, a different filename from their
+parent runner (ie. `run` executing `subrun`), but they still must be provided
+with the original `argv[0]`, making further recursion possible. +
+This is not an issue for binary executables as the parent runner can pass
+the `subrun` file path and `argv[0]` separately to `execve(2)`, and, indeed,
+the new subrunner process sees its `argv[0]` as `run`, correctly.
+
+However a documented limitation of `execve(2)` is that the kernel discards
+`argv[0]` in the passed array when running interpreted scripts, replacing it
+it with the interpreter path, so not even the interpreter has access to the
+original `argv[0]`.
+
+Since interpreted runners are an important use case for PTEF, a replacement
+solution of using an environment variable was chosen instead.
+
+To allow symlink-based runners (zero configuration) setups, runners are still
+required to default to `basename(argv[0])` if `PTEF_RUNNER` is undefined,
+ie. for the first (root) runner of a hierarchy.
+
+=== The use of environment variables instead of CLI options
+
+While a runner is free to implement any `getopt(3)`-like option arguments,
+this specification leans environment variables instead. In theory, a runner
+could be required to pass any option arguments to subrunners and thus
+propagate a requested feature throughout a hierarchy, environment variables
+are guaranteed to propagate automatically even if a runner doesn't touch them
+and are thus a better fit.
+
+Further, while POSIX.1-2008 defines some guidelines for CLI option format,
+namely
+http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html[the Utility Argument Syntax section],
+and while many programming languages support `POSIXLY_CORRECT`, the CLI
+interface is hardly standard:
+
+* Despite the POSIX recommendations, many languages implement option arguments
+  differently in subtle ways (ie. silently treating `-1` as option argument)
+* Some languages implement more programmer-friendly interfaces compared to
+  their ``getopt(3)``-based implementation, thus discourating `getopt(3)` use
+* POSIX specifies only single-letter options, thus limiting the namespace
+  and causing potential conflicts
+* Options with non-trivial arguments (whitespaces, newlines) are hard to pass
+  correctly
+
+A runner is however still free to use option arguments, ie. as a shorthand
+for exporting environment variables for subrunners, however these are
+non-standard.
+
+=== Not accepting arguments on standard input
+
+There is currently no great way of passing an arbitrary amount of arguments
+to a runner - CLI is limited in length (4K in POSIX, 2MB on Linux) and while
+one can use `xargs(1)` to split a huge list of arguments into one-cmdline-sized
+separate runner executions, this prevents effective argument merging, which,
+while it shouldn't break anything, can cost extra time if some sub-runner has
+long setup/cleanup times, ie. virtual machine testing.
+
+One idea is to have an environment variable (or an `-` argument) instructing
+a runner to accept arguments from stdin instead of the command line. +
+This, however, has several issues.
+
+* The runner would have to implement `xargs(1)`-like cmdline splitting
+  functionality when passing arguments to executables, as the amount of incoming
+  arguments for an executable can now exceed the maximum cmdline length
+* Alternatively, it could pass arguments via an executable's stdin, requiring
+  each (non-runner non-PTEF) executable to read stdin or risk blocking on
+  or failing system utilities or library functions (used by an executable)
+  which do read stdin
+
+Ultimately, running with huge lists of arguments was never intended to be the
+primary way of executing a suite using this framework. The use case was a manual
+tester investigating issues by running individual tests or intentionally running
+only a portion of a suite (by specifying a single argument with a path to
+a hierarchy subtree). +
+A test suite can always implement file based or environment variable based lists
+of executables that its runner wrappers read and execute.
+
+Another use for reading stdin could be substitution for CWD scanning logic
+(running without arguments) - in this way, a runner could be customized to ie.
+ignore specific executable names. This is also an unnecessary complication and
+can be implemented without drawbacks in a runner wrapper by listing CWD,
+filtering the list, and splitting it into cmdline-sized argument lists passed
+(via `xargs(1)`) to the runner. +
+Since all arguments will always be without a `/`, no arguments are passed to
+executables and no argument merging occurs.

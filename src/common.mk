@@ -19,6 +19,7 @@ libexecdir	?= $(exec_prefix)/libexec
 datarootdir	?= $(prefix)/share
 datadir		?= $(datarootdir)
 mandir		?= $(datadir)/man
+docdir		?= $(datadir)/doc
 sysconfdir	?= /etc
 localstatedir	?= /var
 sharedstatedir	?= /var/lib

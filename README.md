@@ -5,6 +5,13 @@ framework for system testing and/or integration and execution of test suites.
 
 Currently still in active development (unstable API).
 
+## The straight dope
+
+
+
+
+
+
 ## Basic intro
 
 ### What is PTEF?
