@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include <ptef.h>
 #include <ptef_helpers.h>
 
 // rotate old logs, create new one, return its fd
@@ -94,6 +95,37 @@ static int open_log(int dirfd, char *testname)
 err:
     free(from);
     free(to);
+    return -1;
+}
+
+// create new log, truncating an old one, return its fd
+static int open_truncated_log(int dirfd, char *testname)
+{
+    char suffix[] = ".log";
+
+    size_t testname_len = strlen(testname);
+
+    char *logfile;
+    if ((logfile = malloc(testname_len+sizeof(suffix))) == NULL) {
+        PERROR("malloc");
+        goto err;
+    }
+
+    char *pos = logfile;
+    pos = memcpy_append(pos, testname, testname_len);
+    pos = memcpy_append(pos, suffix, sizeof(suffix));
+
+    // create and open a new log
+    int fd = openat(dirfd, logfile, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+    if (fd == -1) {
+        PERROR_FMT("openat(..,%s,O_CREAT|O_WRONLY|O_TRUNC)", logfile);
+        goto err;
+    }
+
+    free(logfile);
+    return fd;
+err:
+    free(logfile);
     return -1;
 }
 
@@ -226,7 +258,12 @@ int ptef_mklog_v0(char *testname, int flags)
     if (logsfd == -1)
         return -1;
 
-    int fd = open_log(logsfd, testname);
+    int fd;
+    if (flags & PTEF_NOROTATE)
+        fd = open_truncated_log(logsfd, testname);
+    else
+        fd = open_log(logsfd, testname);
+
     close(logsfd);
 
     if (fd != -1)

@@ -31,12 +31,7 @@
     - sort it alphabetically, but in reverse, to show the posibilities,
       also include hidden executables, also skip some exec name
 
-- TODO: PTEF_NOROTATE flag to mklog
-  - and getopt to cli and bash ptef-mklog
-  - and flag in ptef.py
-  - and some test(s)
-
-- TODO: test for -- arg first occurence
+- TODO: try running ptef-report and ptef-mklog without any args
 
 - add example showing how to post-process results
   - see ospp-kickstart-test-suite

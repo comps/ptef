@@ -3,6 +3,7 @@
 *.la
 *.so
 *.so.*
+*.html
 
 bash/builtins.sh
 

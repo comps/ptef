@@ -10,6 +10,9 @@ NOLOCK      = (1 << 0)
 NOWAIT      = (1 << 1)
 RAWNAME     = (1 << 2)
 
+# mklog flags
+NOROTATE    = (1 << 0)
+
 def runner(argv: list = None, default_basename: str = None, jobs: int = 0,
            mark_interval: int = 0, flags: int = 0) -> None:
     if argv is None:

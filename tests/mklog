@@ -72,6 +72,15 @@ function log_rotation {
 	done
 }
 
+# Test that log rotation can be disabled
+function norotate {
+	assert_ptef_mklog testname <<<"1"
+	assert_ptef_mklog -r testname <<<"2"
+	[ -f logs/testname.log ]
+	[ ! -f logs/testname.log.* ]
+	assert_contents '2' logs/testname.log
+}
+
 
 + sanity
 + testname_with_spaces
@@ -79,6 +88,7 @@ function log_rotation {
 + write_log
 + binary_log
 + log_rotation
++ norotate
 
 
 run_tests "$@"

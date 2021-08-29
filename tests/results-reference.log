@@ -74,6 +74,7 @@ PASS /mklog/testname_empty
 PASS /mklog/write_log
 PASS /mklog/binary_log
 PASS /mklog/log_rotation
+PASS /mklog/norotate
 PASS /mklog
 PASS /prefix/sanity
 PASS /prefix/notset

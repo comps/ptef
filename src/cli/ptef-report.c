@@ -50,7 +50,13 @@ int main(int argc, char **argv)
                 return 1;
         }
     }
+    argc -= optind;
     argv += optind;
+
+    if (argc != 2) {
+        print_help();
+        return 1;
+    }
 
     int ret = ptef_report(argv[0], argv[1], flags);
     if (ret == -1 &&

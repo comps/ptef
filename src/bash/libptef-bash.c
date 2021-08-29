@@ -116,8 +116,29 @@ static int mklog_bind_variable(char *name, int value)
     return !!v;
 }
 
-static int mklog_main(WORD_LIST *testname)
+static int mklog_main(WORD_LIST *arglist)
 {
+    int flags = 0;
+
+    reset_internal_getopt();
+
+    int c;
+    while ((c = internal_getopt(arglist, "rh")) != -1) {
+        switch (c) {
+            case 'r':
+                flags |= PTEF_NOROTATE;
+                break;
+            case GETOPT_HELP:
+                builtin_usage();
+                return 0;
+            default:
+                builtin_usage();
+                return 1;
+        }
+    }
+    arglist = loptend;
+
+    WORD_LIST *testname = arglist;
     if (!testname) {
         builtin_error("not enough arguments");
         return 1;
@@ -131,7 +152,8 @@ static int mklog_main(WORD_LIST *testname)
         builtin_error("too many arguments");
         return 1;
     }
-    int fd = ptef_mklog(testname->word->word, 0);
+
+    int fd = ptef_mklog(testname->word->word, flags);
     if (fd == -1) {
         builtin_error("returned -1");
         return 1;

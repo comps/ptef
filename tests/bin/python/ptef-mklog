@@ -3,7 +3,17 @@ import sys, os
 libdir = os.path.join(os.environ['TEST_BINDIR'], 'python')
 sys.path.append(libdir)
 import ptef
-with ptef.mklog(sys.argv[1]) as log:
+
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument('-r', action='store_true')
+parser.add_argument('testname')
+args = parser.parse_args()
+flags = 0
+if args.r:
+    flags |= ptef.NOROTATE
+
+with ptef.mklog(args.testname, flags) as log:
     while True:
         buf = sys.stdin.buffer.read1()
         if len(buf) < 1:
