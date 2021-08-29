@@ -4,7 +4,7 @@ Release: PTEF_RELEASE%{?dist}
 Summary: POSIX-inspired Test Execution Framework
 
 License: MIT
-URL: https://github.com/comps/ptef
+URL: https://github.com/comps/ptef/
 Source0: ptef-PTEF_VERSION.tar.gz
 
 # required for python rpm macros to work

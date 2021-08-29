@@ -1,23 +1,4 @@
-- warn that readdir(3) is used, which is generally thread-safe,
-  but this is not guaranteed by POSIX.1
-  - also document thread-safety for all 3 API functions
-  - ie. runner is *not* thread safe with itself, but it should be safe to use in a bigger
-    threaded program, though note:
-    - writes to stdout, locked by F_WRLCK
-      - is per-process, not per-fd; the runner will unlock any locks on stdout
-        and on PTEF_RESULTS_FD
-      - other threads MUST NOT lock stdout/PTEF_RESULTS_FD
-    - writes to stderr on error, unsafely (not locked)
-    - managers forks with PID tracking and will report as error (on stderr)
-      any collected children that aren't its own, so DO NOT start any background
-      forks that may exit before the runner call finishes
-      - thus also do not start more than one instance of the runner in
-        a single process
-      - the limitation is waitpid() unable to wait for an array of pids
-  - regular MARK printout is done via periodic SIGALRM, not using
-    POSIX timers (as they require linking libpthread + librt)
-    - make sure SIGALRM is blocked using sigprocmask(2) or pthread_sigmask(3)
-      in all threads other than the one executing ptef_runner
+- document thread-safety for all 3 API functions
 
 - TODO: remove PTEF_IGNORE_FILES, turn it into runner -i arg
   - only for the current level
@@ -32,9 +13,21 @@
       also include hidden executables, also skip some exec name
 
 - TODO: try running ptef-report and ptef-mklog without any args
+   - verify they show help msg without segfault
+   - they should exit with non-zero
+- TODO: try running them with -h; they should exit with zero
 
 - add example showing how to post-process results
   - see ospp-kickstart-test-suite
+
+- fix MARK result locking
+  - F_GETLK
+  - if we do have a lock --> do ptef_report with PTEF_NOLOCK
+  - if we don't have a lock --> do ptef_report normally
+    - this will also wait for somebody else if they manage to lock
+      it faster than us and/or are already holding the lock
+
+- compile with -O2, ship debuginfo separately
 
 ----
 

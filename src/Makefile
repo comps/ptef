@@ -6,7 +6,7 @@ include common.mk
 # - cli/bash/python need lib
 # and rather than writing long and hacky Makefile to allow parallel build,
 # just have this simple sequential list
-SUBDIRS := helpers runner report mklog lib cli bash python doc
+SUBDIRS := helpers runner report mklog lib cli bash python man doc
 
 .PHONY: all install clean
 all:

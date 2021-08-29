@@ -1,0 +1,127 @@
+.\" syntax documented on (search on page):
+.\" https://www.gnu.org/software/groff/manual/groff.html
+.TH PTEF_RUNNER 3
+
+.SH NAME
+ptef_runner \- implements a POSIX\-inspired Test Execution Framework runner
+
+.SH SYNOPSIS
+.nf
+.B  #include <ptef.h>
+.PP
+.BI "int ptef_runner(int " argc ", char **" argv ", char *" default_basename ", int " jobs ,
+.BI "                int " mark_interval ", int " flags );
+.fi
+.PP
+Link with \fI\-lptef\fP.
+
+.SH DESCRIPTION
+.BR ptef_runner ()
+is the ABI of a reference POSIX\-inspired Test Execution Framework (PTEF)
+"runner" implementation.
+.PP
+It takes arguments via
+.I argc
+and 
+.I argv
+as they would be passed on a command line. Unlike a typical
+.BR main (),
+argv[0] is just one of the arguments, it has no special meaning. If
+.I argc
+is 0, the runner behaves as if run without arguments.
+.PP
+.I default_basename
+then specifies a fallback if PTEF_BASENAME is undefined. To comply with the
+PTEF specification, pass a
+.BR basename (argv[0])
+of the calling program.
+.PP
+.I jobs
+set to anything above 1 will make the runner execute files in parallel, with
+a maximum parallel processes equal to the
+.I jobs
+value. Set to 0 or 1 to run sequentially.
+.PP
+When
+.I mark_interval
+is set to a value above 0, the runner will emit a result with MARK status every
+.I mark_interval
+seconds. Pass 0 to disable this functionality.
+.PP
+.I flags
+provide a way to further parametrize the runner execution:
+.TP
+.BR PTEF_NOMERGE
+Disable argument merging. See the PTEF specification for details.
+
+.SH RETURN VALUE
+On success,
+.BR ptef_runner ()
+returns 0. On failure, \-1 is returned, and
+.I errno
+is set to indicate the error.
+.PP
+Note that the runner itself doesn't set the
+.IR errno ,
+it comes from one of the syscalls or other library functions it calls.
+.PP
+Additionally, the runner writes details about the failure to standard error
+output.
+
+.SH NOTES
+.BR ptef_runner ()
+is not meant to be used inside generic programs due to how heavily it relies
+on the overall program state and its access to stdout and stderr. It's intended
+use is in simple wrappers that perform some setup/cleanup around the actual
+runner logic.
+.PP
+Further, it is not thread-safe, mainly due to:
+.IP \[bu] 2
+locking via POSIX advisory locks, which are per-process, so another thread
+could cause an unlock
+.RS
+.IP \[bu] 2
+(both on stdout and PTEF_RESULTS_FD)
+.RE
+.IP \[bu]
+writes to stderr (on error) not being guarded by a lock
+.IP \[bu]
+creating children via
+.BR fork (2)
+and waiting for them via
+.BR waitpid (2)
+\- while the runner keeps track of which PIDs were created by itself and is able
+to skip foreign PIDs, it has no control over which one it gets from the kernel
+via
+.BR waitpid (2)
+so it may accidentally consume a child created by another thread
+.IP \[bu]
+the use of
+.BR setitimer (2)
+and SIGALRM for periodic MARK status result printouts
+.RS
+.IP \[bu] 2
+(other threads would have to have SIGALRM blocked via
+.BR sigprocmask (2)
+or via
+.BR pthread_sigmask (3))
+.RE
+.IP \[bu]
+the use of
+.BR strerror (3)
+which is not thread-safe as it may use a global table of error descriptions,
+which may be altered during runtime by another thread changing locale
+.IP \[bu]
+the use of
+.BR readdir (3)
+which is generally thread-safe, but this is not guaranteed by POSIX
+
+.SH SEE ALSO
+.ad l
+.nh
+.BR ptef_report (3),
+.BR ptef_mklog (3)
+
+.SH COLOPHON
+This page is part of the PTEF project, see
+\%https://github.com/comps/ptef/
