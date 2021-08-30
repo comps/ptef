@@ -103,6 +103,8 @@ static SHELL_VAR *builtin_bind_variable(char *name, char *value, int flags)
         VUNSETATTR(v, att_invisible);
     return v;
 }
+#else
+extern SHELL_VAR *builtin_bind_variable();
 #endif
 
 static int mklog_bind_variable(char *name, int value)
