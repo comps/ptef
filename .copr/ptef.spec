@@ -21,12 +21,6 @@ BuildRequires: asciidoctor
 Recommends: bash
 Recommends: python3
 
-# automatic dependency generation finds the libptef.so symlink and generates
-# a dependency on it, but then it fails to notice it when generating Provides,
-# causing the RPM to be non-installable
-# work around this by manually providing the symbol
-Provides: libptef.so()(64bit)
-
 %description
 TBD
 

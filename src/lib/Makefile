@@ -7,7 +7,10 @@ CFLAGS ?= -O2 -flto -Wall -Wextra -Werror -g -D_POSIX_C_SOURCE=200809
 
 # GNU LD
 libptef.so.0: ../helpers/*.o ../runner/*.o ../report/*.o ../mklog/*.o
-	$(CC) -shared -fPIC -Wl,--version-script=libptef.map $(CFLAGS) -o $@ $^
+	$(CC) -shared -fPIC \
+		-Wl,--version-script=libptef.map \
+		-Wl,-soname,$@ \
+		$(CFLAGS) -o $@ $^
 
 libptef.so: libptef.so.0
 	ln -sf $< $@
