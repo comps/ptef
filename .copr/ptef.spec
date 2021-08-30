@@ -1,6 +1,6 @@
 Name: ptef
 Version: PTEF_VERSION
-Release: PTEF_RELEASE%{?dist}
+Release: 1%{?dist}
 Summary: POSIX-inspired Test Execution Framework
 
 License: MIT

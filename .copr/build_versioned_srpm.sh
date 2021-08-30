@@ -1,11 +1,14 @@
 #!/bin/bash
 set -e
 
-full=$(git describe --tags HEAD)
-tag=$(git describe --tags --abbrev=0 HEAD)
-release=${full##$tag-}
-release=$(grep -o '^[0-9]\+' <<<"$release")
-version=$(sed 's/^v//' <<<"$tag")
+version=$(git describe --tags HEAD)  # v0.7 | v0.7-113-g1a9f9a3
+if [ "${version%%-*}" = "$version" ]; then
+	version="$version.0"      # v0.7 -> v0.7.0
+else
+	version="${version%-g*}"  # v0.7-113
+	version="${version#v}"    # 0.7-113
+	version="${version/-/.}"  # 0.7.113
+fi
 
 rm -rf .rpmbuild
 mkdir -p .rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
@@ -19,8 +22,7 @@ cp .copr/ptef.spec .rpmbuild/SPECS/.
 
 # hardcode version/release, don't use rpm macros, they would
 # be missing when this SRPM is actually built elsewhere
-sed "s/PTEF_VERSION/$version/g;s/PTEF_RELEASE/$release/g" \
-	-i .rpmbuild/SPECS/ptef.spec
+sed "s/PTEF_VERSION/$version/g" -i .rpmbuild/SPECS/ptef.spec
 rpmbuild \
 	--define "_topdir $PWD/.rpmbuild" \
 	-bs .rpmbuild/SPECS/ptef.spec
