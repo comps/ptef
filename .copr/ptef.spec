@@ -17,9 +17,14 @@ BuildRequires: python3
 BuildRequires: gcc
 BuildRequires: make
 BuildRequires: bash-devel
-BuildRequires: asciidoctor
 Recommends: bash
 Recommends: python3
+
+# el8 doesn't have asciidoctor for some weird reason,
+# el7 does, fedora does, so just don't build docs on 8
+%if 0%{?rhel} != 8
+BuildRequires: asciidoctor
+%endif
 
 %description
 TBD
@@ -28,18 +33,21 @@ TBD
 %setup
 
 %build
-# we intentionally discard writev() result as it's used only for debugging,
-# unfortunately, there's no __attribute__ that could create an exception,
-# and (void) also doesn't silence it, so just disable it globally
-CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result" make
+# -Wno-unused-result
+#   we intentionally discard writev() result as it's used only for debugging,
+#   unfortunately, there's no __attribute__ that could create an exception,
+#   and (void) also doesn't silence it, so just disable it globally
+# -Wextra -Werror
+#   because I want to be pedantic
+CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra -Werror" make
 
 %check
 # testing is destructive since it re-builds binaries
-# with different CFLAGS, so back-up original outputs
+# with several different CFLAGS, so back-up original outputs
 rm -rf src-backup
 mv src src-backup
 cp -a src-backup src
-make test
+CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result" make test
 rm -rf src
 mv src-backup src
 
