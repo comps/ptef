@@ -47,6 +47,7 @@ mv src-backup src
 %make_install \
 	bindir="%{_bindir}" \
 	libdir="%{_libdir}" \
+	includedir="%{_includedir}" \
 	datadir="%{_datadir}" \
 	docdir="%{_docdir}" \
 	mandir="%{_mandir}" \
@@ -57,6 +58,7 @@ mv src-backup src
 %attr(755,root,root) %{_libdir}/libptef.so.0
 %{_libdir}/libptef.so
 %attr(755,root,root) %{_libdir}/libptef-bash.so
+%attr(644,root,root) %{_includedir}/ptef.h
 %attr(755,root,root) %dir %{_datadir}/ptef
 %attr(644,root,root) %{_datadir}/ptef/builtins.sh
 %attr(644,root,root) %{_mandir}/man3/ptef_{runner,report,mklog}.3*

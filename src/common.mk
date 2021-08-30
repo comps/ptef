@@ -8,6 +8,7 @@ prefix		?= /usr
 exec_prefix	?= $(prefix)
 bindir		?= $(exec_prefix)/bin
 sbindir		?= $(exec_prefix)/sbin
+includedir	?= $(prefix)/include
 
 ifneq ($(filter $(MACHINE),i386 i686 ppc s390),)
 libdir		?= $(exec_prefix)/lib
