@@ -4,7 +4,7 @@ include ../common.mk
 all: ;
 
 install:
-#	install -d "$(DESTDIR)$(mandir)/man2"
-#	install -m644 .... "$(DESTDIR)$(mandir)/man2/."
+	install -d "$(DESTDIR)$(mandir)/man3"
+	install -m644 ptef_runner.3 "$(DESTDIR)$(mandir)/man3/."
 
 clean: ;

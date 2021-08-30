@@ -17,8 +17,15 @@ BuildRequires: python3
 BuildRequires: gcc
 BuildRequires: make
 BuildRequires: bash-devel
+BuildRequires: asciidoctor
 Recommends: bash
 Recommends: python3
+
+# automatic dependency generation finds the libptef.so symlink and generates
+# a dependency on it, but then it fails to notice it when generating Provides,
+# causing the RPM to be non-installable
+# work around this by manually providing the symbol
+Provides: libptef.so()(64bit)
 
 %description
 TBD
@@ -27,7 +34,10 @@ TBD
 %setup
 
 %build
-make
+# we intentionally discard writev() result as it's used only for debugging,
+# unfortunately, there's no __attribute__ that could create an exception,
+# and (void) also doesn't silence it, so just disable it globally
+CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result" make
 
 %check
 # testing is destructive since it re-builds binaries
@@ -44,11 +54,9 @@ mv src-backup src
 	bindir="%{_bindir}" \
 	libdir="%{_libdir}" \
 	datadir="%{_datadir}" \
+	docdir="%{_docdir}" \
+	mandir="%{_mandir}" \
 	python3_sitelib="%{python3_sitelib}"
-
-#install -d "%{buildroot}%{_docdir}"/ptef
-#install -m644 doc/blabla "%{buildroot}%{_docdir}"/ptef/.
-
 
 %files
 %attr(755,root,root) %{_bindir}/ptef-{runner,report,mklog}
@@ -57,11 +65,10 @@ mv src-backup src
 %attr(755,root,root) %{_libdir}/libptef-bash.so
 %attr(755,root,root) %dir %{_datadir}/ptef
 %attr(644,root,root) %{_datadir}/ptef/builtins.sh
+%attr(644,root,root) %{_mandir}/man3/ptef_{runner,report,mklog}.3*
+%attr(755,root,root) %dir %{_docdir}/ptef
+%attr(644,root,root) %{_docdir}/ptef/ptef.{adoc,html}
 %pycached %{python3_sitelib}/ptef.py
-
-#%docdir %{_docdir}/ptef
-
-# TODO: PTEF.md itself, under %docdir ^^^^
 
 #%license
 

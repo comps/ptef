@@ -190,19 +190,19 @@ int for_each_exec(char *basename, int jobs)
 
     struct exec_entry **ents = NULL;
     char **ignored = NULL;
+    int i = 0, cnt = 0;
 
     char *ignore_files = getenv_defined("PTEF_IGNORE_FILES");
     if (ignore_files)
         if ((ignored = str_to_array(ignore_files, '\n')) == NULL)
             goto err;
 
-    int cnt = find_execs(&ents, basename, ignored);
+    cnt = find_execs(&ents, basename, ignored);
     if (cnt == -1)
         goto err;
 
     char *argv[2] = { NULL };
-    int i;
-    for (i = 0; i < cnt; i++) {
+    for (; i < cnt; i++) {
         if (execute(ents[i]->name, ents[i]->type, argv, basename, state) == -1)
             goto err;
         free(ents[i]);
