@@ -27,7 +27,9 @@
     - this will also wait for somebody else if they manage to lock
       it faster than us and/or are already holding the lock
 
-- compile with -O2, ship debuginfo separately
+- add python api documentation as """
+
+- resolve CFLAGS="-fanalyzer -O0 -g" warnings
 
 ----
 

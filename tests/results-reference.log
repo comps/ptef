@@ -91,6 +91,7 @@ PASS /report/locking_results_fd
 PASS /report/locking_nowait
 PASS /report/locking_nolock
 PASS /report/rawname
+PASS /report/color_map
 PASS /report
 PASS /vars/ptef_run
 PASS /vars/ptef_run_opt

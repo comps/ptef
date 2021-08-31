@@ -13,7 +13,7 @@ ptef-mklog.o: ptef-mklog.c
 ptef-runner: ptef-runner.o ../helpers/*.o
 	$(CC) $(CFLAGS) -o $@ $^ -lptef
 
-ptef-report: ptef-report.o
+ptef-report: ptef-report.o ../helpers/*.o
 	$(CC) $(CFLAGS) -o $@ $^ -lptef
 
 ptef-mklog: ptef-mklog.o ../helpers/*.o

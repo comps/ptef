@@ -30,10 +30,9 @@ static void print_help(void)
             "  -r       set PTEF_RUN and export it\n"
             "  -m       don't merge arguments of subrunners (always pass 1 arg)\n"
             "\n"
-            "Executes the PTEF runner logic from CWD, executing executables\n"
-            "and traversing subdirectories.\n"
-            "If TEST is specified, runs only that test, without scanning for\n"
-            "executables.\n");
+            "Executes the PTEF runner logic from CWD, executing executables and traversing\n"
+            "subdirectories.\n"
+            "If TEST is specified, runs only that test, without scanning for executables.\n");
 }
 
 int main(int argc, char **argv)

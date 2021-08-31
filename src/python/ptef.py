@@ -32,10 +32,26 @@ def runner(argv: list = None, default_basename: str = None, jobs: int = 0,
         errno = ctypes.get_errno()
         raise OSError(errno, os.strerror(errno), None)
 
-def report(status: str, testname: str, flags: int = 0) -> None:
-    ctypes.set_errno(0)
+def _dict_to_2d_array(src: dict):
+    pairs = [
+        (
+            ctypes.c_char_p(x.encode('utf-8')),
+            ctypes.c_char_p(src[x].encode('utf-8'))
+        ) for x in src
+    ]
+    pairs.append((ctypes.c_char_p(None),ctypes.c_char_p(None))) # NULL-terminate
+    # ((ctypes.c_char_p * 2) * 5) , a char[5][2] data type
+    return ((ctypes.c_char_p * 2) * len(pairs))(*pairs)
+
+def report(status: str, testname: str, colors: dict = None,
+           flags: int = 0) -> None:
+    if colors is None:
+        colors_array = ctypes.c_char_p(None)
+    else:
+        colors_array = _dict_to_2d_array(colors)
     rc = libptef.ptef_report(ctypes.c_char_p(status.encode('utf-8')),
                              ctypes.c_char_p(testname.encode('utf-8')),
+                             colors_array,
                              ctypes.c_int(flags))
     if rc == -1:
         errno = ctypes.get_errno()

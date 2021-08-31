@@ -10,24 +10,28 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-N', action='store_true')
 parser.add_argument('-n', action='store_true')
 parser.add_argument('-r', action='store_true')
+parser.add_argument('-c', action='append')
 parser.add_argument('status')
 parser.add_argument('testname')
 args = parser.parse_args()
 flags = 0
+colormap = None
 if args.N:
     flags |= ptef.NOLOCK
 if args.n:
     flags |= ptef.NOWAIT
 if args.r:
     flags |= ptef.RAWNAME
+if args.c:
+    colormap = dict([x.split(' ', 1) for x in args.c])
 
 if args.n and not args.N:
     try:
-        ptef.report(args.status, args.testname, flags)
+        ptef.report(args.status, args.testname, colormap, flags)
     except OSError as e:
         if e.errno == errno.EAGAIN:
             sys.exit(2)
         else:
             raise e
 else:
-    ptef.report(args.status, args.testname, flags)
+    ptef.report(args.status, args.testname, colormap, flags)

@@ -21,8 +21,8 @@ static void print_help(void)
             "\n"
             "  -r  truncate test log instead of rotating it\n"
             "\n"
-            "Creates and opens a log storage for a given TESTNAME, relaying\n"
-            "stdin to the log storage until EOF is encountered.\n");
+            "Creates and opens a log storage for a given TESTNAME, relaying stdin to\n"
+            "the log storage until EOF is encountered.\n");
 }
 
 #define BUF_SIZE 1024

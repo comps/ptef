@@ -12,6 +12,7 @@
 
 extern void builtin_error();
 extern void builtin_usage();
+extern void *xrealloc();
 
 //
 // runner
@@ -36,10 +37,14 @@ static int report_main(WORD_LIST *arglist)
 {
     int flags = 0;
 
+    char *(*colormap)[2] = NULL;
+    int colorcnt = 0;
+    char *delim;
+
     reset_internal_getopt();
 
     int c;
-    while ((c = internal_getopt(arglist, "Nnrh")) != -1) {
+    while ((c = internal_getopt(arglist, "Nnrc:h")) != -1) {
         switch (c) {
             case 'N':
                 flags |= PTEF_NOLOCK;
@@ -50,12 +55,25 @@ static int report_main(WORD_LIST *arglist)
             case 'r':
                 flags |= PTEF_RAWNAME;
                 break;
+            case 'c':
+                delim = strchr(list_optarg, ' ');
+                if (!delim) {
+                    builtin_error("-c MAP has no space");
+                    goto err;
+                }
+                colorcnt++;
+                colormap = xrealloc(colormap, colorcnt*sizeof(char*[1][2]));
+                *delim = '\0';
+                colormap[colorcnt-1][0] = list_optarg;
+                colormap[colorcnt-1][1] = delim+1;  // worst case, it is '\0'
+                break;
             case GETOPT_HELP:
                 builtin_usage();
+                free(colormap);
                 return 0;
             default:
                 builtin_usage();
-                return 1;
+                goto err;
         }
     }
     arglist = loptend;
@@ -63,24 +81,30 @@ static int report_main(WORD_LIST *arglist)
     WORD_LIST *status = arglist;
     if (!status) {
         builtin_error("not enough arguments");
-        return 1;
+        goto err;
     }
     WORD_LIST *testname = status->next;
     if (!testname) {
         builtin_error("not enough arguments");
-        return 1;
+        goto err;
     }
     if (testname->next) {
         builtin_error("too many arguments");
-        return 1;
+        goto err;
     }
 
-    int ret = ptef_report(status->word->word, testname->word->word, flags);
+    int ret = ptef_report(status->word->word, testname->word->word,
+                          colormap, flags);
+    free(colormap);
     if (ret == -1 &&
             flags & PTEF_NOWAIT && ~flags & PTEF_NOLOCK && errno == EAGAIN)
         return 2;
     else
         return !!ret;
+
+err:
+    free(colormap);
+    return 1;
 }
 
 //

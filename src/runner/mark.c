@@ -46,7 +46,7 @@ static void signal_printer(int signum)
 
     // if our signal got called while another ptef_report was running,
     // abort and don't produce a MARK
-    if (ptef_report("MARK", timestr, PTEF_NOWAIT | PTEF_RAWNAME) == -1)
+    if (ptef_report("MARK", timestr, NULL, PTEF_NOWAIT | PTEF_RAWNAME) == -1)
         if (errno != EAGAIN)
             PERROR_FMT("ptef_report(MARK, %s, PTEF_NOWAIT)", timestr);
 

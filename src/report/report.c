@@ -117,20 +117,20 @@ static char *format_line(char *status, char *name, size_t *len, int flags)
 #define CLBLUE  "\e[1;34m"
 #define CLGRAY  "\e[1;90m"
 #define CLRESET "\e[0m"
-static char *status_rewrites[][2] = {
+static char *default_colors[][2] = {
     { "PASS", CLGREEN "PASS" CLRESET },
     { "FAIL", CLRED "FAIL" CLRESET },
     { "RUN", CLBLUE "RUN" CLRESET " " },
     { "MARK", CLGRAY "MARK" CLRESET },
+    { NULL }
 };
-#define REWRITES_CNT sizeof(status_rewrites)/sizeof(*status_rewrites)
 
 // don't use STDOUT_FILENO as the standard specifies numbers
 #define TERMINAL_FD 1
 
 __asm__(".symver ptef_report_v0, ptef_report@@VERS_0.7");
 __attribute__((used))
-int ptef_report_v0(char *status, char *testname, int flags)
+int ptef_report_v0(char *status, char *testname, char *colors[][2], int flags)
 {
     int orig_errno = errno;
 
@@ -149,9 +149,11 @@ int ptef_report_v0(char *status, char *testname, int flags)
     }
 
     if (use_color) {
-        for (unsigned long i = 0; i < REWRITES_CNT; i++) {
-            if (strcmp(status_rewrites[i][0], status)==0) {
-                status_pretty = status_rewrites[i][1];
+        if (!colors)
+            colors = default_colors;
+        for (unsigned long i = 0; colors[i][0] != NULL; i++) {
+            if (strcmp(colors[i][0], status)==0) {
+                status_pretty = colors[i][1];
                 break;
             }
         }
