@@ -31,6 +31,13 @@
 
 - resolve CFLAGS="-fanalyzer -O0 -g" warnings
 
+- examples/ dir - requires ptef installed on the system
+  - simple symlinks example
+    - simple 'run' symlinks
+    - custom mini wrapper in utils/ symlinked in other dirs
+      - TODO: make up some reason why
+  - ...
+
 ----
 
 - look for EINTR of every syscall used, make an INTR-safe wrapper

@@ -24,14 +24,15 @@ if args.r:
     flags |= ptef.RAWNAME
 if args.c:
     colormap = dict([x.split(' ', 1) for x in args.c])
+    ptef.set_status_colors(colormap)
 
 if args.n and not args.N:
     try:
-        ptef.report(args.status, args.testname, colormap, flags)
+        ptef.report(args.status, args.testname, flags)
     except OSError as e:
         if e.errno == errno.EAGAIN:
             sys.exit(2)
         else:
             raise e
 else:
-    ptef.report(args.status, args.testname, colormap, flags)
+    ptef.report(args.status, args.testname, flags)

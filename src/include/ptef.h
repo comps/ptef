@@ -12,9 +12,11 @@
 // mklog flags
 #define PTEF_NOROTATE   (1 << 0)
 
+extern __thread char *(*ptef_status_colors)[2];
+
 int ptef_runner(int argc, char **argv, char *default_basename, int jobs,
                 int mark_interval, int flags);
-int ptef_report(char *status, char *testname, char *colors[][2], int flags);
+int ptef_report(char *status, char *testname, int flags);
 int ptef_mklog(char *testname, int flags);
 
 #endif

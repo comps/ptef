@@ -167,7 +167,7 @@ err:
 static int start_job(pid_t pid, char *name, struct exec_state *state)
 {
     if (getenv_defined("PTEF_RUN"))
-        if (ptef_report("RUN", name, NULL, 0) == -1)
+        if (ptef_report("RUN", name, 0) == -1)
             return -1;
     // find a (guaranteed) free slot in pid-to-name map and use it up
     struct pid_to_name *map = state->map;
@@ -191,7 +191,7 @@ static int finish_job(pid_t pid, struct exec_state *state, int exitcode)
         return 0;
     }
     char *status = exitcode == 0 ? "PASS" : "FAIL";
-    int report_rc = ptef_report(status, map[i].name, NULL, 0);
+    int report_rc = ptef_report(status, map[i].name, 0);
     // TODO: won't be needed once free() guarantees no errno changes
     int report_errno = errno;
     // reset the entry

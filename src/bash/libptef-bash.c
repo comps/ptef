@@ -93,9 +93,16 @@ static int report_main(WORD_LIST *arglist)
         goto err;
     }
 
-    int ret = ptef_report(status->word->word, testname->word->word,
-                          colormap, flags);
-    free(colormap);
+    int ret;
+    if (colormap) {
+        char *(*orig_colormap)[2] = ptef_status_colors;
+        ptef_status_colors = colormap;
+        ret = ptef_report(status->word->word, testname->word->word, flags);
+        ptef_status_colors = orig_colormap;
+        free(colormap);
+    } else {
+        ret = ptef_report(status->word->word, testname->word->word, flags);
+    }
     if (ret == -1 &&
             flags & PTEF_NOWAIT && ~flags & PTEF_NOLOCK && errno == EAGAIN)
         return 2;

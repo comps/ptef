@@ -89,7 +89,9 @@ int main(int argc, char **argv)
         goto err;
     }
 
-    int ret = ptef_report(argv[0], argv[1], colormap, flags);
+    if (colormap)
+        ptef_status_colors = colormap;
+    int ret = ptef_report(argv[0], argv[1], flags);
     free(colormap);
     if (ret == -1 &&
             flags & PTEF_NOWAIT && ~flags & PTEF_NOLOCK && errno == EAGAIN)

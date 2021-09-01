@@ -32,7 +32,8 @@ def runner(argv: list = None, default_basename: str = None, jobs: int = 0,
         errno = ctypes.get_errno()
         raise OSError(errno, os.strerror(errno), None)
 
-def _dict_to_2d_array(src: dict):
+_custom_status_colors = None
+def set_status_colors(src: dict):
     pairs = [
         (
             ctypes.c_char_p(x.encode('utf-8')),
@@ -41,17 +42,15 @@ def _dict_to_2d_array(src: dict):
     ]
     pairs.append((ctypes.c_char_p(None),ctypes.c_char_p(None))) # NULL-terminate
     # ((ctypes.c_char_p * 2) * 5) , a char[5][2] data type
-    return ((ctypes.c_char_p * 2) * len(pairs))(*pairs)
+    char_n_2_type = (ctypes.c_char_p * 2) * len(pairs)
+    global _custom_status_colors
+    _custom_status_colors = char_n_2_type(*pairs)
+    current_map = ctypes.POINTER(char_n_2_type).in_dll(libptef, 'ptef_status_colors')
+    current_map.contents = _custom_status_colors
 
-def report(status: str, testname: str, colors: dict = None,
-           flags: int = 0) -> None:
-    if colors is None:
-        colors_array = ctypes.c_char_p(None)
-    else:
-        colors_array = _dict_to_2d_array(colors)
+def report(status: str, testname: str, flags: int = 0) -> None:
     rc = libptef.ptef_report(ctypes.c_char_p(status.encode('utf-8')),
                              ctypes.c_char_p(testname.encode('utf-8')),
-                             colors_array,
                              ctypes.c_int(flags))
     if rc == -1:
         errno = ctypes.get_errno()

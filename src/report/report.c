@@ -125,12 +125,14 @@ static char *default_colors[][2] = {
     { NULL }
 };
 
+__thread char *(*ptef_status_colors)[2] = default_colors;
+
 // don't use STDOUT_FILENO as the standard specifies numbers
 #define TERMINAL_FD 1
 
 __asm__(".symver ptef_report_v0, ptef_report@@VERS_0.7");
 __attribute__((used))
-int ptef_report_v0(char *status, char *testname, char *colors[][2], int flags)
+int ptef_report_v0(char *status, char *testname, int flags)
 {
     int orig_errno = errno;
 
@@ -149,11 +151,9 @@ int ptef_report_v0(char *status, char *testname, char *colors[][2], int flags)
     }
 
     if (use_color) {
-        if (!colors)
-            colors = default_colors;
-        for (unsigned long i = 0; colors[i][0] != NULL; i++) {
-            if (strcmp(colors[i][0], status)==0) {
-                status_pretty = colors[i][1];
+        for (unsigned long i = 0; ptef_status_colors[i][0] != NULL; i++) {
+            if (strcmp(ptef_status_colors[i][0], status)==0) {
+                status_pretty = ptef_status_colors[i][1];
                 break;
             }
         }
