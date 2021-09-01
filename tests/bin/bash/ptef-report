@@ -1,4 +1,12 @@
 #!/bin/bash
 LIBPTEF_BASH="$TEST_BINDIR/bash/libptef-bash.so"
 . "$TEST_BINDIR/bash/builtins.sh"
+
+colors=()
+while [ "$1" = "-c" ]; do
+	colors+=("$2")
+	shift 2
+done
+[ "${#colors[@]}" -gt 0 ] && ptef_set_status_colors "${colors[@]}"
+
 ptef_report "$@"

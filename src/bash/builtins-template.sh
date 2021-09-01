@@ -18,6 +18,7 @@ LIBPTEF_BASH="${LIBPTEF_BASH:-TEMPLATE_LIBDIR/libptef-bash.so}"
 [ "${LIBPTEF_BASH::1}" != "/" ] && LIBPTEF_BASH="$PWD/$LIBPTEF_BASH"
 
 enable -f "$LIBPTEF_BASH" \
+	ptef_set_status_colors \
 	ptef_report \
 	ptef_mklog
 

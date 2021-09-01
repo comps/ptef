@@ -33,18 +33,67 @@ extern void *xrealloc();
 // report
 //
 
+// track *our* allocations separately, so we don't free() the original
+// static array
+static int custom_colors_used = 0;
+
+static int set_status_colors_main(WORD_LIST *arglist)
+{
+    char *(*colormap)[2] = NULL;
+    int colorcnt = 0;
+
+    while (arglist) {
+        char *arg = savestring(arglist->word->word);
+        char *delim = strchr(arg, ' ');
+        if (!delim) {
+            builtin_error("argument has no space");
+            free(arg);
+            goto err;
+        }
+
+        colorcnt++;
+        colormap = xrealloc(colormap, colorcnt*sizeof(char*[1][2]));
+        *delim = '\0';
+        colormap[colorcnt-1][0] = arg;
+        colormap[colorcnt-1][1] = delim+1;  // worst case, it is '\0'
+
+        arglist = arglist->next;
+    }
+
+    if (!colormap) {
+        builtin_usage();
+        goto err;
+    }
+
+    colorcnt++;
+    colormap = xrealloc(colormap, colorcnt*sizeof(char*[1][2]));
+    colormap[colorcnt-1][0] = colormap[colorcnt-1][1] = NULL;
+
+    if (custom_colors_used) {
+        for (int i = 0; ptef_status_colors[i][0] != NULL; i++)
+            free(ptef_status_colors[i][0]);
+        free(ptef_status_colors);
+    }
+    ptef_status_colors = colormap;
+    custom_colors_used = 1;
+
+    return 0;
+
+err:
+    while (colorcnt--)
+        free(colormap[colorcnt][0]);
+    free(colormap);
+    return 1;
+}
+
 static int report_main(WORD_LIST *arglist)
 {
     int flags = 0;
 
-    char *(*colormap)[2] = NULL;
-    int colorcnt = 0;
-    char *delim;
-
     reset_internal_getopt();
 
     int c;
-    while ((c = internal_getopt(arglist, "Nnrc:h")) != -1) {
+    while ((c = internal_getopt(arglist, "Nnrh")) != -1) {
         switch (c) {
             case 'N':
                 flags |= PTEF_NOLOCK;
@@ -55,25 +104,12 @@ static int report_main(WORD_LIST *arglist)
             case 'r':
                 flags |= PTEF_RAWNAME;
                 break;
-            case 'c':
-                delim = strchr(list_optarg, ' ');
-                if (!delim) {
-                    builtin_error("-c MAP has no space");
-                    goto err;
-                }
-                colorcnt++;
-                colormap = xrealloc(colormap, colorcnt*sizeof(char*[1][2]));
-                *delim = '\0';
-                colormap[colorcnt-1][0] = list_optarg;
-                colormap[colorcnt-1][1] = delim+1;  // worst case, it is '\0'
-                break;
             case GETOPT_HELP:
                 builtin_usage();
-                free(colormap);
                 return 0;
             default:
                 builtin_usage();
-                goto err;
+                return 1;
         }
     }
     arglist = loptend;
@@ -81,37 +117,24 @@ static int report_main(WORD_LIST *arglist)
     WORD_LIST *status = arglist;
     if (!status) {
         builtin_error("not enough arguments");
-        goto err;
+        return 1;
     }
     WORD_LIST *testname = status->next;
     if (!testname) {
         builtin_error("not enough arguments");
-        goto err;
+        return 1;
     }
     if (testname->next) {
         builtin_error("too many arguments");
-        goto err;
+        return 1;
     }
 
-    int ret;
-    if (colormap) {
-        char *(*orig_colormap)[2] = ptef_status_colors;
-        ptef_status_colors = colormap;
-        ret = ptef_report(status->word->word, testname->word->word, flags);
-        ptef_status_colors = orig_colormap;
-        free(colormap);
-    } else {
-        ret = ptef_report(status->word->word, testname->word->word, flags);
-    }
+    int ret = ptef_report(status->word->word, testname->word->word, flags);
     if (ret == -1 &&
             flags & PTEF_NOWAIT && ~flags & PTEF_NOLOCK && errno == EAGAIN)
         return 2;
     else
         return !!ret;
-
-err:
-    free(colormap);
-    return 1;
 }
 
 //
@@ -201,19 +224,38 @@ static int mklog_main(WORD_LIST *arglist)
 //
 // builtin boilerplate
 //
+static char *set_status_colors_help[] = {
+    "Sets a custom status color map for the ptef_report builting.",
+    "",
+    "A color map is a set of arguments, each with a \"STATUS NEWSTATUS\" pair,",
+    "rewriting STATUS to NEWSTATUS (which can contain color escape sequences or",
+    "additional trailing spaces for alignment with longer statuses).",
+    "",
+    "For example (2 arguments passed):",
+    "    $'FAIL \\e[1;41mFAIL\\e[0m ' $'WAIVE \\e[1;33mWAIVE\\e[0m'",
+    NULL
+};
 static char *report_help[] = {
-    "Reports STATUS for a test named TESTNAME, prepending PTEF_PREFIX",
-    "to the TESTNAME, copying the report to PTEF_RESULTS_FD if defined.",
+    "Reports STATUS for a given TESTNAME, prepending PTEF_PREFIX to the TESTNAME,"
+    "copying the report to PTEF_RESULTS_FD if defined.",
     "Outputs color if stdout is connected to a terminal.",
     NULL
 };
 static char *mklog_help[] = {
-    "Creates and opens a log storage for a given TESTNAME,",
-    "binds its file descriptor number to a variable named VARNAME.",
+    "Creates and opens a log storage for a given TESTNAME, relaying stdin to",
+    "the log storage until EOF is encountered.",
     NULL
 };
 // must be named <name>_struct
 // name, function, flags, log_doc, short_doc, handle (unused)
+struct builtin ptef_set_status_colors_struct = {
+    "ptef_set_status_colors",
+    set_status_colors_main,
+    BUILTIN_ENABLED,
+    set_status_colors_help,
+    "ptef_set_status_colors \"STATUS NEWSTATUS\" ...",
+    NULL
+};
 struct builtin ptef_report_struct = {
     "ptef_report",
     report_main,
