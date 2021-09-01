@@ -26,10 +26,16 @@
 
 - examples/ dir - requires ptef installed on the system
   - simple symlinks example
-    - simple 'run' symlinks
-    - custom mini wrapper in utils/ symlinked in other dirs
-      - TODO: make up some reason why
+    - simple 'run' symlinks + trivial standalone tests
+    - shared test lib in utils/ sourced by bash tests
+      - ie. function for checking service status
+  - custom mini wrapper in utils/ symlinked in other dirs that would
+    run all tests via 'time', measuring their time, logging it to some
+    single file along with test name; see also bash TIMEFORMAT
+  - more complex example with one executable checking multiple services
+    and reporting each via ptef_report
   - ...
+  - subshell spawned as background job using ptef_report MARK $(date)
 
 ----
 

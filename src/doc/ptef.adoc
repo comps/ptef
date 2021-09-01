@@ -615,3 +615,29 @@ filtering the list, and splitting it into cmdline-sized argument lists passed
 (via `xargs(1)`) to the runner. +
 Since all arguments will always be without a `/`, no arguments are passed to
 executables and no argument merging occurs.
+
+=== The lack of elapsed time tracking in results
+
+Some test result formats (jUnit, xUnit, NUnit, etc.) track how long a test
+spent executing (duration) or it start/end timestamps. While it would be
+possible to have a 3rd column in the PTEF result line, it would be a red
+herring.
+
+Duration is just one of many parameters one might want to track for a test,
+memory usage might be another, CPU time, number of syscalls or even network
+data sent/received, etc. Therefore, PTEF leaves this up to the user to implement
+ie. via runner wrappers.
+
+This can be done re-using the PTEF result format, encoding the metadata as
+a part of the test name - either by following the standard format (prepending
+prefix) or by creating an incompatible one (inserting one or more columns
+between status and test name).
+
+Another approach might be logging this separately, ie. in a CSV file, and
+processing the performance results (checking for deviations) separately.
+
+Yet another approach is to not measure duration of tests, but regularly report
+out timestamps using a custom status, serving both as keepalive entries
+as well as test duration estimates (when post-processed).
+
+All of these can be easily done in a top-level runner wrapper.
