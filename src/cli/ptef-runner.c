@@ -24,7 +24,6 @@ static void print_help(void)
             "  -a BASE  runner basename, overriding autodetection from basename(argv[0])\n"
             "  -A BASE  set and export PTEF_BASENAME, overriding even -a\n"
             "  -j NR    number of parallel jobs (tests)\n"
-            "  -k SECS  enable MARK status, emit it every SECS seconds\n"
             "  -i IGN   set PTEF_IGNORE_FILES to IGN, export it\n"
             "  -v       set PTEF_NOLOGS and export it\n"
             "  -r       set PTEF_RUN and export it\n"
@@ -39,11 +38,10 @@ int main(int argc, char **argv)
 {
     char *argv0 = NULL;
     int jobs = 1;
-    int mark = 0;
     int flags = 0;
 
     int c;
-    while ((c = getopt(argc, argv, "a:A:j:k:i:vrmh")) != -1) {
+    while ((c = getopt(argc, argv, "a:A:j:i:vrmh")) != -1) {
         switch (c) {
             case 'a':
                 argv0 = optarg;
@@ -59,13 +57,6 @@ int main(int argc, char **argv)
                 jobs = atoi(optarg);
                 if (jobs < 1) {
                     ERROR_FMT("invalid job cnt: %s\n", optarg);
-                    return 1;
-                }
-                break;
-            case 'k':
-                mark = atoi(optarg);
-                if (mark < 1) {
-                    ERROR_FMT("invalid mark interval: %s\n", optarg);
                     return 1;
                 }
                 break;
@@ -101,6 +92,5 @@ int main(int argc, char **argv)
     if (!argv0)
         argv0 = basename(argv[0]);
 
-    return !!ptef_runner(argc-optind, argv+optind,
-                         argv0, jobs, mark, flags);
+    return !!ptef_runner(argc-optind, argv+optind, argv0, jobs, flags);
 }

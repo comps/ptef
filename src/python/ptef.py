@@ -14,7 +14,7 @@ RAWNAME     = (1 << 2)
 NOROTATE    = (1 << 0)
 
 def runner(argv: list = None, default_basename: str = None, jobs: int = 0,
-           mark_interval: int = 0, flags: int = 0) -> None:
+           flags: int = 0) -> None:
     if argv is None:
         argv = []
     if default_basename is None:
@@ -26,7 +26,6 @@ def runner(argv: list = None, default_basename: str = None, jobs: int = 0,
                              (ctypes.c_char_p * argc)(*argv_bstrings),
                              ctypes.c_char_p(default_basename.encode('utf-8')),
                              ctypes.c_int(jobs),
-                             ctypes.c_int(mark_interval),
                              ctypes.c_int(flags))
     if rc == -1:
         errno = ctypes.get_errno()

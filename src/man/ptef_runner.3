@@ -10,7 +10,7 @@ ptef_runner \- implements a POSIX\-inspired Test Execution Framework runner
 .B  #include <ptef.h>
 .PP
 .BI "int ptef_runner(int " argc ", char **" argv ", char *" default_basename ", int " jobs ,
-.BI "                int " mark_interval ", int " flags );
+.BI "                int " flags );
 .fi
 .PP
 Link with \fI\-lptef\fP.
@@ -41,12 +41,6 @@ set to anything above 1 will make the runner execute files in parallel, with
 a maximum parallel processes equal to the
 .I jobs
 value. Set to 0 or 1 to run sequentially.
-.PP
-When
-.I mark_interval
-is set to a value above 0, the runner will emit a result with MARK status every
-.I mark_interval
-seconds. Pass 0 to disable this functionality.
 .PP
 .I flags
 provide a way to further parametrize the runner execution:
@@ -95,17 +89,6 @@ to skip foreign PIDs, it has no control over which one it gets from the kernel
 via
 .BR waitpid (2)
 so it may accidentally consume a child created by another thread
-.IP \[bu]
-the use of
-.BR setitimer (2)
-and SIGALRM for periodic MARK status result printouts
-.RS
-.IP \[bu] 2
-(other threads would have to have SIGALRM blocked via
-.BR sigprocmask (2)
-or via
-.BR pthread_sigmask (3))
-.RE
 .IP \[bu]
 the use of
 .BR strerror (3)

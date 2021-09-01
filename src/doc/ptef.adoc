@@ -379,33 +379,6 @@ when running with arguments.
 A runner may choose to implement any of these features. If it does, it must
 follow the specification of each feature it implements, as described below.
 
-[[mark-status]]
-=== Keep-alive reported results (the `MARK` status)
-
-When requested by a user, a runner must regularly output a result line with
-a `MARK` status, in user-specified intervals. The _test name_ of this line
-must be an ISO 8601 formatted timestamp containing at least a year, a month,
-a day, an hour, a minute and a second.
-
-[NOTE]
---
-It is expected that the user will instruct only the root-level runner (top of
-a hierarchy) to produce `MARK` status lines, as a simple form of "keep alive"
-messages, potentially for an external logic.
---
-
-[NOTE]
---
-For example
-
-----
-MARK 1970-04-07T08:10:20
-MARK 1970-04-07T08:10:20+01:00
-MARK 1970-04-07T04:10:20,909601272-0300
-MARK 1970-04-07T07:10:20Z
-----
---
-
 [[parallel-execution]]
 === Parallel execution of executables
 

@@ -115,13 +115,11 @@ static char *format_line(char *status, char *name, size_t *len, int flags)
 #define CLGREEN "\e[1;32m"
 #define CLRED   "\e[1;31m"
 #define CLBLUE  "\e[1;34m"
-#define CLGRAY  "\e[1;90m"
 #define CLRESET "\e[0m"
 static char *default_colors[][2] = {
     { "PASS", CLGREEN "PASS" CLRESET },
     { "FAIL", CLRED "FAIL" CLRESET },
     { "RUN", CLBLUE "RUN" CLRESET " " },
-    { "MARK", CLGRAY "MARK" CLRESET },
     { NULL }
 };
 
