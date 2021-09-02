@@ -89,8 +89,14 @@ int main(int argc, char **argv)
         }
     }
 
-    if (!argv0)
-        argv0 = basename(argv[0]);
+    // shift argv[0] before the remaining arguments,
+    // adjust argc/argv to appear as if there was no getopt()
+    argv[optind-1] = argv[0];
+    argc -= optind-1;
+    argv += optind-1;
 
-    return !!ptef_runner(argc-optind, argv+optind, argv0, jobs, flags);
+    if (argv0)
+        argv[0] = argv0;
+
+    return !!ptef_runner(argc, argv, jobs, flags);
 }

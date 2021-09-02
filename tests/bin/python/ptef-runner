@@ -17,9 +17,12 @@ parser.add_argument('rest', nargs=argparse.REMAINDER)
 args = parser.parse_args()
 if len(args.rest) > 0 and args.rest[0] == '--':
     args.rest.pop(0)
+args.rest.insert(0, sys.argv[0])
 if args.A:
     os.environ['PTEF_BASENAME'] = args.A
     args.a = args.A
+if args.a:
+    args.rest[0] = args.a
 if args.i:
     os.environ['PTEF_IGNORE_FILES'] = args.i
 if args.v:
@@ -30,4 +33,4 @@ flags = 0
 if args.m:
     flags |= ptef.NOMERGE
 
-ptef.runner(argv=args.rest, default_basename=args.a, jobs=args.j, flags=flags)
+ptef.runner(argv=args.rest, jobs=args.j, flags=flags)

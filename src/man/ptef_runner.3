@@ -9,8 +9,7 @@ ptef_runner \- implements a POSIX\-inspired Test Execution Framework runner
 .nf
 .B  #include <ptef.h>
 .PP
-.BI "int ptef_runner(int " argc ", char **" argv ", char *" default_basename ", int " jobs ,
-.BI "                int " flags );
+.BI "int ptef_runner(int " argc ", char **" argv ", int " jobs ", int " flags );
 .fi
 .PP
 Link with \fI\-lptef\fP.
@@ -24,17 +23,11 @@ It takes arguments via
 .I argc
 and 
 .I argv
-as they would be passed on a command line. Unlike a typical
+as they would be passed on a command line to a
 .BR main (),
-argv[0] is just one of the arguments, it has no special meaning. If
-.I argc
-is 0, the runner behaves as if run without arguments.
-.PP
-.I default_basename
-then specifies a fallback if PTEF_BASENAME is undefined. To comply with the
-PTEF specification, pass a
+including argv[0] indicating the path used to start up the program, used for
 .BR basename (argv[0])
-of the calling program.
+detection, as outlined in the PTEF specification.
 .PP
 .I jobs
 set to anything above 1 will make the runner execute files in parallel, with

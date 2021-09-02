@@ -37,6 +37,9 @@
   - ...
   - subshell spawned as background job using ptef_report MARK $(date)
 
+- add -DPOSIX.. to the mandatory part of CFLAGS
+  - put the optional part into common.mk, it's probably shared by all
+
 ----
 
 - look for EINTR of every syscall used, make an INTR-safe wrapper

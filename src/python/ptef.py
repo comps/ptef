@@ -13,18 +13,17 @@ RAWNAME     = (1 << 2)
 # mklog flags
 NOROTATE    = (1 << 0)
 
-def runner(argv: list = None, default_basename: str = None, jobs: int = 0,
-           flags: int = 0) -> None:
+def runner(argv: list = None, jobs: int = 0, flags: int = 0) -> None:
+    """
+    TODO: mention that argv must contain the real argv[0], eg. program name
+    """
     if argv is None:
-        argv = []
-    if default_basename is None:
-        default_basename = os.path.basename(sys.argv[0])
+        argv = [sys.argv[0]]
     argc = len(argv)
     argv_bstrings = (x.encode('utf-8') for x in argv)
     ctypes.set_errno(0)
     rc = libptef.ptef_runner(ctypes.c_int(argc),
                              (ctypes.c_char_p * argc)(*argv_bstrings),
-                             ctypes.c_char_p(default_basename.encode('utf-8')),
                              ctypes.c_int(jobs),
                              ctypes.c_int(flags))
     if rc == -1:

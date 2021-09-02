@@ -19,7 +19,7 @@ else
 all: ptef.html
 
 ptef.html: ptef.adoc
-	asciidoctor -w -d article -o $@ $<
+	asciidoctor -d article -o $@ $<
 
 install:
 	install -d "$(DESTDIR)$(docdir)/ptef"
