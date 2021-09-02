@@ -3,7 +3,7 @@ include ../common.mk
 .PHONY: all install clean
 all: libptef.so
 
-CFLAGS ?= -O2 -flto -Wall -Wextra -Werror -g -D_POSIX_C_SOURCE=200809
+CFLAGS += -D_POSIX_C_SOURCE=200809
 
 # GNU LD
 libptef.so.0: ../helpers/*.o ../runner/*.o ../report/*.o ../mklog/*.o

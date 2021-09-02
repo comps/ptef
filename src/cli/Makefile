@@ -3,8 +3,7 @@ include ../common.mk
 .PHONY: all install clean
 all: ptef-runner ptef-report ptef-mklog
 
-CFLAGS ?= -O2 -flto -Wall -Wextra -Werror -g -D_POSIX_C_SOURCE=200809
-CFLAGS += -I../include -I../helpers -L../lib
+CFLAGS += -I../include -I../helpers -L../lib -D_POSIX_C_SOURCE=200809
 
 ptef-runner.o: ptef-runner.c
 ptef-report.o: ptef-report.c
