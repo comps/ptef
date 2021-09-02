@@ -1,0 +1,94 @@
+.\" syntax documented on (search on page):
+.\" https://www.gnu.org/software/groff/manual/groff.html
+.TH PTEF_REPORT 3
+
+.SH NAME
+ptef_report \- provides result-reporting functionality of the PTEF spec
+
+.SH SYNOPSIS
+.nf
+.B  #include <ptef.h>
+.PP
+.BI "int ptef_report(char *" status ", char *" testname ", int " flags );
+.PP
+.BR "extern __thread char *(*" ptef_status_colors ")[2];"
+.fi
+.PP
+Link with \fI\-lptef\fP.
+
+.SH DESCRIPTION
+.BR ptef_report ()
+implements the ABI of the results-reporting functionality described by the
+POSIX\-inspired Test Execution Framework (PTEF) specification.
+.PP
+It takes
+.I status
+and 
+.IR testname ,
+transforming them into result lines, and outputting them to standard output
+and (optionally) an
+.B PTEF_RESULTS_FD
+open file descriptor, as outlined in the PTEF specification.
+.PP
+.I flags
+then provide a way to further parametrize the reporting:
+.TP
+.BR PTEF_NOLOCK
+Do not lock outputs when writing results. Useful if you can guarantee that
+any result reporting is done sequentially.
+.TP
+.BR PTEF_NOWAIT
+Attempt to lock outputs, but do not wait if there is an active lock.
+In such a case, \-1 is returned and
+.I errno
+is set to
+.BR EAGAIN .
+.TP
+.BR PTEF_RAWNAME
+Output
+.I testname
+verbatim, without prepending
+.BR PTEF_PREFIX .
+Useful for implementing custom statuses with custom metadata in place of
+a test name.
+.PP
+The
+.I ptef_status_colors
+variable points to a default set of colors to be used for PTEF result line
+statuses. Override the color set by making
+.I ptef_status_colors
+point to your own char *colors[][2] array, where the first column is status
+to be matched on, and the second column is the status it should be rewritten
+to (may include ASCII color codes, spaces for alignment, etc.).
+The array must be terminated with
+.I NULL
+in both columns on the same row.
+
+.SH RETURN VALUE
+On success,
+.BR ptef_report ()
+returns 0. On failure, \-1 is returned, and
+.I errno
+is set to indicate the error.
+.PP
+Additionally,
+.BR ptef_report ()
+writes details about the failure to standard error output.
+
+.SH NOTES
+.BR ptef_runner ()
+is thread-safe during successful operation, but it outputs errors to standard
+error output without locking and using
+.BR strerror (3)
+which is not thread-safe as it may use a global table of error descriptions,
+which may be altered during runtime by another thread changing locale.
+
+.SH SEE ALSO
+.ad l
+.nh
+.BR ptef_runner (3),
+.BR ptef_mklog (3)
+
+.SH COLOPHON
+This page is part of the PTEF project, see
+\%https://github.com/comps/ptef/

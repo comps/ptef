@@ -1,0 +1,67 @@
+.\" syntax documented on (search on page):
+.\" https://www.gnu.org/software/groff/manual/groff.html
+.TH PTEF_MKLOG 3
+
+.SH NAME
+ptef_mklog \- provides logging functionality of the PTEF spec
+
+.SH SYNOPSIS
+.nf
+.B  #include <ptef.h>
+.PP
+.BI "int ptef_mklog(char *" testname ", int " flags );
+.fi
+.PP
+Link with \fI\-lptef\fP.
+
+.SH DESCRIPTION
+.BR ptef_mklog ()
+implements the ABI of the logging functionality described by the
+POSIX\-inspired Test Execution Framework (PTEF) specification.
+.PP
+It creates a log file inside one of the subdirectories described by
+the PTEF spec (in the current working directory or in
+.BR PTEF_LOGS ,
+performing
+.BR mkdir (3)
+as necessary), opens the log file for writing, and passes the open file
+descriptor to the caller.
+.PP
+The log file name is based on
+.IR testname .
+.PP
+.I flags
+then further fine-tune the behavior:
+.TP
+.BR PTEF_NOROTATE
+Do not rotate old log files, truncate any existing log file instead.
+
+.SH RETURN VALUE
+On success,
+.BR ptef_mklog ()
+returns an open file descriptor to a valid log file. On failure, \-1 is
+returned, and
+.I errno
+is set to indicate the error.
+.PP
+Additionally,
+.BR ptef_mklog ()
+writes details about the failure to standard error output.
+
+.SH NOTES
+.BR ptef_mklog ()
+is thread-safe during successful operation, but it outputs errors to standard
+error output without locking and using
+.BR strerror (3)
+which is not thread-safe as it may use a global table of error descriptions,
+which may be altered during runtime by another thread changing locale.
+
+.SH SEE ALSO
+.ad l
+.nh
+.BR ptef_runner (3),
+.BR ptef_report (3)
+
+.SH COLOPHON
+This page is part of the PTEF project, see
+\%https://github.com/comps/ptef/

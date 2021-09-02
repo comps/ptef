@@ -1,4 +1,3 @@
-- document thread-safety for all 3 API functions
 
 - TODO: remove PTEF_IGNORE_FILES, turn it into runner -i arg
   - only for the current level
@@ -17,10 +16,7 @@
    - they should exit with non-zero
 - TODO: try running them with -h; they should exit with zero
 
-- add example showing how to post-process results
-  - see ospp-kickstart-test-suite
-
-- add python api documentation as """
+- add python api documentation as """ for all functions
 
 - resolve CFLAGS="-fanalyzer -O0 -g" warnings
 
@@ -34,7 +30,8 @@
     single file along with test name; see also bash TIMEFORMAT
   - more complex example with one executable checking multiple services
     and reporting each via ptef_report
-  - ...
+  - post-processing results via PTEF_RESULTS_FD pipe + waiving tool
+    - custom color map in the waiving tool
   - subshell spawned as background job using ptef_report MARK $(date)
 
 ----
