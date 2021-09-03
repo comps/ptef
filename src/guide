@@ -1,6 +1,4 @@
 
-- add python api documentation as """ for all functions
-
 - examples/ dir - requires ptef installed on the system
   - simple symlinks example
     - simple 'run' symlinks + trivial standalone tests
