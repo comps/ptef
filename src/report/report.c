@@ -127,8 +127,11 @@ int ptef_report_v0(char *status, char *testname, int flags)
 {
     int orig_errno = errno;
 
+    char *ptef_results_fd = NULL;
     int ptef_results_fd_fd = -1;
-    char *line = NULL;
+
+    char *line_stdout = NULL, *line_envvar = NULL;
+    size_t line_stdout_len, line_envvar_len;
 
     char *status_pretty = status;
 
@@ -150,48 +153,56 @@ int ptef_report_v0(char *status, char *testname, int flags)
         }
     }
 
-    // lock stdout / PTEF_RESULTS_FD
-    if (lock(TERMINAL_FD, flags) == -1)
+    // format line for stdout
+    line_stdout = format_line(status_pretty, testname, &line_stdout_len, flags);
+    if (!line_stdout)
         goto err;
-    char *ptef_results_fd = getenv_defined("PTEF_RESULTS_FD");
+
+    // format line for PTEF_RESULTS_FD
+    ptef_results_fd = getenv_defined("PTEF_RESULTS_FD");
     if (ptef_results_fd) {
+        if (status_pretty == status) {
+            // black&white line already formatted
+            line_envvar = line_stdout;
+            line_envvar_len = line_stdout_len;
+        } else {
+            // color used for stdout, format a new b&w line
+            line_envvar = format_line(status, testname, &line_envvar_len, flags);
+            if (!line_envvar)
+                goto err;
+        }
+
         ptef_results_fd_fd = atoi(ptef_results_fd);
         if (ptef_results_fd_fd == 0 && *ptef_results_fd != '0') {
             ERROR_FMT("atoi(%s) failed conversion", ptef_results_fd);
             goto err;
         }
+    }
+
+    // lock stdout / PTEF_RESULTS_FD
+    if (lock(TERMINAL_FD, flags) == -1)
+        goto err;
+    if (ptef_results_fd) {
         if (lock(ptef_results_fd_fd, flags) == -1)
             goto err;
     }
 
     // write to stdout
-    size_t len;
-    line = format_line(status_pretty, testname, &len, flags);
-    if (!line)
-        goto err;
-
-    if (write_safe(TERMINAL_FD, line, len) == -1)
+    if (write_safe(TERMINAL_FD, line_stdout, line_stdout_len) == -1)
         goto err;
 
     // duplicate write to PTEF_RESULTS_FD
     if (ptef_results_fd) {
-        if (status_pretty == status) {
-            // black'n'white line already formatted
-            if (write_safe(ptef_results_fd_fd, line, len) == -1)
-                goto err;
-        } else {
-            free(line);
-            line = format_line(status, testname, &len, flags);
-            if (!line)
-                goto err;
-            if (write_safe(ptef_results_fd_fd, line, len) == -1)
-                goto err;
-        }
+        if (write_safe(ptef_results_fd_fd, line_envvar, line_envvar_len) == -1)
+            goto err;
     }
 
     unlock(TERMINAL_FD);
-    unlock(ptef_results_fd_fd);
-    free(line);
+    if (ptef_results_fd)
+        unlock(ptef_results_fd_fd);
+    if (line_envvar != line_stdout)
+        free(line_envvar);
+    free(line_stdout);
     errno = orig_errno;
     return 0;
 
@@ -199,8 +210,11 @@ err:
     // preserve errno that got us here (to err) through unlock/free
     orig_errno = errno;
     unlock(TERMINAL_FD);
-    unlock(ptef_results_fd_fd);
-    free(line);
+    if (ptef_results_fd)
+        unlock(ptef_results_fd_fd);
+    if (line_envvar != line_stdout)
+        free(line_envvar);
+    free(line_stdout);
     errno = orig_errno;
     return -1;
 }

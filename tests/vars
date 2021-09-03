@@ -43,6 +43,19 @@ function ptef_results_fd {
 	assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/result_log"
 }
 
+# Test that it receives black&white output only, even if stdout gets
+# colors
+function ptef_results_fd_nocolor {
+	local colorpass=$'\e\[1;32mPASS\e\[0m'
+	mkfile > executable
+	chmod +x executable
+	exec {test_fd}>"$tmpdir/result_log"
+	TEST_WRAPPER=ttee PTEF_RESULTS_FD="$test_fd" \
+		assert_ptef_runner > "$tmpdir/runner_out"
+	assert_grep "^$colorpass[[:space:]]\+/executable$" "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/result_log"
+}
+
 # Test that PTEF_NOLOGS results in executable stderr not being redirected
 # and prevents logs from being created
 function ptef_nologs {
@@ -121,6 +134,7 @@ function ptef_color {
 + ptef_run
 + ptef_run_opt
 + ptef_results_fd
++ ptef_results_fd_nocolor
 + ptef_nologs
 + ptef_nologs_opt
 + ptef_color

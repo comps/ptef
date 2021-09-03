@@ -18,11 +18,11 @@
     - custom color map in the waiving tool
   - subshell spawned as background job using ptef_report MARK $(date)
 
+- test with PTEF_RESULTS_FD=123, where 123 is NOT an open fd
+
 ----
 
 - look for EINTR of every syscall used, make an INTR-safe wrapper
   for each one of them
   - alarm can interrupt anywhere
   - incl. waitpid in runner
-
-- clean up includes
