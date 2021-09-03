@@ -104,7 +104,6 @@ find_execs(struct exec_entry ***entries, char *basename)
             PERROR("realloc");
             goto err;
         }
-        entcnt++;
 
         struct exec_entry *ent;
         if ((ent = malloc(sizeof(*ent))) == NULL) {
@@ -114,10 +113,12 @@ find_execs(struct exec_entry ***entries, char *basename)
         strncpy(ent->name, dent->d_name, sizeof(ent->name));
         ent->type = enttype;
 
-        ents[entcnt-1] = ent;
+        ents[entcnt] = ent;
+        entcnt++;
     }
 
-    qsort(ents, entcnt, sizeof(*ents), exec_entry_sort_cmp);
+    if (ents)
+        qsort(ents, entcnt, sizeof(*ents), exec_entry_sort_cmp);
     closedir(cwd);
     *entries = ents;
     return entcnt;
