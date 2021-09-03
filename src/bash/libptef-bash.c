@@ -105,6 +105,7 @@ static int report_main(WORD_LIST *arglist)
                 flags |= PTEF_RAWNAME;
                 break;
             case GETOPT_HELP:
+            case 'h':
                 builtin_usage();
                 return 0;
             default:
@@ -185,6 +186,7 @@ static int mklog_main(WORD_LIST *arglist)
                 flags |= PTEF_NOROTATE;
                 break;
             case GETOPT_HELP:
+            case 'h':
                 builtin_usage();
                 return 0;
             default:

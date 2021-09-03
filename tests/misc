@@ -93,10 +93,43 @@ function run_before_pass {
 		"$tmpdir/runner_out"
 }
 
+# Test that all ptef-* CLIs support -h (for help)
+function cli_help {
+	local ret=0
+	ptef-runner -h >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
+	[ "$ret" -eq 0 ]
+	[ -s "$tmpdir/runner_err" ]
+	ret=0
+	ptef-report -h >"$tmpdir/report_out" 2>"$tmpdir/report_err" || ret=$?
+	[ "$ret" -eq 0 ]
+	[ -s "$tmpdir/report_err" ]
+	ret=0
+	ptef-mklog -h >"$tmpdir/mklog_out" 2>"$tmpdir/mklog_err" || ret=$?
+	[ "$ret" -eq 0 ]
+	[ -s "$tmpdir/mklog_err" ]
+}
+
+# Test that report/mklog without args exit with error (without segfault)
+function cli_noargs {
+	local ret=1
+	ptef-report >"$tmpdir/report_out" 2>"$tmpdir/report_err" || ret=$?
+	[ "$ret" -ne 0 ]
+	[ -s "$tmpdir/report_err" ]
+	ret=1
+	ptef-mklog >"$tmpdir/mklog_out" 2>"$tmpdir/mklog_err" || ret=$?
+	[ "$ret" -ne 0 ]
+	[ -s "$tmpdir/mklog_err" ]
+}
+
 
 + parallel_jobs
 + open_fds
 + run_before_pass
+case "$TEST_VARIANT" in	cli|valgrind)
+	+ cli_help
+	+ cli_noargs
+	;;
+esac
 
 
 run_tests "$@"

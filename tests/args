@@ -88,6 +88,7 @@ function invalid_arg {
 	assert_grep 'arg failed sanity check: \.$' "$tmpdir/runner_err"
 	assert_nogrep '' "$tmpdir/runner_out"
 	[ "$ret" -ne 0 ]
+	ret=0
 	ptef-runner "$@" '..' >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
 	assert_grep 'arg failed sanity check: \.\.$' "$tmpdir/runner_err"
 	assert_nogrep '' "$tmpdir/runner_out"

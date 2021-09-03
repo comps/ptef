@@ -1,13 +1,5 @@
 
-
-- TODO: try running ptef-report and ptef-mklog without any args
-   - verify they show help msg without segfault
-   - they should exit with non-zero
-- TODO: try running them with -h; they should exit with zero
-
 - add python api documentation as """ for all functions
-
-- resolve CFLAGS="-fanalyzer -O0 -g" warnings
 
 - examples/ dir - requires ptef installed on the system
   - simple symlinks example
