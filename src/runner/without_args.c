@@ -13,45 +13,6 @@
 
 #include "common.h"
 
-// transform sep-separated string into malloc'd char**
-char **str_to_array(char *input, char sep)
-{
-    // str len and separator cnt
-    size_t len = 0, cnt = 0;
-    char *tmp;
-    for (tmp = input; *tmp != '\0'; tmp++) {
-        len++;
-        if (*tmp == sep)
-            cnt++;
-    }
-    cnt++;  // last array member after last sep
-
-    // allocate cnt*sizeof(char**) for the array
-    // plus 1x sizeof(char**) for a terminating NULL
-    // plus len*sizeof(char) for a copy of input (we'll be modifying it)
-    // plus 1x sizeof(char) for a terminating '\0' of the string
-
-    char **arr;
-    if ((arr = malloc((cnt+1)*sizeof(char**) + len+1)) == NULL) {
-        PERROR("malloc");
-        return NULL;
-    }
-
-    tmp = ((char *)arr) + (cnt+1)*sizeof(char**);
-    memcpy(tmp, input, len+1);  // incl. '\0'
-
-    size_t i;
-    for (i = 0; i+1 < cnt; i++) {  // i+1 to avoid last member
-        arr[i] = tmp;
-        for (; *tmp != sep; tmp++);
-        *tmp++ = '\0';
-    }
-    arr[i++] = tmp;  // last member
-    arr[i] = NULL;
-
-    return arr;
-}
-
 // used to wrap enum exec_entry_type into an dirent-like
 // structure, for convenience
 struct exec_entry {
@@ -84,7 +45,7 @@ static bool is_exec(int parentfd, char *name)
 }
 
 static int
-find_execs(struct exec_entry ***entries, char *basename, char **ignored)
+find_execs(struct exec_entry ***entries, char *basename)
 {
     DIR *cwd = NULL;
     if ((cwd = opendir(".")) == NULL) {
@@ -105,17 +66,6 @@ find_execs(struct exec_entry ***entries, char *basename, char **ignored)
         // skip current executable
         if (strcmp(dent->d_name, basename) == 0)
             continue;
-
-        // skip user-ignored names
-        if (ignored) {
-            int i;
-            for (i = 0; ignored[i] != NULL; i++) {
-                if (strcmp(dent->d_name, ignored[i]) == 0)
-                    break;
-            }
-            if (ignored[i] != NULL)
-                continue;
-        }
 
         enum exec_entry_type enttype;
 
@@ -189,15 +139,9 @@ int for_each_exec(char *basename, int jobs)
     }
 
     struct exec_entry **ents = NULL;
-    char **ignored = NULL;
     int i = 0, cnt = 0;
 
-    char *ignore_files = getenv_defined("PTEF_IGNORE_FILES");
-    if (ignore_files)
-        if ((ignored = str_to_array(ignore_files, '\n')) == NULL)
-            goto err;
-
-    cnt = find_execs(&ents, basename, ignored);
+    cnt = find_execs(&ents, basename);
     if (cnt == -1)
         goto err;
 
@@ -209,14 +153,12 @@ int for_each_exec(char *basename, int jobs)
     }
 
     free(ents);
-    free(ignored);
     return destroy_exec_state(state);
 
 err:
     for (; i < cnt; i++)
         free(ents[i]);
     free(ents);
-    free(ignored);
     destroy_exec_state(state);
     return -1;
 }

@@ -117,38 +117,6 @@ function ptef_color {
 	assert_contents "$colorpass"$'[\t ]*/testname' "$tmpdir/report_out"
 }
 
-# Test that PTEF_IGNORE_FILES skips newline-separated executable names
-function ptef_ignore_files {
-	mkfile > exec1
-	mkfile > exec2
-	chmod +x exec1 exec2
-	PTEF_IGNORE_FILES=exec1 assert_ptef_runner > "$tmpdir/runner_out"
-	assert_nogrep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
-	assert_grep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
-	PTEF_IGNORE_FILES=$'exec1\nexec2' assert_ptef_runner > "$tmpdir/runner_out"
-	assert_nogrep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
-	assert_nogrep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
-	# try with leading/trailing empty arg
-	PTEF_IGNORE_FILES=$'\nexec1\nexec2' assert_ptef_runner > "$tmpdir/runner_out"
-	assert_nogrep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
-	assert_nogrep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
-	PTEF_IGNORE_FILES=$'exec1\nexec2\n' assert_ptef_runner > "$tmpdir/runner_out"
-	assert_nogrep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
-	assert_nogrep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
-}
-
-# Test that cli -i option exports PTEF_IGNORE_FILES and the runner honors it
-function ptef_ignore_files_opt {
-	make_var_printer PTEF_IGNORE_FILES > exec1
-	mkfile > exec2
-	chmod +x exec1 exec2
-	assert_ptef_runner -i exec2 > "$tmpdir/runner_out"
-	assert_contents 'exec2' exec_log
-	assert_grep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
-	assert_nogrep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
-	assert_grep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
-}
-
 
 + ptef_run
 + ptef_run_opt
@@ -156,8 +124,6 @@ function ptef_ignore_files_opt {
 + ptef_nologs
 + ptef_nologs_opt
 + ptef_color
-+ ptef_ignore_files
-+ ptef_ignore_files_opt
 
 
 run_tests "$@"

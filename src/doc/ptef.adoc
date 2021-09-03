@@ -352,26 +352,6 @@ configured to print verbose output on stderr, such as `set -x` for bash scripts.
 The runner may still create log directories and even log files for test names
 as if it was about to redirect the output.
 
-[[ptef-ignore-files]]
-=== Skipping additional files during CWD search (`PTEF_IGNORE_FILES`)
-
-If the `PTEF_IGNORE_FILES` environment variable is set and non-empty, it
-specifies additional newline-separated file names that must be skipped
-by the runner when searching CWD for executables.
-
-[NOTE]
---
-For example setting it to `exec1\nexec2` (where `\n` is ASCII `0x0a`) will
-prevent any runner on any hierarchy level below the current one from running
-either `exec1` or `exec2`, even if those files are executable.
-
-This may be useful for integrating with build systems and other recursive
-non-PTEF runners that have executables with known names present on multiple
-levels of a hierarchy.
---
-
-The variable is only valid when running without arguments and must be ignored
-when running with arguments.
 
 [[additional-extensions]]
 == Additional extensions

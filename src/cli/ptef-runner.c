@@ -24,7 +24,6 @@ static void print_help(void)
             "  -a BASE  runner basename, overriding autodetection from basename(argv[0])\n"
             "  -A BASE  set and export PTEF_BASENAME, overriding even -a\n"
             "  -j NR    number of parallel jobs (tests)\n"
-            "  -i IGN   set PTEF_IGNORE_FILES to IGN, export it\n"
             "  -v       set PTEF_NOLOGS and export it\n"
             "  -r       set PTEF_RUN and export it\n"
             "  -m       don't merge arguments of subrunners (always pass 1 arg)\n"
@@ -41,7 +40,7 @@ int main(int argc, char **argv)
     int flags = 0;
 
     int c;
-    while ((c = getopt(argc, argv, "a:A:j:i:vrmh")) != -1) {
+    while ((c = getopt(argc, argv, "a:A:j:vrmh")) != -1) {
         switch (c) {
             case 'a':
                 argv0 = optarg;
@@ -57,12 +56,6 @@ int main(int argc, char **argv)
                 jobs = atoi(optarg);
                 if (jobs < 1) {
                     ERROR_FMT("invalid job cnt: %s\n", optarg);
-                    return 1;
-                }
-                break;
-            case 'i':
-                if (setenv("PTEF_IGNORE_FILES", optarg, 1) == -1) {
-                    PERROR("setenv");
                     return 1;
                 }
                 break;

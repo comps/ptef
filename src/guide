@@ -1,15 +1,4 @@
 
-- TODO: remove PTEF_IGNORE_FILES, turn it into runner -i arg
-  - only for the current level
-  - change ptef_runner() arg to be char **ignore, NULL-terminated
-    - do newline-to-char** conversion in the CLI ptef-runner.c
-    - have native list [] interface in ptef.py
-    - don't care about bash, it uses CLI runner
-  - add an example under examples/ showing off how to 'find .' a custom list
-    of executables and pass it via xargs to ptef-runner
-    - use 'xargs -a $tmpfile' to preserve stdin
-    - sort it alphabetically, but in reverse, to show the posibilities,
-      also include hidden executables, also skip some exec name
 
 - TODO: try running ptef-report and ptef-mklog without any args
    - verify they show help msg without segfault
@@ -30,6 +19,11 @@
     single file along with test name; see also bash TIMEFORMAT
   - more complex example with one executable checking multiple services
     and reporting each via ptef_report
+  - add an example under examples/ showing off how to 'find .' a custom list
+    of executables and pass it via xargs to ptef-runner
+    - use 'xargs -a $tmpfile' to preserve stdin
+    - sort it alphabetically, but in reverse, to show the posibilities,
+      also include hidden executables, also skip some exec name
   - post-processing results via PTEF_RESULTS_FD pipe + waiving tool
     - custom color map in the waiving tool
   - subshell spawned as background job using ptef_report MARK $(date)

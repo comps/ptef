@@ -98,6 +98,4 @@ PASS /vars/ptef_results_fd
 PASS /vars/ptef_nologs
 PASS /vars/ptef_nologs_opt
 PASS /vars/ptef_color
-PASS /vars/ptef_ignore_files
-PASS /vars/ptef_ignore_files_opt
 PASS /vars
