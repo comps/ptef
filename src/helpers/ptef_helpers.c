@@ -67,6 +67,16 @@ ssize_t write_safe(int fd, const void *buf, size_t count)
     return written;
 }
 
+int close_safe(int fd)
+{
+    int ret;
+    while ((ret = close(fd)) == -1) {
+        if (errno != EINTR)
+            return -1;
+    }
+    return ret;
+}
+
 // useful for many PTEF_* variables which say 'defined and non-empty'
 char *getenv_defined(const char *name)
 {

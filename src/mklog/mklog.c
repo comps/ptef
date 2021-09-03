@@ -8,6 +8,16 @@
 #include <ptef.h>
 #include <ptef_helpers.h>
 
+static int openat_safe(int dirfd, const char *pathname, int flags, mode_t mode)
+{
+    int ret;
+    while ((ret = openat(dirfd, pathname, flags, mode)) == -1) {
+        if (errno != EINTR)
+            return -1;
+    }
+    return ret;
+}
+
 // rotate old logs, create new one, return its fd
 static int open_log(int dirfd, char *testname)
 {
@@ -76,7 +86,7 @@ static int open_log(int dirfd, char *testname)
     }
 
     // create and open a new log
-    int fd = openat(dirfd, to, O_CREAT | O_WRONLY, 0644);
+    int fd = openat_safe(dirfd, to, O_CREAT | O_WRONLY, 0644);
     if (fd == -1) {
         PERROR_FMT("openat(..,%s,O_CREAT|O_WRONLY)", to);
         goto err;
@@ -109,7 +119,7 @@ static int open_truncated_log(int dirfd, char *testname)
     pos = memcpy_append(pos, suffix, sizeof(suffix));
 
     // create and open a new log
-    int fd = openat(dirfd, logfile, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+    int fd = openat_safe(dirfd, logfile, O_CREAT | O_WRONLY | O_TRUNC, 0644);
     if (fd == -1) {
         PERROR_FMT("openat(..,%s,O_CREAT|O_WRONLY|O_TRUNC)", logfile);
         goto err;
@@ -217,7 +227,7 @@ static int open_ptef_logs(char *ptef_logs, char *ptef_prefix)
     *pos = '\0';
 
     // open the concatenated result
-    close(logsfd);
+    close_safe(logsfd);
     logsfd = open(combined, O_DIRECTORY);
     if (logsfd == -1) {
         PERROR_FMT("open %s", combined);
@@ -229,7 +239,7 @@ static int open_ptef_logs(char *ptef_logs, char *ptef_prefix)
 err:
     free(combined);
     if (logsfd != -1)
-        close(logsfd);
+        close_safe(logsfd);
     return -1;
 }
 
@@ -257,7 +267,7 @@ int ptef_mklog_v0(char *testname, int flags)
     else
         fd = open_log(logsfd, testname);
 
-    close(logsfd);
+    close_safe(logsfd);
 
     if (fd != -1)
         errno = orig_errno;

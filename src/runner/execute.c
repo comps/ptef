@@ -19,6 +19,16 @@ static pid_t waitpid_safe(pid_t pid, int *wstatus, int options)
     return ret;
 }
 
+static int dup2_safe(int oldfd, int newfd)
+{
+    int ret;
+    while ((ret = dup2(oldfd, newfd)) == -1) {
+        if (errno != EINTR)
+            return -1;
+    }
+    return ret;
+}
+
 static _Noreturn void execute_child(char *basename, char **argv, char *dir)
 {
     int logfd = -1;
@@ -115,11 +125,8 @@ static _Noreturn void execute_child(char *basename, char **argv, char *dir)
         PERROR("dup(" DEFAULT_ERROR_FD_STR ")");
         goto err;
     }
-    if (close(DEFAULT_ERROR_FD) == -1) {
-        PERROR("close(" DEFAULT_ERROR_FD_STR ")");
-        goto err;
-    }
-    if (dup2(logfd, DEFAULT_ERROR_FD) == -1) {
+    // dup2() closes newfd if open
+    if (dup2_safe(logfd, DEFAULT_ERROR_FD) == -1) {
         PERROR_FMT_FD(errout, "dup2(%d," DEFAULT_ERROR_FD_STR ")", logfd);
         goto err;
     }
@@ -128,17 +135,14 @@ static _Noreturn void execute_child(char *basename, char **argv, char *dir)
         goto err;
     }
 #else
-    if (close(DEFAULT_ERROR_FD) == -1) {
-        PERROR("close(" DEFAULT_ERROR_FD_STR ")");
+    if (dup2_safe(logfd, DEFAULT_ERROR_FD) == -1) {
+        PERROR_FMT("dup2(%d," DEFAULT_ERROR_FD_STR ")", logfd);
         goto err;
     }
-    if (dup2(logfd, DEFAULT_ERROR_FD) == -1)
-        goto err;
-        // no PERROR() as stderr is already closed
 #endif
 
     // logfd has been dup2()'d to 2, close the original fd from ptef_mklog()
-    close(logfd);
+    close_safe(logfd);
     logfd = -1;
 
     if (execv(argv[0], argv) == -1) {
@@ -154,8 +158,8 @@ static _Noreturn void execute_child(char *basename, char **argv, char *dir)
     // so fall through to 'err' and exit with failure
 err:
     free(tmp);
-    close(logfd);
-    close(errout);
+    close_safe(logfd);
+    close_safe(errout);
     exit(1);
 }
 

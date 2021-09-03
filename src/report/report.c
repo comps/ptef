@@ -22,8 +22,9 @@ static int intr_safe_setlkw(int fd, struct flock *f)
 static int setlk(int fd, struct flock *f)
 {
     if (fcntl(fd, F_SETLK, f) == -1) {
-        // POSIX allows both, unify them under EAGAIN
-        if (errno == EACCES)
+        // POSIX allows both EACCES and EAGAIN, unify them under EAGAIN
+        // also catch interrupted slow locking over NFS
+        if (errno == EACCES || errno == EINTR)
             errno = EAGAIN;
         if (errno != EAGAIN)
             PERROR_FMT("fcntl(%d, F_SETLK)", fd);

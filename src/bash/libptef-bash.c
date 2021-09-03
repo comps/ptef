@@ -46,7 +46,7 @@ static int set_status_colors_main(WORD_LIST *arglist)
         char *arg = savestring(arglist->word->word);
         char *delim = strchr(arg, ' ');
         if (!delim) {
-            builtin_error("argument has no space");
+            builtin_error("argument \"%s\" has no space", arg);
             free(arg);
             goto err;
         }

@@ -64,10 +64,10 @@ int main(int argc, char **argv)
         return 1;
 
     if (relay_input(fd) == -1) {
-        close(fd);
+        close_safe(fd);
         return 1;
     }
 
-    close(fd);
+    close_safe(fd);
     return 0;
 }

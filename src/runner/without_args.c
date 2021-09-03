@@ -81,10 +81,10 @@ find_execs(struct exec_entry ***entries, char *basename)
                     continue;
                 }
                 if (!is_exec(subdir, basename)) {
-                    close(subdir);
+                    close_safe(subdir);
                     continue;
                 }
-                close(subdir);
+                close_safe(subdir);
                 break;
             case EXEC_TYPE_FILE:
                 // just check for executability
