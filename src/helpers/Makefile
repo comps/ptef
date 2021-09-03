@@ -11,3 +11,4 @@ install: ;
 
 clean:
 	rm -f ptef_helpers.o
+	rm -f \*.o  # generated when the build fails, sometimes

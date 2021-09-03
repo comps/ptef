@@ -1,15 +1,6 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
-#include <stddef.h>
 #include <unistd.h>
-#include <dirent.h>
-#include <libgen.h>
-#include <errno.h>
-//#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 
 #include <ptef.h>
 #include <ptef_helpers.h>

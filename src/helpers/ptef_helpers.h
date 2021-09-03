@@ -1,6 +1,9 @@
 #ifndef _PTEF_HELPERS_H
 #define _PTEF_HELPERS_H
 
+#include <stdio.h>  // dprintf
+#include <errno.h>  // errno = ...
+
 #define STRINGIFY_INDIRECT(x) #x
 #define STRINGIFY(x) STRINGIFY_INDIRECT(x)
 #define FILELINE __FILE__ ":" STRINGIFY(__LINE__) ": "

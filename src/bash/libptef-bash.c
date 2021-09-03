@@ -5,8 +5,8 @@
 #include <bash/variables.h>
 #include <bash/arrayfunc.h>
 #include <bash/externs.h>
-#include <bash/version.h>
-#include <bash/config.h>
+//#include <bash/version.h>
+//#include <bash/config.h>
 
 #include <ptef.h>
 
