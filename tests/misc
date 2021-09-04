@@ -93,6 +93,20 @@ function run_before_pass {
 		"$tmpdir/runner_out"
 }
 
+# Test that the runner's -i option (and char **ignored functionality) correctly
+# ignore files in CWD
+function ignored {
+	make_arg_printer > exec1
+	make_arg_printer > exec2
+	chmod +x exec1 exec2
+	assert_ptef_runner -i exec1 > "$tmpdir/runner_out"
+	assert_nogrep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+	assert_grep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+	assert_ptef_runner -i exec1 -i exec2 > "$tmpdir/runner_out"
+	assert_nogrep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+	assert_nogrep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+}
+
 # Test that all ptef-* CLIs support -h (for help)
 function cli_help {
 	local ret=0
@@ -125,6 +139,7 @@ function cli_noargs {
 + parallel_jobs
 + open_fds
 + run_before_pass
++ ignored
 case "$TEST_VARIANT" in	cli|valgrind)
 	+ cli_help
 	+ cli_noargs

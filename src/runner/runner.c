@@ -6,7 +6,7 @@
 // true if everything PASSed, false on error or FAIL
 __asm__(".symver ptef_runner_v0, ptef_runner@@VERS_0.7");
 __attribute__((used))
-int ptef_runner_v0(int argc, char **argv, int jobs, int flags)
+int ptef_runner_v0(int argc, char **argv, int jobs, char **ignored, int flags)
 {
     if (argc < 1) {
         ERROR("need at least argv[0] for basename");
@@ -28,7 +28,7 @@ int ptef_runner_v0(int argc, char **argv, int jobs, int flags)
 
     int rc;
     if (argc <= 0) {
-        rc = for_each_exec(base, jobs);
+        rc = for_each_exec(base, jobs, ignored);
     } else {
         if (flags & PTEF_NOMERGE)
             rc = for_each_arg(argc, argv, base, jobs);

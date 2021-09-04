@@ -9,7 +9,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-a')
 parser.add_argument('-A')
 parser.add_argument('-j', type=int, default=0)
-parser.add_argument('-i')
+parser.add_argument('-i', action='append')
 parser.add_argument('-v', action='store_true')
 parser.add_argument('-r', action='store_true')
 parser.add_argument('-m', action='store_true')
@@ -23,8 +23,6 @@ if args.A:
     args.a = args.A
 if args.a:
     args.rest[0] = args.a
-if args.i:
-    os.environ['PTEF_IGNORE_FILES'] = args.i
 if args.v:
     os.environ['PTEF_NOLOGS'] = str(1)
 if args.r:
@@ -33,4 +31,4 @@ flags = 0
 if args.m:
     flags |= ptef.NOMERGE
 
-ptef.runner(argv=args.rest, jobs=args.j, flags=flags)
+ptef.runner(argv=args.rest, jobs=args.j, ignored=args.i, flags=flags)

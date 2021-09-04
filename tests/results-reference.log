@@ -66,6 +66,7 @@ PASS /cli/logging
 PASS /cli/misc/parallel_jobs
 PASS /cli/misc/open_fds
 PASS /cli/misc/run_before_pass
+PASS /cli/misc/ignored
 PASS /cli/misc/cli_help
 PASS /cli/misc/cli_noargs
 PASS /cli/misc
@@ -172,6 +173,7 @@ PASS /valgrind/logging
 PASS /valgrind/misc/parallel_jobs
 PASS /valgrind/misc/open_fds
 PASS /valgrind/misc/run_before_pass
+PASS /valgrind/misc/ignored
 PASS /valgrind/misc/cli_help
 PASS /valgrind/misc/cli_noargs
 PASS /valgrind/misc
@@ -278,6 +280,7 @@ PASS /bash/logging
 PASS /bash/misc/parallel_jobs
 PASS /bash/misc/open_fds
 PASS /bash/misc/run_before_pass
+PASS /bash/misc/ignored
 PASS /bash/misc
 PASS /bash/mklog/sanity
 PASS /bash/mklog/testname_with_spaces
@@ -382,6 +385,7 @@ PASS /python/logging
 PASS /python/misc/parallel_jobs
 PASS /python/misc/open_fds
 PASS /python/misc/run_before_pass
+PASS /python/misc/ignored
 PASS /python/misc
 PASS /python/mklog/sanity
 PASS /python/mklog/testname_with_spaces

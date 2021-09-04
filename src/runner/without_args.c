@@ -39,8 +39,8 @@ static bool is_exec(int parentfd, char *name)
     return true;
 }
 
-static int
-find_execs(struct exec_entry ***entries, char *basename)
+static int find_execs(struct exec_entry ***entries, char *basename,
+                      char **ignored)
 {
     DIR *cwd = NULL;
     if ((cwd = opendir(".")) == NULL) {
@@ -61,6 +61,17 @@ find_execs(struct exec_entry ***entries, char *basename)
         // skip current executable
         if (strcmp(dent->d_name, basename) == 0)
             continue;
+
+        // skip user-ignored names
+        if (ignored) {
+            int i;
+            for (i = 0; ignored[i] != NULL; i++) {
+                if (strcmp(dent->d_name, ignored[i]) == 0)
+                    break;
+            }
+            if (ignored[i] != NULL)
+                continue;
+        }
 
         enum exec_entry_type enttype;
 
@@ -126,7 +137,7 @@ err:
     return -1;
 }
 
-int for_each_exec(char *basename, int jobs)
+int for_each_exec(char *basename, int jobs, char **ignored)
 {
     struct exec_state *state;
     if ((state = create_exec_state(jobs)) == NULL) {
@@ -137,7 +148,7 @@ int for_each_exec(char *basename, int jobs)
     struct exec_entry **ents = NULL;
     int i = 0, cnt = 0;
 
-    cnt = find_execs(&ents, basename);
+    cnt = find_execs(&ents, basename, ignored);
     if (cnt == -1)
         goto err;
 

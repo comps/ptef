@@ -14,7 +14,7 @@
 
 extern __thread char *(*ptef_status_colors)[2];
 
-int ptef_runner(int argc, char **argv, int jobs, int flags);
+int ptef_runner(int argc, char **argv, int jobs, char **ignored, int flags);
 int ptef_report(char *status, char *testname, int flags);
 int ptef_mklog(char *testname, int flags);
 

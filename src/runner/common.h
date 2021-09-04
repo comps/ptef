@@ -40,4 +40,4 @@ int for_each_arg(int argc, char **argv, char *basename, int jobs);
 
 int for_each_merged_arg(int argc, char **argv, char *basename, int jobs);
 
-int for_each_exec(char *basename, int jobs);
+int for_each_exec(char *basename, int jobs, char **ignored);

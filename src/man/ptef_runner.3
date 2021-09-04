@@ -9,7 +9,8 @@ ptef_runner \- implements a runner as described by the PTEF spec
 .nf
 .B  #include <ptef.h>
 .PP
-.BI "int ptef_runner(int " argc ", char **" argv ", int " jobs ", int " flags );
+.BI "int ptef_runner(int " argc ", char **" argv ", int " jobs ", char **" ignored ,
+.BI "                int " flags );
 .PP
 .BR "extern __thread char *(*" ptef_status_colors ")[2];"
 .fi
@@ -29,13 +30,23 @@ as they would be passed on a command line to a
 .BR main (),
 including argv[0] indicating the path used to start up the program, used for
 .BR basename (argv[0])
-detection, as outlined in the PTEF specification.
+detection, as outlined in the PTEF specification. Unlike a traditional
+.BR main (),
+.I argv
+may be, but does not need to be NULL-terminated.
 .PP
 .I jobs
 set to anything above 1 will make the runner execute files in parallel, with
 a maximum parallel processes equal to the
 .I jobs
 value. Set to 0 or 1 to run sequentially.
+.PP
+.I ignored
+is a NULL-terminated array of file/directory names to ignore when running
+without arguments and searching the current working directory for executables.
+It has no effect when running with arguments (when
+.I argc
+is >1).
 .PP
 .I flags
 provide a way to further parametrize the runner execution:

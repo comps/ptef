@@ -16,6 +16,7 @@ the leading PTEF_ part of their names.
 
 import typing, ctypes, sys, os
 
+
 libptef = ctypes.CDLL("libptef.so.0", use_errno=True)
 
 # runner flags
@@ -29,7 +30,9 @@ RAWNAME     = (1 << 2)
 # mklog flags
 NOROTATE    = (1 << 0)
 
-def runner(argv: list = None, jobs: int = 0, flags: int = 0) -> None:
+
+def runner(argv: list = None, jobs: int = 0, ignored: list = None,
+           flags: int = 0) -> None:
     """
     Launch the PTEF runner logic, as implemented by ptef_runner(3).
 
@@ -42,14 +45,22 @@ def runner(argv: list = None, jobs: int = 0, flags: int = 0) -> None:
         argv = [sys.argv[0]]
     argc = len(argv)
     argv_bstrings = (x.encode('utf-8') for x in argv)
+
+    if not ignored:
+        ignored = []
+    ignored_bstrings = [x.encode('utf-8') for x in ignored]
+    ignored_bstrings.append(None)  # NULL-terminate
+
     ctypes.set_errno(0)
     rc = libptef.ptef_runner(ctypes.c_int(argc),
                              (ctypes.c_char_p * argc)(*argv_bstrings),
                              ctypes.c_int(jobs),
+                             (ctypes.c_char_p * len(ignored_bstrings))(*ignored_bstrings),
                              ctypes.c_int(flags))
     if rc == -1:
         errno = ctypes.get_errno()
         raise OSError(errno, os.strerror(errno), None)
+
 
 _custom_status_colors = None
 def set_status_colors(src: dict):
@@ -81,6 +92,7 @@ def set_status_colors(src: dict):
     current_map = ctypes.POINTER(char_n_2_type).in_dll(libptef, 'ptef_status_colors')
     current_map.contents = _custom_status_colors
 
+
 def report(status: str, testname: str, flags: int = 0) -> None:
     """
     Produce a report line on stdout, as implemented by ptef_report(3).
@@ -91,6 +103,7 @@ def report(status: str, testname: str, flags: int = 0) -> None:
     if rc == -1:
         errno = ctypes.get_errno()
         raise OSError(errno, os.strerror(errno), None)
+
 
 def mklog(testname: str, flags: int = 0) -> typing.BinaryIO:
     """
