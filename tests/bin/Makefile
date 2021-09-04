@@ -4,7 +4,8 @@
 .PHONY: all
 all: ttee list-fds hold-lock
 
-CFLAGS ?= -O2 -Wall -g -D_POSIX_C_SOURCE=200809
+CFLAGS ?= -O2 -Wall -Wextra -Werror -g
+CFLAGS += -std=c99 -D_POSIX_C_SOURCE=200809
 
 ttee: ttee.c
 list-fds: list-fds.c

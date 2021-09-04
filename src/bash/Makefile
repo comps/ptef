@@ -16,7 +16,7 @@ else
 all: libptef-bash.so builtins.sh
 
 CFLAGS += -I/usr/include/bash/include -I../include -L../lib
-CFLAGS += -D_POSIX_C_SOURCE=200809
+CFLAGS += -std=c99 -D_POSIX_C_SOURCE=200809
 
 libptef-bash.so: libptef-bash.c
 	$(CC) -shared -fPIC $(CFLAGS) -o $@ $^ -l:libptef.so.0

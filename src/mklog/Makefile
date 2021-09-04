@@ -3,7 +3,7 @@ include ../common.mk
 .PHONY: all install clean
 all: mklog.o
 
-CFLAGS += -I../include -I../helpers -fPIC -D_POSIX_C_SOURCE=200809
+CFLAGS += -I../include -I../helpers -fPIC -std=c99 -D_POSIX_C_SOURCE=200809
 
 mklog.o: mklog.c
 
