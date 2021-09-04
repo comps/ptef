@@ -56,6 +56,18 @@ function ptef_results_fd_nocolor {
 	assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/result_log"
 }
 
+# Test that the runner errors out on a closed PTEF_RESULTS_FD
+function ptef_results_fd_closed {
+	local ret=0
+	mkfile > executable
+	chmod +x executable
+	exec {test_fd}>"$tmpdir/result_log"
+	PTEF_RESULTS_FD="12345" ptef-runner \
+		>"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
+	[ "$ret" -ne 0 ]
+	assert_grep 'Bad file descriptor' "$tmpdir/runner_err"
+}
+
 # Test that PTEF_NOLOGS results in executable stderr not being redirected
 # and prevents logs from being created
 function ptef_nologs {
@@ -135,6 +147,7 @@ function ptef_color {
 + ptef_run_opt
 + ptef_results_fd
 + ptef_results_fd_nocolor
++ ptef_results_fd_closed
 + ptef_nologs
 + ptef_nologs_opt
 + ptef_color
