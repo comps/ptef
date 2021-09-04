@@ -15,7 +15,7 @@ if args.r:
 
 with ptef.mklog(args.testname, flags) as log:
     while True:
-        buf = sys.stdin.buffer.read1()
+        buf = sys.stdin.buffer.read1(100)
         if len(buf) < 1:
             break
         log.write(buf)
