@@ -6,9 +6,11 @@ ASCIIDOCTOR := $(shell	x=$$(command -v asciidoctor 2>/dev/null); \
 .PHONY: all install clean
 
 ifeq ($(ASCIIDOCTOR),)
-$(warning asciidoctor not found, won't build documentation)
 
-all: ;
+all:
+	@echo "::::::::::::::::::::::::::::::::::::::::::::::::::::::"
+	@echo ":: asciidoctor not found, won't build documentation ::"
+	@echo "::::::::::::::::::::::::::::::::::::::::::::::::::::::"
 
 install:
 	install -d "$(DESTDIR)$(docdir)/ptef"
@@ -25,6 +27,7 @@ install:
 	install -d "$(DESTDIR)$(docdir)/ptef"
 	install -m644 ptef.adoc "$(DESTDIR)$(docdir)/ptef/."
 	install -m644 ptef.html "$(DESTDIR)$(docdir)/ptef/."
+
 endif
 
 clean:
