@@ -1,11 +1,11 @@
-Name: ptef
-Version: PTEF_VERSION
+Name: {{{ git_name }}}
+Version: {{{ ptef_git_version }}}
 Release: 1%{?dist}
 Summary: POSIX-inspired Test Execution Framework
 
 License: MIT
-URL: https://github.com/comps/ptef/
-Source0: ptef-PTEF_VERSION.tar.gz
+URL: https://github.com/comps/ptef
+Source: {{{ git_pack }}}
 
 # required for python rpm macros to work
 BuildRequires: python3-devel
@@ -16,29 +16,19 @@ BuildRequires: python3-devel
 
 BuildRequires: gcc
 BuildRequires: make
-
-# not built on el7 at all
-%if 0%{?rhel} != 7
 BuildRequires: bash-devel
-%endif
 
-# el7 rpmbuild doesn't understand Recommends:
-%if 0%{?rhel} != 7
 Recommends: bash
 Recommends: python3
-%endif
-
-# el7 seems to have asciidoctor, but fails to build on copr anyway,
-# el8 weirdly doesn't have it at all
-%if 0%{?rhel} != 7 && 0%{?rhel} != 8
-BuildRequires: asciidoctor
-%endif
 
 %description
 TBD
 
+%changelog
+{{{ git_changelog }}}
+
 %prep
-%setup
+{{{ git_setup_macro }}}
 
 %build
 # -Wno-unused-result
@@ -78,28 +68,15 @@ CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra -Werror" make
 %attr(755,root,root) %{_libdir}/libptef.so.0
 %{_libdir}/libptef.so
 %attr(644,root,root) %{_includedir}/ptef.h
-%if 0%{?rhel} != 7
 %attr(755,root,root) %{_libdir}/libptef-bash.so
 %attr(755,root,root) %dir %{_datadir}/ptef
 %attr(644,root,root) %{_datadir}/ptef/builtins.sh
-%endif
 %attr(644,root,root) %{_mandir}/man3/ptef_runner.3*
 %attr(644,root,root) %{_mandir}/man3/ptef_report.3*
 %attr(644,root,root) %{_mandir}/man3/ptef_mklog.3*
 %attr(755,root,root) %dir %{_docdir}/ptef
 %attr(644,root,root) %{_docdir}/ptef/ptef.adoc
-%if 0%{?rhel} != 7 && 0%{?rhel} != 8
-%attr(644,root,root) %{_docdir}/ptef/ptef.html
-%endif
-# el7 doesn't apparently have working pycached
-%if 0%{?rhel} != 7
 %pycached %{python3_sitelib}/ptef.py
-%else
-%attr(644,root,root) %{python3_sitelib}/ptef.py*
-%attr(644,root,root) %{python3_sitelib}/__pycache__/ptef.*.pyc
-%endif
 
 #%license
-
-%changelog
 
