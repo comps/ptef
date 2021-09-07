@@ -336,6 +336,20 @@ reporting to be either
 If the runner does not support color in its output, it should ignore this
 variable.
 
+[[ptef-silent]]
+=== Running silently (`PTEF_SILENT`)
+
+If the `PTEF_SILENT` environment variable is set and non-empty, any results
+that would normally be reported to standard output must be suppressed.
+
+Reporting to `PTEF_RESULTS_FD` is unaffected.
+
+[NOTE]
+--
+This must not redirect the standard output in any way, eg. if a non-runner
+executable writes to standard output, the write must not be suppressed.
+--
+
 [[ptef-nologs]]
 === Avoiding standard error output log redirect (`PTEF_NOLOGS`)
 

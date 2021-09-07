@@ -154,15 +154,20 @@ int ptef_report_v0(char *status, char *testname, int flags)
         }
     }
 
+    char *silent = getenv_defined("PTEF_SILENT");
+
     // format line for stdout
-    line_stdout = format_line(status_pretty, testname, &line_stdout_len, flags);
-    if (!line_stdout)
-        goto err;
+    if (!silent) {
+        line_stdout = format_line(status_pretty, testname, &line_stdout_len,
+                                  flags);
+        if (!line_stdout)
+            goto err;
+    }
 
     // format line for PTEF_RESULTS_FD
     ptef_results_fd = getenv_defined("PTEF_RESULTS_FD");
     if (ptef_results_fd) {
-        if (status_pretty == status) {
+        if (!silent && status_pretty == status) {
             // black&white line already formatted
             line_envvar = line_stdout;
             line_envvar_len = line_stdout_len;
@@ -181,16 +186,20 @@ int ptef_report_v0(char *status, char *testname, int flags)
     }
 
     // lock stdout / PTEF_RESULTS_FD
-    if (lock(TERMINAL_FD, flags) == -1)
-        goto err;
+    if (!silent) {
+        if (lock(TERMINAL_FD, flags) == -1)
+            goto err;
+    }
     if (ptef_results_fd) {
         if (lock(ptef_results_fd_fd, flags) == -1)
             goto err;
     }
 
     // write to stdout
-    if (write_safe(TERMINAL_FD, line_stdout, line_stdout_len) == -1)
-        goto err;
+    if (!silent) {
+        if (write_safe(TERMINAL_FD, line_stdout, line_stdout_len) == -1)
+            goto err;
+    }
 
     // duplicate write to PTEF_RESULTS_FD
     if (ptef_results_fd) {
@@ -198,7 +207,8 @@ int ptef_report_v0(char *status, char *testname, int flags)
             goto err;
     }
 
-    unlock(TERMINAL_FD);
+    if (!silent)
+        unlock(TERMINAL_FD);
     if (ptef_results_fd)
         unlock(ptef_results_fd_fd);
     if (line_envvar != line_stdout)
@@ -210,7 +220,8 @@ int ptef_report_v0(char *status, char *testname, int flags)
 err:
     // preserve errno that got us here (to err) through unlock/free
     orig_errno = errno;
-    unlock(TERMINAL_FD);
+    if (!silent)
+        unlock(TERMINAL_FD);
     if (ptef_results_fd)
         unlock(ptef_results_fd_fd);
     if (line_envvar != line_stdout)

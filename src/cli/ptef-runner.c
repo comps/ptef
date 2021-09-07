@@ -13,6 +13,7 @@ static void print_help(void)
             "  -A BASE  set and export PTEF_BASENAME, overriding even -a\n"
             "  -j NR    number of parallel jobs (tests)\n"
             "  -i IGN   ignore a file/dir named IGN when searching for executables\n"
+            "  -s       set PTEF_SILENT and export it\n"
             "  -v       set PTEF_NOLOGS and export it\n"
             "  -r       set PTEF_RUN and export it\n"
             "  -m       don't merge arguments of subrunners (always pass 1 arg)\n"
@@ -33,7 +34,7 @@ int main(int argc, char **argv)
     int flags = 0;
 
     int c;
-    while ((c = getopt(argc, argv, "a:A:j:i:vrmh")) != -1) {
+    while ((c = getopt(argc, argv, "a:A:j:i:svrmh")) != -1) {
         switch (c) {
             case 'a':
                 argv0 = optarg;
@@ -56,6 +57,12 @@ int main(int argc, char **argv)
                 ignored_cnt++;
                 ignored = realloc_safe(ignored, ignored_cnt*sizeof(char*));
                 ignored[ignored_cnt-1] = optarg;
+                break;
+            case 's':
+                if (setenv("PTEF_SILENT", "1", 1) == -1) {
+                    PERROR("setenv");
+                    goto err;
+                }
                 break;
             case 'v':
                 if (setenv("PTEF_NOLOGS", "1", 1) == -1) {
