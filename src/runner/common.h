@@ -17,6 +17,8 @@ enum exec_entry_type {
 
 int fstatat_type(int dirfd, char *pathname, enum exec_entry_type *type);
 
+int dup2_safe(int oldfd, int newfd);
+
 // for parallel execution - we need to keep track of persistent
 // pid-to-testname mapping, so we can ptef_report the correct name
 // when a child finishes (might be many iterations later)

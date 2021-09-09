@@ -19,16 +19,6 @@ static pid_t waitpid_safe(pid_t pid, int *wstatus, int options)
     return ret;
 }
 
-static int dup2_safe(int oldfd, int newfd)
-{
-    int ret;
-    while ((ret = dup2(oldfd, newfd)) == -1) {
-        if (errno != EINTR)
-            return -1;
-    }
-    return ret;
-}
-
 static _Noreturn void execute_child(char *basename, char **argv, char *dir)
 {
     int logfd = -1;

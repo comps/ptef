@@ -23,3 +23,13 @@ int fstatat_type(int dirfd, char *pathname, enum exec_entry_type *type)
     }
     return ret;
 }
+
+int dup2_safe(int oldfd, int newfd)
+{
+    int ret;
+    while ((ret = dup2(oldfd, newfd)) == -1) {
+        if (errno != EINTR)
+            return -1;
+    }
+    return ret;
+}

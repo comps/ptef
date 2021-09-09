@@ -387,6 +387,10 @@ Otherwise, if the `SHELL` environment variable is set and non-empty, it must
 be used as the shell executable. +
 Otherwise, `/bin/sh` must be used as a fallback.
 
+Standard output must be duplicated to standard error output prior to launching
+the shell, closing original standard error output, which might have been
+redirected to a log file.
+
 [NOTE]
 --
 The intended use is to launch an interactive shell deep within a hierarchy,

@@ -6,6 +6,10 @@
 
 static void run_shell(char *shell)
 {
+    if (dup2_safe(1, 2) == -1) {
+        PERROR("dup2(1,2)");
+        return;
+    }
     if (access(shell, X_OK) == -1) {
         if (errno != ENOENT) {
             PERROR_FMT("access(%s)", shell);
