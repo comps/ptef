@@ -36,9 +36,7 @@ TBD
 #   we intentionally discard writev() result as it's used only for debugging,
 #   unfortunately, there's no __attribute__ that could create an exception,
 #   and (void) also doesn't silence it, so just disable it globally
-# -Wextra -Werror
-#   because I want to be pedantic
-CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra -Werror" make
+CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" make
 
 # disable completely on copr, which builds non-native arches in chroot,
 # failing to actually run non-native binaries
