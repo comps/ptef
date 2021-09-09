@@ -3,6 +3,7 @@
 
 #include <stdio.h>  // dprintf
 #include <errno.h>  // errno = ...
+#include <string.h> // strerror
 
 #define STRINGIFY_INDIRECT(x) #x
 #define STRINGIFY(x) STRINGIFY_INDIRECT(x)

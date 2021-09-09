@@ -116,6 +116,57 @@ function ptef_nologs_opt {
 	assert_contents 'this is stderr' "$tmpdir/runner_err"
 }
 
+# Test that PTEF_SHELL makes the runner launch shell and do nothing more
+# (Run ptef-runner via timeout, in case it actually spawns interactive shell.)
+function ptef_shell {
+	mkfile > executable
+	chmod +x executable
+	# run with arguments shoud ignore PTEF_SHELL
+	PTEF_SHELL="/bin/echo" timeout 10 ptef-runner executable \
+		>"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
+	assert_contents $'PASS[\t ]*/executable\n' "$tmpdir/runner_out"
+	assert_contents '' "$tmpdir/runner_err"
+	# set to a specific value = run that executable
+	PTEF_SHELL="/bin/echo" timeout 10 ptef-runner \
+		>"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
+	assert_contents $'\n' "$tmpdir/runner_out"
+	assert_contents '' "$tmpdir/runner_err"
+	# try with relative path
+	cat > "$tmpdir/testshell" <<-EOF
+	#!/bin/bash
+	echo "works"
+	EOF
+	chmod +x "$tmpdir/testshell"
+	local relpath=$(realpath --relative-to=. "$tmpdir/testshell")
+	PTEF_SHELL="$relpath" timeout 10 ptef-runner \
+		>"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
+	assert_contents $'works\n' "$tmpdir/runner_out"
+	assert_contents '' "$tmpdir/runner_err"
+	# try non-zero exit code
+	local ret=0
+	echo "exit 10" >> "$tmpdir/testshell"
+	PTEF_SHELL="$relpath" timeout 10 ptef-runner \
+		>"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
+	assert_contents $'works\n' "$tmpdir/runner_out"
+	assert_contents '' "$tmpdir/runner_err"
+	[ "$ret" -eq 10 ]
+	# check for $SHELL fallback
+	PTEF_SHELL=1 SHELL="/bin/echo" timeout 10 ptef-runner \
+		>"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
+	assert_contents $'\n' "$tmpdir/runner_out"
+	assert_contents '' "$tmpdir/runner_err"
+}
+
+# Test that cli -d option exports PTEF_SHELL and the runner honors it
+function ptef_shell_opt {
+	# run with args, so that we can actually print out the variable
+	make_var_printer PTEF_SHELL > executable
+	chmod +x executable
+	timeout 10 ptef-runner -d executable \
+		>"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
+	assert_contents $'1\n' exec_log
+}
+
 # Test that PTEF_COLOR controls result color output on both non-terminal
 # and terminal-based stdout
 function ptef_color {
@@ -170,6 +221,8 @@ function ptef_color {
 + ptef_silent_opt
 + ptef_nologs
 + ptef_nologs_opt
++ ptef_shell
++ ptef_shell_opt
 + ptef_color
 
 

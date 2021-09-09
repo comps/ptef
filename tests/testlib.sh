@@ -45,9 +45,10 @@ function make_var_printer {
 }
 
 function assert_contents {
-	local content=$(<"$2")
-	# support globbing
-	case "$content" in $1) true;; *) false;; esac || {
+	local content=
+	IFS= read -r -d '' content < "$2" || true  # will hit EOF
+	# supports globbing - see bash(1) on [[
+	[[ $content == $1 ]] || {
 		{
 			echo "assert_contents failed, ${@: -1} contains:"
 			echo "$content"

@@ -10,9 +10,10 @@ parser.add_argument('-a')
 parser.add_argument('-A')
 parser.add_argument('-j', type=int, default=0)
 parser.add_argument('-i', action='append')
+parser.add_argument('-r', action='store_true')
 parser.add_argument('-s', action='store_true')
 parser.add_argument('-v', action='store_true')
-parser.add_argument('-r', action='store_true')
+parser.add_argument('-d', action='store_true')
 parser.add_argument('-m', action='store_true')
 parser.add_argument('rest', nargs=argparse.REMAINDER)
 args = parser.parse_args()
@@ -24,12 +25,14 @@ if args.A:
     args.a = args.A
 if args.a:
     args.rest[0] = args.a
+if args.r:
+    os.environ['PTEF_RUN'] = str(1)
 if args.s:
     os.environ['PTEF_SILENT'] = str(1)
 if args.v:
     os.environ['PTEF_NOLOGS'] = str(1)
-if args.r:
-    os.environ['PTEF_RUN'] = str(1)
+if args.d:
+    os.environ['PTEF_SHELL'] = str(1)
 flags = 0
 if args.m:
     flags |= ptef.NOMERGE
