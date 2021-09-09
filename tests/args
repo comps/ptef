@@ -86,23 +86,28 @@ function invalid_arg {
 	mk2execs
 	ptef-runner "$@" '.' >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
 	assert_grep 'arg failed sanity check: \.$' "$tmpdir/runner_err"
-	assert_nogrep '' "$tmpdir/runner_out"
+	assert_contents '' "$tmpdir/runner_out"
 	[ "$ret" -ne 0 ]
 	ret=0
 	ptef-runner "$@" '..' >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
 	assert_grep 'arg failed sanity check: \.\.$' "$tmpdir/runner_err"
-	assert_nogrep '' "$tmpdir/runner_out"
+	assert_contents '' "$tmpdir/runner_out"
+	[ "$ret" -ne 0 ]
+	ret=0
+	ptef-runner "$@" '' >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
+	assert_grep 'arg failed sanity check: $' "$tmpdir/runner_err"
+	assert_contents '' "$tmpdir/runner_out"
 	[ "$ret" -ne 0 ]
 }
 
-# Test that the runner aborts on invalid argument and executes no further args
+# Test that the runner aborts on invalid argument and doesn't execute anything
 function invalid_arg_skip {
 	local ret=0
 	mk2execs
-	ptef-runner "$@" exec1 '.' exec2 >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
-	assert_grep 'arg failed sanity check' "$tmpdir/runner_err"
-	assert_grep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
-	assert_nogrep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+	ptef-runner "$@" exec1 '.' exec2 \
+		>"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
+	assert_grep 'arg failed sanity check: \.$' "$tmpdir/runner_err"
+	assert_contents '' "$tmpdir/runner_out"
 	[ "$ret" -ne 0 ]
 }
 
@@ -138,8 +143,6 @@ function nonexecutable {
 + one_arg
 + one_arg_with_spaces
 + multiple_args
-+ zero_length_arg
-+ zero_length_arg_skip
 + invalid_arg
 + invalid_arg_skip
 + double_dash_skip
@@ -151,8 +154,6 @@ function no_args_nomerge { no_args -m "$@"; }
 function one_arg_nomerge { one_arg -m "$@"; }
 function one_arg_with_spaces_nomerge { one_arg_with_spaces -m "$@"; }
 function multiple_args_nomerge { multiple_args -m "$@"; }
-function zero_length_arg_nomerge { zero_length_arg -m "$@"; }
-function zero_length_arg_skip_nomerge { zero_length_arg_skip -m "$@"; }
 function invalid_arg_nomerge { invalid_arg -m "$@"; }
 function invalid_arg_skip_nomerge { invalid_arg_skip -m "$@"; }
 function double_dash_skip_nomerge { double_dash_skip -m "$@"; }
@@ -162,8 +163,6 @@ function nonexecutable_nomerge { nonexecutable -m "$@"; }
 + one_arg_nomerge
 + one_arg_with_spaces_nomerge
 + multiple_args_nomerge
-+ zero_length_arg_nomerge
-+ zero_length_arg_skip_nomerge
 + invalid_arg_nomerge
 + invalid_arg_skip_nomerge
 + double_dash_skip_nomerge
@@ -175,17 +174,17 @@ function merged_args {
 	mkfile 1 > exec1
 	mkfile 2 > exec2
 	chmod +x exec1 exec2
+	# one executable with two arguments
 	assert_ptef_runner "$@" exec1/arg1 exec1/arg2 > "$tmpdir/runner_out"
 	assert_grep '^argc: 2$' exec_log.1
 	assert_grep '^argv: arg1 arg2$' exec_log.1
+	# same, but with an additional different executable
 	assert_ptef_runner "$@" exec1/arg1 exec1/arg2 exec2 > "$tmpdir/runner_out"
 	assert_grep '^argv: arg1 arg2$' exec_log.1
 	assert_grep '^argc: 0$' exec_log.2
-	assert_ptef_runner "$@" exec1/arg1 '' exec1/arg2 > "$tmpdir/runner_out"
-	assert_grep '^argc: 1$' exec_log.1
-	assert_grep '^argv: arg2$' exec_log.1  # last execution overrides the log
-	# TODO: run with exec1 (no slash) two times, to make sure it is run twice
-	#       and no merging occurs
+	# one executable run twice, without arguments
+	assert_ptef_runner "$@" exec1 exec1 > "$tmpdir/runner_out"
+	assert_grep '^argc: 0$' exec_log.1  # last execution
 }
 function nonmerged_args {
 	mkfile 1 > exec1

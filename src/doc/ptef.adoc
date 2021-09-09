@@ -93,23 +93,23 @@ and used instead of searching CWD
 
 For each argument:
 
-* If it is empty (eg. its first byte is a string terminator), it is silently
-  skipped without an error
+* If it is empty (eg. its first byte is a string terminator), an error condition
+  must be triggered.
+  This condition is left up to the implementation.
 * If it is equal to `--` and this is the first occurence of an `--` argument,
-  it is silently skipped without an error
-* Any leading forward slashes are removed (trimmed)
+  it is silently skipped without an error.
+* Any leading and trailing forward slashes are removed (trimmed).
 * The argument is split into a "left" portion of non-slash characters up to,
   but excluding, a next forward slash, and a "right" portion of any
-  characters after, and excluding, that slash
+  characters after, and excluding, that slash.
 ** If the argument contains no forward slash, the "left" portion is equal
-   to the argument itself and the "right" portion is considered undefined
+   to the argument itself and the "right" portion is considered undefined.
 * If the left portion is `.` or `..`, the argument is considered invalid,
-  further arguments must be ignored, and an error condition must be triggered.
-  This condition is left up to the implementation.
+  and an error condition must be triggered.
 
 The runner then takes the "left" portion and executes it as if it was an
-executable name in CWD, *without* further sanity checking or filtering that
-would be otherwise performed for a CWD directory search.
+executable name in CWD, *without* further filtering that would otherwise be
+performed for a CWD directory search.
 
 If the "right" portion is undefined, no further arguments are passed for
 the execution. Otherwise, a single argument equal to the "right" portion
@@ -121,21 +121,15 @@ For example, an argument of `///left/right/with/path` would evaluate the
 "left" portion to be `left` and the "right" portion to be `right/with/path`.
 --
 
+If an error condition is triggered (from the argument sanity checks listed
+above), the runner must not run any executables. In other words, if at least one
+argument fails sanity checks, no executables are run.
+
 [NOTE]
 --
-There is a difference between a runner started with no arguments and a runner
-started with a single empty argument. The former scans CWD for executables,
-the latter is, essentially, a no-op. +
-External logic can thus easily verify runner sanity by passing a single empty
-argument as the runner is guaranteed to not execute any tests (though it may
-still perform out-of-spec sanity checks, setup, cleanup, etc.).
 
 The `--` argument skip is for compatibility with runners using `getopt(3)` style
 option arguments.
-
-Also note that `left` and `left/` arguments are different - the former specifies
-an executable named `left` to be run without arguments, the latter states to
-run it with a single empty argument.
 --
 
 If the `PTEF_BASENAME` environment variable is unset or empty, the runner must

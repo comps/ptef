@@ -2,8 +2,6 @@ PASS /cli/args/no_args
 PASS /cli/args/one_arg
 PASS /cli/args/one_arg_with_spaces
 PASS /cli/args/multiple_args
-PASS /cli/args/zero_length_arg
-PASS /cli/args/zero_length_arg_skip
 PASS /cli/args/invalid_arg
 PASS /cli/args/invalid_arg_skip
 PASS /cli/args/double_dash_skip
@@ -12,8 +10,6 @@ PASS /cli/args/no_args_nomerge
 PASS /cli/args/one_arg_nomerge
 PASS /cli/args/one_arg_with_spaces_nomerge
 PASS /cli/args/multiple_args_nomerge
-PASS /cli/args/zero_length_arg_nomerge
-PASS /cli/args/zero_length_arg_skip_nomerge
 PASS /cli/args/invalid_arg_nomerge
 PASS /cli/args/invalid_arg_skip_nomerge
 PASS /cli/args/double_dash_skip_nomerge
@@ -113,8 +109,6 @@ PASS /valgrind/args/no_args
 PASS /valgrind/args/one_arg
 PASS /valgrind/args/one_arg_with_spaces
 PASS /valgrind/args/multiple_args
-PASS /valgrind/args/zero_length_arg
-PASS /valgrind/args/zero_length_arg_skip
 PASS /valgrind/args/invalid_arg
 PASS /valgrind/args/invalid_arg_skip
 PASS /valgrind/args/double_dash_skip
@@ -123,8 +117,6 @@ PASS /valgrind/args/no_args_nomerge
 PASS /valgrind/args/one_arg_nomerge
 PASS /valgrind/args/one_arg_with_spaces_nomerge
 PASS /valgrind/args/multiple_args_nomerge
-PASS /valgrind/args/zero_length_arg_nomerge
-PASS /valgrind/args/zero_length_arg_skip_nomerge
 PASS /valgrind/args/invalid_arg_nomerge
 PASS /valgrind/args/invalid_arg_skip_nomerge
 PASS /valgrind/args/double_dash_skip_nomerge
@@ -224,8 +216,6 @@ PASS /bash/args/no_args
 PASS /bash/args/one_arg
 PASS /bash/args/one_arg_with_spaces
 PASS /bash/args/multiple_args
-PASS /bash/args/zero_length_arg
-PASS /bash/args/zero_length_arg_skip
 PASS /bash/args/invalid_arg
 PASS /bash/args/invalid_arg_skip
 PASS /bash/args/double_dash_skip
@@ -234,8 +224,6 @@ PASS /bash/args/no_args_nomerge
 PASS /bash/args/one_arg_nomerge
 PASS /bash/args/one_arg_with_spaces_nomerge
 PASS /bash/args/multiple_args_nomerge
-PASS /bash/args/zero_length_arg_nomerge
-PASS /bash/args/zero_length_arg_skip_nomerge
 PASS /bash/args/invalid_arg_nomerge
 PASS /bash/args/invalid_arg_skip_nomerge
 PASS /bash/args/double_dash_skip_nomerge
@@ -333,8 +321,6 @@ PASS /python/args/no_args
 PASS /python/args/one_arg
 PASS /python/args/one_arg_with_spaces
 PASS /python/args/multiple_args
-PASS /python/args/zero_length_arg
-PASS /python/args/zero_length_arg_skip
 PASS /python/args/invalid_arg
 PASS /python/args/invalid_arg_skip
 PASS /python/args/double_dash_skip
@@ -343,8 +329,6 @@ PASS /python/args/no_args_nomerge
 PASS /python/args/one_arg_nomerge
 PASS /python/args/one_arg_with_spaces_nomerge
 PASS /python/args/multiple_args_nomerge
-PASS /python/args/zero_length_arg_nomerge
-PASS /python/args/zero_length_arg_skip_nomerge
 PASS /python/args/invalid_arg_nomerge
 PASS /python/args/invalid_arg_skip_nomerge
 PASS /python/args/double_dash_skip_nomerge

@@ -55,11 +55,8 @@ int ptef_runner_v0(int argc, char **argv, int jobs, char **ignored, int flags)
     if (!base)
         base = basename(argv[0]);
 
-    argc--;
-    argv++;
-
     int rc;
-    if (argc <= 0) {
+    if (argc < 2) {
         rc = for_each_exec(base, jobs, ignored);
     } else {
         if (flags & PTEF_NOMERGE)
