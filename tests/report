@@ -65,7 +65,7 @@ function locking_nowait {
 	# ptef-report should have exited without writing out results
 	assert_contents '' "$tmpdir/results_fd_out"
 	assert_contents '' "$tmpdir/report_out"
-	assert_contents '2' "$tmpdir/report_exitval"
+	assert_contents $'2\n' "$tmpdir/report_exitval"
 }
 
 # Test that ptef_report ignores any locking when PTEF_NOLOCK is passed
@@ -83,17 +83,17 @@ function locking_nolock {
 	cat "$tmpdir/lockfifo"
 	wait
 	# ptef-report should have reported to both outputs, ignoring lock
-	assert_contents $'PASS[\t ]*/testname' "$tmpdir/results_fd_out"
-	assert_contents $'PASS[\t ]*/testname' "$tmpdir/report_out"
+	assert_contents $'PASS[\t ]*/testname\n' "$tmpdir/results_fd_out"
+	assert_contents $'PASS[\t ]*/testname\n' "$tmpdir/report_out"
 }
 
 # Test that PTEF_RAWNAME outputs testname as-is, unchanged
 function rawname {
 	assert_ptef_report -r PASS testname >"$tmpdir/report_out"
-	assert_contents $'PASS[\t ]*testname' "$tmpdir/report_out"
+	assert_contents $'PASS[\t ]*testname\n' "$tmpdir/report_out"
 	PTEF_PREFIX=/prefix \
 		assert_ptef_report -r PASS testname >"$tmpdir/report_out"
-	assert_contents $'PASS[\t ]*testname' "$tmpdir/report_out"
+	assert_contents $'PASS[\t ]*testname\n' "$tmpdir/report_out"
 }
 
 # Test custom color mapping
@@ -102,21 +102,21 @@ function color_map {
 	# color reporting sanity
 	TEST_WRAPPER=ttee \
 		assert_ptef_report PASS testname >"$tmpdir/report_out"
-	assert_contents "$colorpass"$'[\t ]*/testname' "$tmpdir/report_out"
+	assert_contents "$colorpass"$'[\t ]*/testname\n' "$tmpdir/report_out"
 	# specifying custom color map resets the default one
 	TEST_WRAPPER=ttee \
 		assert_ptef_report -c "FAIL FOO" PASS testname >"$tmpdir/report_out"
-	assert_contents 'PASS[\t ]*/testname' "$tmpdir/report_out"
+	assert_contents $'PASS[\t ]*/testname\n' "$tmpdir/report_out"
 	# the actual status rewrite
 	TEST_WRAPPER=ttee \
 		assert_ptef_report -c "ONE FOO" -c "TWO BAR" ONE testname >"$tmpdir/report_out"
-	assert_contents 'FOO[\t ]*/testname' "$tmpdir/report_out"
+	assert_contents $'FOO[\t ]*/testname\n' "$tmpdir/report_out"
 	TEST_WRAPPER=ttee \
 		assert_ptef_report -c "ONE FOO" -c "TWO BAR" TWO testname >"$tmpdir/report_out"
-	assert_contents 'BAR[\t ]*/testname' "$tmpdir/report_out"
+	assert_contents $'BAR[\t ]*/testname\n' "$tmpdir/report_out"
 	# non-colored output should remain unchanged
 	assert_ptef_report -c "ONE FOO" -c "TWO BAR" ONE testname >"$tmpdir/report_out"
-	assert_contents 'ONE[\t ]*/testname' "$tmpdir/report_out"
+	assert_contents $'ONE[\t ]*/testname\n' "$tmpdir/report_out"
 }
 
 

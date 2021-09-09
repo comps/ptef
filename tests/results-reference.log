@@ -104,6 +104,8 @@ PASS /cli/vars/ptef_silent
 PASS /cli/vars/ptef_silent_opt
 PASS /cli/vars/ptef_nologs
 PASS /cli/vars/ptef_nologs_opt
+PASS /cli/vars/ptef_shell
+PASS /cli/vars/ptef_shell_opt
 PASS /cli/vars/ptef_color
 PASS /cli/vars
 PASS /cli
@@ -213,6 +215,8 @@ PASS /valgrind/vars/ptef_silent
 PASS /valgrind/vars/ptef_silent_opt
 PASS /valgrind/vars/ptef_nologs
 PASS /valgrind/vars/ptef_nologs_opt
+PASS /valgrind/vars/ptef_shell
+PASS /valgrind/vars/ptef_shell_opt
 PASS /valgrind/vars/ptef_color
 PASS /valgrind/vars
 PASS /valgrind
@@ -320,6 +324,8 @@ PASS /bash/vars/ptef_silent
 PASS /bash/vars/ptef_silent_opt
 PASS /bash/vars/ptef_nologs
 PASS /bash/vars/ptef_nologs_opt
+PASS /bash/vars/ptef_shell
+PASS /bash/vars/ptef_shell_opt
 PASS /bash/vars/ptef_color
 PASS /bash/vars
 PASS /bash
@@ -427,6 +433,8 @@ PASS /python/vars/ptef_silent
 PASS /python/vars/ptef_silent_opt
 PASS /python/vars/ptef_nologs
 PASS /python/vars/ptef_nologs_opt
+PASS /python/vars/ptef_shell
+PASS /python/vars/ptef_shell_opt
 PASS /python/vars/ptef_color
 PASS /python/vars
 PASS /python

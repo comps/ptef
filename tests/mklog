@@ -36,7 +36,7 @@ function testname_empty {
 function write_log {
 	assert_ptef_mklog testname <<<"this is logged"
 	[ -f logs/testname.log ]
-	assert_contents 'this is logged' logs/testname.log
+	assert_contents $'this is logged\n' logs/testname.log
 }
 
 # Test binary data written to the log
@@ -66,9 +66,9 @@ function log_rotation {
 	[ ! -f logs/testname.log.0 ]
 	# check log file content - we rotated i=0 out,
 	# so .log is 10, .log.1 is 9, .., .log.9 is 1
-	assert_contents '10' logs/testname.log
+	assert_contents $'10\n' logs/testname.log
 	for i in {9..1}; do
-		assert_contents "$((10-i))" "logs/testname.log.$i"
+		assert_contents "$((10-i))"$'\n' "logs/testname.log.$i"
 	done
 }
 
@@ -78,7 +78,7 @@ function norotate {
 	assert_ptef_mklog -r testname <<<"2"
 	[ -f logs/testname.log ]
 	[ ! -f logs/testname.log.* ]
-	assert_contents '2' logs/testname.log
+	assert_contents $'2\n' logs/testname.log
 }
 
 

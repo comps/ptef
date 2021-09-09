@@ -16,9 +16,9 @@ function ptef_run {
 	mkfile > executable
 	chmod +x executable
 	assert_ptef_runner > "$tmpdir/runner_out"
-	assert_contents $'PASS[\t ]*/executable' "$tmpdir/runner_out"
+	assert_contents $'PASS[\t ]*/executable\n' "$tmpdir/runner_out"
 	PTEF_RUN=1 assert_ptef_runner > "$tmpdir/runner_out"
-	assert_contents $'RUN[\t ]*/executable\nPASS[\t ]*/executable' \
+	assert_contents $'RUN[\t ]*/executable\nPASS[\t ]*/executable\n' \
 		"$tmpdir/runner_out"
 }
 # Test that cli -r option exports PTEF_RUN and the runner honors it
@@ -26,8 +26,8 @@ function ptef_run_opt {
 	make_var_printer PTEF_RUN > executable
 	chmod +x executable
 	assert_ptef_runner -r > "$tmpdir/runner_out"
-	assert_contents '1' exec_log
-	assert_contents $'RUN[\t ]*/executable\nPASS[\t ]*/executable' \
+	assert_contents $'1\n' exec_log
+	assert_contents $'RUN[\t ]*/executable\nPASS[\t ]*/executable\n' \
 		"$tmpdir/runner_out"
 }
 
@@ -78,7 +78,7 @@ function ptef_silent {
 	chmod +x executable
 	PTEF_SILENT=1 ptef-runner \
 		>"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
-	assert_contents 'this is stdout' "$tmpdir/runner_out"
+	assert_contents $'this is stdout\n' "$tmpdir/runner_out"
 }
 
 # Test that cli -s option exports PTEF_SILENT and the runner honors it
@@ -87,8 +87,8 @@ function ptef_silent_opt {
 	echo 'echo "this is stdout"' >> executable
 	chmod +x executable
 	ptef-runner -s >"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
-	assert_contents '1' exec_log
-	assert_contents 'this is stdout' "$tmpdir/runner_out"
+	assert_contents $'1\n' exec_log
+	assert_contents $'this is stdout\n' "$tmpdir/runner_out"
 }
 
 # Test that PTEF_NOLOGS results in executable stderr not being redirected
@@ -103,7 +103,7 @@ function ptef_nologs {
 		>"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
 	assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/runner_out"
 	[ ! -d logs ]
-	assert_contents 'this is stderr' "$tmpdir/runner_err"
+	assert_contents $'this is stderr\n' "$tmpdir/runner_err"
 }
 
 # Test that cli -v option exports PTEF_NOLOGS and the runner honors it
@@ -112,8 +112,8 @@ function ptef_nologs_opt {
 	echo 'echo "this is stderr" >&2' >> executable
 	chmod +x executable
 	ptef-runner -v >"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
-	assert_contents '1' exec_log
-	assert_contents 'this is stderr' "$tmpdir/runner_err"
+	assert_contents $'1\n' exec_log
+	assert_contents $'this is stderr\n' "$tmpdir/runner_err"
 }
 
 # Test that PTEF_SHELL makes the runner launch shell and do nothing more
@@ -177,38 +177,38 @@ function ptef_color {
 	assert_ptef_runner >"$tmpdir/runner_out"
 	assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/runner_out"
 	assert_ptef_report PASS testname >"$tmpdir/report_out"
-	assert_contents $'PASS[\t ]*/testname' "$tmpdir/report_out"
+	assert_contents $'PASS[\t ]*/testname\n' "$tmpdir/report_out"
 	# output to file + var 0 = no color
 	PTEF_COLOR=0 assert_ptef_runner >"$tmpdir/runner_out"
 	assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/runner_out"
 	PTEF_COLOR=0 assert_ptef_report PASS testname >"$tmpdir/report_out"
-	assert_contents $'PASS[\t ]*/testname' "$tmpdir/report_out"
+	assert_contents $'PASS[\t ]*/testname\n' "$tmpdir/report_out"
 	# output to file + var 1 = color
 	PTEF_COLOR=1 assert_ptef_runner >"$tmpdir/runner_out"
 	assert_grep "^$colorpass[[:space:]]\+/executable$" "$tmpdir/runner_out"
 	PTEF_COLOR=1 assert_ptef_report PASS testname >"$tmpdir/report_out"
-	assert_contents "$colorpass"$'[\t ]*/testname' "$tmpdir/report_out"
+	assert_contents "$colorpass"$'[\t ]*/testname\n' "$tmpdir/report_out"
 	# output to terminal + no var = color
 	TEST_WRAPPER=ttee \
 		assert_ptef_runner >"$tmpdir/runner_out"
 	assert_grep "^$colorpass[[:space:]]\+/executable$" "$tmpdir/runner_out"
 	TEST_WRAPPER=ttee \
 		assert_ptef_report PASS testname >"$tmpdir/report_out"
-	assert_contents "$colorpass"$'[\t ]*/testname' "$tmpdir/report_out"
+	assert_contents "$colorpass"$'[\t ]*/testname\n' "$tmpdir/report_out"
 	# output to terminal + var 0 = no color
 	TEST_WRAPPER=ttee PTEF_COLOR=0 \
 		assert_ptef_runner >"$tmpdir/runner_out"
 	assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/runner_out"
 	TEST_WRAPPER=ttee PTEF_COLOR=0 \
 		assert_ptef_report PASS testname >"$tmpdir/report_out"
-	assert_contents $'PASS[\t ]*/testname' "$tmpdir/report_out"
+	assert_contents $'PASS[\t ]*/testname\n' "$tmpdir/report_out"
 	# output to terminal + var 1 = color
 	TEST_WRAPPER=ttee PTEF_COLOR=1 \
 		assert_ptef_runner >"$tmpdir/runner_out"
 	assert_grep "^$colorpass[[:space:]]\+/executable$" "$tmpdir/runner_out"
 	TEST_WRAPPER=ttee PTEF_COLOR=1 \
 		assert_ptef_report PASS testname >"$tmpdir/report_out"
-	assert_contents "$colorpass"$'[\t ]*/testname' "$tmpdir/report_out"
+	assert_contents "$colorpass"$'[\t ]*/testname\n' "$tmpdir/report_out"
 }
 
 

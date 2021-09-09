@@ -67,7 +67,7 @@ function open_fds {
 	chmod +x executable
 	assert_ptef_runner > "$tmpdir/runner_out"
 	valgrind_fd="${TEST_VALGRIND_FD:+$'\n'$TEST_VALGRIND_FD}"
-	assert_contents $'0\n1\n2'"$valgrind_fd" exec_log
+	assert_contents $'0\n1\n2'"$valgrind_fd"$'\n' exec_log
 }
 
 # Test that the runner emits a RUN result when it runs an executable
@@ -88,8 +88,8 @@ function run_before_pass {
 	cp "$tmpdir/runner_out" "$tmpdir/midrun_out"
 	echo > fifolock
 	wait
-	assert_contents $'RUN[\t ]*/executable' "$tmpdir/midrun_out"
-	assert_contents $'RUN[\t ]*/executable\nPASS[\t ]*/executable' \
+	assert_contents $'RUN[\t ]*/executable\n' "$tmpdir/midrun_out"
+	assert_contents $'RUN[\t ]*/executable\nPASS[\t ]*/executable\n' \
 		"$tmpdir/runner_out"
 }
 

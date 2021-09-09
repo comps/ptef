@@ -13,14 +13,14 @@ function export_var_file {
 	mkfile > executable
 	chmod +x executable
 	assert_ptef_runner > "$tmpdir/runner_out"
-	assert_contents 'ptef-runner' exec_log
+	assert_contents $'ptef-runner\n' exec_log
 }
 function export_var_dir {
 	mkdir subd
 	mkfile > subd/ptef-runner
 	chmod +x subd/ptef-runner
 	assert_ptef_runner > "$tmpdir/runner_out"
-	assert_contents 'ptef-runner' subd/exec_log
+	assert_contents $'ptef-runner\n' subd/exec_log
 }
 
 # Test that PTEF_BASENAME defaults to filesystem-based argv0
@@ -30,7 +30,7 @@ function argv0_default {
 	link_from_PATH ptef-runner testrun
 	[ -x testrun ]
 	./testrun >"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
-	assert_contents 'testrun' exec_log
+	assert_contents $'testrun\n' exec_log
 }
 
 # Test that default basename can be set via CLI -a option
@@ -38,7 +38,7 @@ function opt_a_over_argv0 {
 	mkfile > executable
 	chmod +x executable
 	assert_ptef_runner -a testrun > "$tmpdir/runner_out"
-	assert_contents 'testrun' exec_log
+	assert_contents $'testrun\n' exec_log
 }
 
 # Test that the runner respects PTEF_BASENAME over its basename(argv[0])
@@ -46,7 +46,7 @@ function var_over_argv0 {
 	mkfile > executable
 	chmod +x executable
 	PTEF_BASENAME=testrun assert_ptef_runner > "$tmpdir/runner_out"
-	assert_contents 'testrun' exec_log
+	assert_contents $'testrun\n' exec_log
 }
 
 # Test that PTEF_BASENAME is preferred over -a (default basename)
@@ -54,7 +54,7 @@ function var_over_opt_a {
 	mkfile > executable
 	chmod +x executable
 	PTEF_BASENAME=varrun assert_ptef_runner -a optrun > "$tmpdir/runner_out"
-	assert_contents 'varrun' exec_log
+	assert_contents $'varrun\n' exec_log
 }
 
 # Test that cli -A re-sets PTEF_BASENAME, overriding any existing one
@@ -62,7 +62,7 @@ function opt_A_over_var {
 	mkfile > executable
 	chmod +x executable
 	PTEF_BASENAME=varrun assert_ptef_runner -A optrun > "$tmpdir/runner_out"
-	assert_contents 'optrun' exec_log
+	assert_contents $'optrun\n' exec_log
 }
 
 # Test that non-existing pre-set PTEF_BASENAME results in no subdir being run
