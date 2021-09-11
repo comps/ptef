@@ -138,7 +138,7 @@ int for_each_merged_arg(int argc, char **argv, char *basename, int jobs)
 
     // array for storing chunks of argv[] that share the same prefix
     // (+1 is for the terminating NULL ptr, execute()'s argv[0] is in argc)
-    if ((merged = malloc((argc+1)*sizeof(argv))) == NULL) {
+    if ((merged = malloc((argc+1)*sizeof(*argv))) == NULL) {
         PERROR("malloc");
         goto err;
     }

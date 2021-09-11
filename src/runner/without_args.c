@@ -30,8 +30,7 @@ static int exec_entry_sort_cmp(const void *a, const void *b)
 // execute() can be treated as an error if execution fails
 static bool is_exec(int parentfd, char *name)
 {
-    int ret;
-    if ((ret = faccessat(parentfd, name, X_OK, 0)) == -1) {
+    if (faccessat(parentfd, name, X_OK, 0) == -1) {
         if (errno != EACCES && errno != ENOENT)
             PERROR_FMT("faccessat %s", name);
         return false;

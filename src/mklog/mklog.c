@@ -37,7 +37,7 @@ static int open_log(int dirfd, char *testname)
 
     char *pos = from;
     pos = memcpy_append(pos, testname, testname_len);
-    pos = memcpy_append(pos, tmpl_suffix, sizeof(tmpl_suffix));
+    memcpy_append(pos, tmpl_suffix, sizeof(tmpl_suffix));
 
     if ((to = strdup(from)) == NULL) {
         PERROR("strdup");
@@ -116,7 +116,7 @@ static int open_truncated_log(int dirfd, char *testname)
 
     char *pos = logfile;
     pos = memcpy_append(pos, testname, testname_len);
-    pos = memcpy_append(pos, suffix, sizeof(suffix));
+    memcpy_append(pos, suffix, sizeof(suffix));
 
     // create and open a new log
     int fd = openat_safe(dirfd, logfile, O_CREAT | O_WRONLY | O_TRUNC, 0644);

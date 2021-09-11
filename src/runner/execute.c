@@ -282,13 +282,16 @@ int execute(char *file, enum exec_entry_type typehint, char **argv,
     child = fork();
     switch (child) {
         case -1:
+            free(name_duped);
             return -1;
         case 0:
             execute_child(basename, argv, child_dir);
             break;
         default:
-            if (start_job(child, name_duped, state) == -1)
+            if (start_job(child, name_duped, state) == -1) {
+                free(name_duped);
                 return -1;
+            }
             break;
     }
 
