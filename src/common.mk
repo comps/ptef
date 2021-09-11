@@ -2,7 +2,7 @@ SHELL		:= /bin/bash
 
 MACHINE		:= $(shell uname -m)
 
-CFLAGS		?= -O2 -flto -Wall -Wextra -Werror -g
+CFLAGS		?= -O2 -flto -Wall -Wextra -g
 
 # https://www.gnu.org/prep/standards/html_node/Directory-Variables.html
 # also similar to what RPM uses
