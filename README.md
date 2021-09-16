@@ -14,7 +14,7 @@ implementation does so (no GNU extensions).
 The specification above is pretty simple, but this is the basic idea:
 
 * Have a directory tree of executable files (and other unrelated data)
-* Run everything in CWD
+* Process files in CWD
   * If a file is executable, just run it
   * If it's a directory, see if there's an executable file inside it
     called after `basename(argv[0])` of the current process
@@ -98,3 +98,35 @@ cause issues on persistent systems.
 Unless otherwise specified (such as at a beginning of a file), all content in
 this repository is provided under the MIT license.  
 See the [LICENSE](LICENSE) file for details.
+
+## Portability
+
+The PTEF specification itself can be implemented in virtually any programming
+language on any platform or libc which provides access to POSIX.1-2008 C API,
+namely the functions mentioned in the specification.
+
+The reference implementation is mostly-C99 with `_POSIX_C_SOURCE=200809`
+extensions, the nonstandard exceptions being several occurences of (fairly
+commonly supported) function attributes (`__attribute__`).  
+The python3 interface to the reference implementation currently requires
+python 3.6 or newer.  
+The bash interface (bash builtins, not standalone CLI utilities) requires
+bash 4.4 or newer.
+
+Note that the build process is smart enough to detect the lack of `python3`
+in PATH, or the lack of bash development headers, and avoids building those
+interfaces.
+
+The build system used for the reference implementation is GNU Make (using
+several of GNU-specific extensions) - this should be fairly widely available
+as `gmake` on \*nixes.  
+The build system also uses `/bin/bash` to avoid the myriad of differences
+between POSIX-like shells, though any 3.x or newer version should work just
+fine.
+
+The biggest (temporary) portability blocker right now is the dependence on
+GNU linker due to symbol (ABI) versioning via `--version-script` and systems
+with shared library support. A possible fix to this is using `libtool`, though
+I was unable to easily figure out how to use it *while* providing support for
+symbol versioning on GNU ld and `CFLAGS`/`LDFLAGS` like `-flto` or `-fPIE`.
+Feel free to submit patches / reach out in case of linking issues. Thanks!
