@@ -1,0 +1,3 @@
+# this file contains full paths to tests which are expected to FAIL
+
+/subdir/third-level/2-deep

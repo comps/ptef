@@ -1,0 +1,19 @@
+#!/usr/bin/python3
+
+import ptef
+
+
+ptef.set_status_colors({
+    'PASS':  '\033[1;32mPASS\033[0m ',
+    'FAIL':  '\033[1;31mFAIL\033[0m ',
+    'RUN':   '\033[1;34mRUN\033[0m  ',
+    'ERROR': '\033[1;41mERROR\033[0m',
+})
+
+ptef.report('PASS', 'some-test')
+ptef.report('FAIL', 'some-test')
+ptef.report('RUN', 'some-test')
+ptef.report('ERROR', 'some-test')
+
+with ptef.mklog('some-test') as f:
+    f.write("this is some-test errout\n".encode('utf-8'))

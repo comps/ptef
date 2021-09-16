@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# this could be any shell
+
+custom_report() {
+	ptef-report \
+		-c $'PASS \e[1;32mPASS\e[0m ' \
+		-c $'FAIL \e[1;31mFAIL\e[0m ' \
+		-c $'RUN \e[1;34mRUN\e[0m  ' \
+		-c $'ERROR \e[1;41mERROR\e[0m' \
+		"$@"
+}
+
+custom_report "PASS" "some-test"
+custom_report "FAIL" "some-test"
+custom_report "RUN" "some-test"
+custom_report "ERROR" "some-test"
+
+echo "this is some-test errout" | ptef-mklog "some-test"
+
+exit 0

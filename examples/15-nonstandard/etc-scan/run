@@ -1,0 +1,41 @@
+#!/bin/bash
+
+. /usr/share/ptef/builtins.bash
+
+function run_scan {
+	local line=
+	while IFS= read -d '' -r line; do
+		if [ -x "$line" ]; then
+			ptef_report "FAIL" "${line#/}"
+		else
+			ptef_report "PASS" "${line#/}"
+		fi
+	done < <(find -H "$@" -ignore_readdir_race -type f -print0 2>/dev/null)
+	wait $!
+	if [ "$?" -ne 0 ]; then
+		echo "find cmd failed" >&2
+		return 1
+	fi
+
+	return 0
+}
+
+if ! command -v find >/dev/null; then
+	echo "find command not found" >&2
+	exit 1
+fi
+
+if [ $# -gt 0 ]; then
+	args=("$@")
+else
+	args=(etc)  # defaults
+fi
+
+# strip all leading /, prefix a single one to each arg
+rootargs=()
+for arg in "${args[@]}"; do
+	[[ $arg =~ ^/*(.*) ]]
+	rootargs+=("/${BASH_REMATCH[1]}")
+done
+
+run_scan "${rootargs[@]}"

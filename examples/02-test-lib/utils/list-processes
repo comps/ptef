@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# this file is actually irrelevant to this exercise,
+# it is here only to show that the runner doesn't execute it
+
+ps -A

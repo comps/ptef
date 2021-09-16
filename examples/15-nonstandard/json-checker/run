@@ -1,0 +1,61 @@
+#!/usr/bin/python3
+
+import sys, os, pwd
+import glob, json
+import ptef
+
+
+def test_exists(j):
+    status = 'PASS' if os.path.exists(j['path']) else 'FAIL'
+    ptef.report(status, j['name'])
+
+def test_permcheck(j):
+    expected = int(j['expect'], 8)
+    st = os.stat(j['path'])
+    actual = st.st_mode & 0o7777
+    status = 'PASS' if expected == actual else 'FAIL'
+    ptef.report(status, j['name'])
+
+def test_ownercheck(j):
+    st = os.stat(j['path'])
+    owner = pwd.getpwuid(os.stat(j['path']).st_uid).pw_name
+    status = 'PASS' if owner == j['expect'] else 'FAIL'
+    ptef.report(status, j['name'])
+
+
+def run_by_action(test):
+    action = test['action']
+    if action == 'exists':
+        test_exists(test)
+    elif action == 'permcheck':
+        test_permcheck(test)
+    elif action == 'ownercheck':
+        test_ownercheck(test)
+
+
+prefix = os.getenv('PTEF_PREFIX', '')
+
+if len(sys.argv) > 1:
+    # with args
+    for arg in sys.argv[1:]:
+        arg = arg.strip('/')
+        if '/' in arg:
+            fname, testname = arg.split('/', 1)
+        else:
+            fname = arg
+            testname = None
+        os.environ['PTEF_PREFIX'] = '/'.join((prefix, fname))
+        with open(f'{fname}.json') as f:
+            if testname:
+                test = next(x for x in json.load(f) if x['name'] == testname)
+                run_by_action(test)
+            else:
+                for test in json.load(f):
+                    run_by_action(test)
+else:
+    # without args
+    for fname in glob.glob('*.json'):
+        os.environ['PTEF_PREFIX'] = '/'.join((prefix, fname[:-5]))
+        with open(fname) as f:
+            for test in json.load(f):
+                run_by_action(test)

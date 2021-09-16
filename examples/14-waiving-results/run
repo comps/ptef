@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# redirect (unsafe) stdout to a log (useful only for debugging)
+# while outputting unformatted results to PTEF_RESULTS_FD
+#
+# then redirect the unformatted PTEF_RESULTS_FD to a stdin of
+# the waive-results tool (via a pipe) while re-setting PTEF_RESULTS_FD
+# of the waive-results tool itself to a "final" waived log file,
+# letting its stdout remain connected to the current tty
+#
+# this results in a seamless experience of the waived results being
+# shown as if they were coming from the test suite
+
+base=$(basename "$0")
+
+set -o pipefail
+
+export PTEF_LOGS="$PWD/all_logs"
+
+exec {RESULT_LOG}>results-final.log
+{
+	PTEF_RESULTS_FD="$RESULT_PIPE" ptef-runner -a "$base" "$@"
+} {RESULT_PIPE}>&1 >results-orig.log | \
+	PTEF_RESULTS_FD="$RESULT_LOG" \
+		./utils/waive-results waives
+rc=$?
+
+exec {RESULT_LOG}>&-
+
+exit "$rc"

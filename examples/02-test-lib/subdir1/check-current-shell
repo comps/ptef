@@ -1,0 +1,10 @@
+#!/bin/bash -x
+
+. ../utils/testlib.sh
+
+owner=$(get_pid_owner $$)
+
+us=$(whoami)
+
+# return 1 if owner of this shell is != us (should never happen)
+[ "$owner" = "$us" ]

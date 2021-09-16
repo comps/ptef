@@ -1,0 +1,13 @@
+[
+  {
+    "name": "is-in-cwd",
+    "action": "exists",
+    "path": "./run"
+  },
+  {
+    "name": "has-executable-perms",
+    "action": "permcheck",
+    "expect": "0755",
+    "path": "./run"
+  }
+]

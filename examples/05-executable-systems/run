@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# ignore any 'build' executables anywhere
+
+base=$(basename "$0")
+ptef-runner -a "$base" -i build "$@"

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo "Doing setup in ${PTEF_PREFIX:-/}"
+
+base=$(basename "$0")
+ptef-runner -a "$base" "$@"
+ret=$?
+
+echo "Doing cleanup in ${PTEF_PREFIX:-/}"
+
+exit $ret

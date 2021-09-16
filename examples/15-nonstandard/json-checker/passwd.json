@@ -1,0 +1,19 @@
+[
+  {
+    "name": "exists-in-etc",
+    "action": "exists",
+    "path": "/etc/passwd"
+  },
+  {
+    "name": "has-644-perms",
+    "action": "permcheck",
+    "expect": "0644",
+    "path": "/etc/passwd"
+  },
+  {
+    "name": "is-owned-by-root",
+    "action": "ownercheck",
+    "expect": "root",
+    "path": "/etc/passwd"
+  }
+]

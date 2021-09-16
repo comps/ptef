@@ -1,0 +1,14 @@
+#!/bin/bash
+
+. ../../utils/build-lib.sh
+
+# "build" some executables
+
+mkexec > 1-drilling
+mkexec > 2-towards
+mkexec > 3-the
+mkexec > 4-core
+chmod +x [0-9]*
+
+base=$(basename "$0")
+recurse "$base"

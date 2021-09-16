@@ -1,0 +1,50 @@
+#!/usr/bin/python3
+
+import sys, os
+import subprocess
+import resource
+import ptef
+
+
+def exec_with_stats(args, testname, indir=None):
+    # do double fork to get RUSAGE_CHILDREN only for the one subprocess
+    # and not accumulate RUSAGE of all children of this python program
+    if os.fork() == 0:
+        if indir:
+            os.chdir(indir)
+        with ptef.mklog(testname) as log:
+            ret = subprocess.run(args, executable=f'./{args[0]}', stderr=log)
+        # print rusage
+        rs = resource.getrusage(resource.RUSAGE_CHILDREN)
+        stats = f"user={rs.ru_utime:.3f},system={rs.ru_stime:.3f},maxrss={rs.ru_maxrss}"
+        prefix = os.getenv('PTEF_PREFIX', default='')
+        ptef.report('USAGE', f"{stats} {prefix}/{testname}", ptef.RAWNAME)
+        status = 'PASS' if ret.returncode == 0 else 'FAIL'
+        ptef.report(status, testname)
+        sys.exit(0)
+    else:
+        pid, status = os.wait()
+        if status != 0:
+            sys.exit(status)
+
+
+base = os.path.basename(sys.argv[0])
+if len(sys.argv) > 1:
+    # with args
+    for arg in sys.argv[1:]:
+        arg = arg.strip('/')
+        parts = arg.split('/', 1)
+        exec_with_stats(parts, testname=parts[0])
+else:
+    for f in os.listdir():
+        if f.startswith('.') or f == base:
+            continue
+        if os.path.isfile(f):
+            if not os.access(f, os.X_OK):
+                continue
+            exec_with_stats([f], testname=base)
+        elif os.path.isdir(f):
+            exe = os.path.join(f, base)
+            if not os.access(exe, os.X_OK):
+                continue
+            exec_with_stats([base], testname=base, indir=f)

@@ -1,0 +1,134 @@
+#!/bin/bash -x
+
+. /usr/share/ptef/builtins.bash
+
+ptef_set_status_colors \
+	$'PASS \e[1;32mPASS\e[0m' \
+	$'FAIL \e[1;31mFAIL\e[0m' \
+	$'RUN \e[1;34mRUN\e[0m ' \
+	$'CONF \e[1;33mCONF\e[0m'
+
+ltp_installed_dir="ltp-installed"
+
+# find key $1 amongst multiple space-separated key=values on a $2 line
+function get_keyval {
+	if [[ $2 =~ (^|\ )$1=\"([^\"]+) ]]; then
+		echo "${BASH_REMATCH[2]}"
+		return 0
+	elif [[ $2 =~ (^|\ )$1=([^ ]+) ]]; then
+		echo "${BASH_REMATCH[2]}"
+		return 0
+	else
+		return 1
+	fi
+}
+
+function run_ltp {
+	local cmd=(
+		./runltp
+		-f syscalls
+	)
+
+	if [ "$#" -gt 0 ]; then
+		cmd+=(-s "$1")
+	else
+		# skip long-running and/or dangerous tests
+		cmd+=(-S ../skipfile)
+	fi
+
+	local line= state="prestart" val= tname= logfd=
+	while IFS= read -r line; do
+		case "$state" in
+		prestart)
+			if [ "$line" = "<<<test_start>>>" ]; then
+				state="start"
+			fi
+			;;
+		start)
+			if [ "$line" = "<<<test_output>>>" ]; then
+				ptef_mklog "$tname" logfd || break
+				state="output"
+				continue
+			fi
+			if val=$(get_keyval "tag" "$line"); then
+				tname="$val"
+				if [ -n "$PTEF_RUN" ]; then
+					ptef_report "RUN" "$tname"
+				fi
+			fi
+			;;
+		output)
+			if [ "$line" = "<<<execution_status>>>" ]; then
+				exec {logfd}>&-
+				state="status"
+				continue
+			fi
+			printf "%s\n" "$line" >&"$logfd"
+			;;
+		status)
+			if [ "$line" = "<<<test_end>>>" ]; then
+				state="prestart"
+			fi
+			if val=$(get_keyval "termination_id" "$line"); then
+				case "$val" in
+					0)  ptef_report "PASS" "$tname" ;;
+					32) ptef_report "CONF" "$tname" ;;
+					*)  ptef_report "FAIL" "$tname" ;;
+				esac
+			fi
+			;;
+		esac
+	done < <(cd "$ltp_installed_dir" && "${cmd[@]}")
+
+	# don't track this; runltp fails on test failure as well
+	#wait $!
+	#if [ "$?" -ne 0 ]; then
+	#	echo "runltp cmd failed: ${cmd[@]}" >&2
+	#	return 1
+	#fi
+
+	if [ "$state" != "prestart" ]; then
+		echo "execution ended in a non-terminating state: $state" >&2
+		return 1
+	fi
+
+	return 0
+}
+
+if [ ! -x "$ltp_installed_dir/runltp" ]; then
+	echo "'runltp' executable not found in $PWD/$ltp_installed_dir" >&2
+	exit 1
+fi
+
+if [ "$EUID" != "0" ]; then
+	echo "LTP must be run as root" >&2
+	exit 1
+fi
+
+# cannot print warning on non-terminal, abort
+if [ ! -t 0 ]; then
+	echo "will not continue non-interactively" >&2
+	exit 1
+fi
+
+if [ "$#" -eq 0 ]; then
+echo "You are about to execute the syscall tests present in LTP."
+echo "The LTP suite *will* modify the system it's running on - adding new"
+echo "unix users, changing sysctls, using losetup(8), etc."
+echo "It should not disconnect you from ssh, but should obviously not be"
+echo "run on any systems you care about."
+echo
+echo -n "Are you sure you want to continue? [Y/N]: "
+read reply
+case "$reply" in Y|y) ;; *) exit 1 ;; esac
+fi
+
+if [ "$#" -gt 0 ]; then
+	for arg in "$@"; do
+		# strip leading /
+		[[ $arg =~ ^/*(.*) ]]
+		run_ltp "${BASH_REMATCH[1]}"
+	done
+else
+	run_ltp
+fi

@@ -1,0 +1,4 @@
+#!/bin/bash
+
+base=$(basename "$0")
+PTEF_LOGS=logdir ptef-runner -a "$base" "$@"

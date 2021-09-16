@@ -1,0 +1,7 @@
+#!/bin/bash -x
+echo running as $0 >&2
+
+ptef-report PASS virtual-test1
+ptef-report FAIL virtual-test2
+
+exit 0

@@ -1,0 +1,4 @@
+#!/bin/bash
+echo running as $0 >&2
+for ((i=0;i<1000;i++)); do /bin/true; done
+exit 0

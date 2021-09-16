@@ -1,0 +1,16 @@
+#!/bin/bash
+
+while :; do
+	sleep 1
+	ptef-report -r MARK "$(date)"
+done &
+pid=$!
+
+base=$(basename "$0")
+ptef-runner -a "$base" "$@"
+ret=$?
+
+kill -TERM "$pid"
+wait 2>/dev/null
+
+exit "$ret"

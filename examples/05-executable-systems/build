@@ -1,0 +1,12 @@
+#!/bin/bash
+
+. utils/build-lib.sh
+
+# "build" some executables
+
+mkexec > hello
+mkexec > world
+chmod +x hello world
+
+base=$(basename "$0")
+recurse "$base"

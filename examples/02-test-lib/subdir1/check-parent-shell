@@ -1,0 +1,12 @@
+#!/bin/bash -x
+
+. ../utils/testlib.sh
+
+parent=$(get_pid_parent $$)
+
+owner=$(get_pid_owner "$parent")
+
+us=$(whoami)
+
+# return 1 if owner of parent of this shell != us (should still never happen)
+[ "$owner" = "$us" ]

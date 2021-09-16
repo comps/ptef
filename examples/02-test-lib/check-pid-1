@@ -1,0 +1,8 @@
+#!/bin/bash -x
+
+. utils/testlib.sh
+
+owner=$(get_pid_owner 1)
+
+# return 1 if owner of PID 1 is != root
+[ "$owner" = "root" ]

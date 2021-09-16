@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# make any .sh files executable and *then* run ptef-runner
+
+chmod +x *.sh
+
+base=$(basename "$0")
+ptef-runner -a "$base" "$@"

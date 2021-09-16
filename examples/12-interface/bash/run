@@ -1,0 +1,20 @@
+#!/bin/bash
+
+. /usr/share/ptef/builtins.bash
+
+ptef_set_status_colors \
+	$'PASS \e[1;32mPASS\e[0m ' \
+	$'FAIL \e[1;31mFAIL\e[0m ' \
+	$'RUN \e[1;34mRUN\e[0m  ' \
+	$'ERROR \e[1;41mERROR\e[0m'
+
+ptef_report "PASS" "some-test"
+ptef_report "FAIL" "some-test"
+ptef_report "RUN" "some-test"
+ptef_report "ERROR" "some-test"
+
+ptef_mklog "some-test" LOG
+echo "this is some-test errout" >&"$LOG"
+exec {LOG}>&-  # close fd
+
+exit 0

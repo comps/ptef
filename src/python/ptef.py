@@ -115,7 +115,6 @@ def mklog(testname: str, flags: int = 0) -> typing.BinaryIO:
 
     with ptef.mklog(test) as f:
         f.write(...)
-        # or print(..., file=f)
         # or subprocess.run(['...'], stderr=f)
     """
     ctypes.set_errno(0)

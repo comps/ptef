@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo "custom setup logic"
+
+base=$(basename "$0")
+ptef-runner -a "$base" "$@"
+rc=$?
+
+echo "custom cleanup logic"
+
+exit "$rc"

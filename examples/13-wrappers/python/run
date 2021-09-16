@@ -1,0 +1,11 @@
+#!/usr/bin/python3
+
+import sys
+import ptef
+
+
+print("custom setup logic")
+
+ptef.runner(sys.argv)
+
+print("custom cleanup logic")

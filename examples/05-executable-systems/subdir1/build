@@ -1,0 +1,11 @@
+#!/bin/bash
+
+. ../utils/build-lib.sh
+
+# "build" some executables
+
+mkexec > testing
+chmod +x testing
+
+base=$(basename "$0")
+recurse "$base"
