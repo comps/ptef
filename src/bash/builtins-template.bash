@@ -1,6 +1,6 @@
 # try to make this snippet as compatible as possible
 if [ -z $BASH_VERSION ]; then
-	echo ptef/bash-builtins.sh is Bash-only.
+	echo ptef/bash-builtins.bash is Bash-only.
 	echo Do not source it from non-Bash shells.
 	exit 1
 fi
@@ -10,7 +10,7 @@ fi
 [ -z "$LIBPTEF_BASH_SOURCED" ] || return 0
 
 if [ "${BASH_VERSINFO[0]}" -lt 4 -o "${BASH_VERSINFO[0]}" -eq 4 -a "${BASH_VERSINFO[1]}" -lt 4 ]; then
-	echo "ptef/bash-builtins.sh supports only Bash 4.4+" >&2
+	echo "ptef/bash-builtins.bash supports only Bash 4.4+" >&2
 	return 1
 fi
 

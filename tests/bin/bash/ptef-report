@@ -1,6 +1,6 @@
 #!/bin/bash
 LIBPTEF_BASH="$TEST_BINDIR/bash/libptef-bash.so"
-. "$TEST_BINDIR/bash/builtins.sh"
+. "$TEST_BINDIR/bash/builtins.bash"
 
 colors=()
 while [ "$1" = "-c" ]; do

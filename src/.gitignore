@@ -5,7 +5,7 @@
 *.so.*
 *.html
 
-bash/builtins.sh
+bash/builtins.bash
 
 cli/ptef-mklog
 cli/ptef-report

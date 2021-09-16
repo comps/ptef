@@ -69,7 +69,7 @@ CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" make
 %attr(644,root,root) %{_includedir}/ptef.h
 %attr(755,root,root) %{_libdir}/libptef-bash.so
 %attr(755,root,root) %dir %{_datadir}/ptef
-%attr(644,root,root) %{_datadir}/ptef/builtins.sh
+%attr(644,root,root) %{_datadir}/ptef/builtins.bash
 %attr(644,root,root) %{_mandir}/man3/ptef_runner.3*
 %attr(644,root,root) %{_mandir}/man3/ptef_report.3*
 %attr(644,root,root) %{_mandir}/man3/ptef_mklog.3*

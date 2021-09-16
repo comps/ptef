@@ -6,7 +6,7 @@ tmpdir
 vgcore.*
 core.*
 
-bin/bash/builtins.sh
+bin/bash/builtins.bash
 bin/bash/libptef-bash.so*
 bin/python/ptef.py
 bin/cli/libptef.so*

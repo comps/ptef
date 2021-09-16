@@ -10,7 +10,7 @@ build: bin_clean
 	$(MAKE) -C ../src clean && \
 	$(MAKE) -C ../src && \
 	cp -v ../src/cli/ptef-{runner,report,mklog} ../src/lib/libptef.so.0 bin/cli/. && \
-	cp -v ../src/bash/{libptef-bash.so,builtins.sh} bin/bash/. && \
+	cp -v ../src/bash/{libptef-bash.so,builtins.bash} bin/bash/. && \
 	cp -v ../src/python/ptef.py bin/python/.
 
 .PHONY: run
@@ -22,11 +22,11 @@ bin_clean:
 	rm -f bin/valgrind/cli/{ptef-{runner,report,mklog},libptef.so.0}
 	rm -f bin/cli/{ptef-{runner,report,mklog},libptef.so.0}
 	rm -f bin/{ptef-{runner,report,mklog},libptef.so.0}
-	rm -f bin/bash/{libptef-bash.so,builtins.sh}
+	rm -f bin/bash/{libptef-bash.so,builtins.bash}
 	rm -f bin/python/ptef.py
 
 .PHONY: clean
 clean: bin_clean
 	$(MAKE) -C bin clean
-	rm -f valgrind.log results-{cli,valgrind,strace,bash,python}.log
+	rm -f valgrind.log results-current.log
 	rm -rf logs testdir tmpdir
