@@ -22,10 +22,15 @@ Recommends: bash
 Recommends: python3
 
 %description
-TBD
+A simple (KISS) specification and an example implementation of a test "runner"
+framework for system testing and/or integration and execution of test suites.
+
+The "portable" refers to its inspiration from POSIX concepts and C API - the
+specification can be implemented purely using POSIX.1-2008 and the reference
+implementation does so (no GNU extensions).
 
 %changelog
-{{{ git_changelog }}}
+{{{ ptef_git_changelog }}}
 
 %prep
 {{{ git_setup_macro }}}
@@ -60,6 +65,7 @@ CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" make
 	python3_sitelib="%{python3_sitelib}"
 
 %files
+%license LICENSE
 %attr(755,root,root) %{_bindir}/ptef-runner
 %attr(755,root,root) %{_bindir}/ptef-report
 %attr(755,root,root) %{_bindir}/ptef-mklog
@@ -75,6 +81,3 @@ CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" make
 %attr(755,root,root) %dir %{_docdir}/ptef
 %attr(644,root,root) %{_docdir}/ptef/ptef.adoc
 %pycached %{python3_sitelib}/ptef.py
-
-#%license
-

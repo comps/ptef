@@ -18,10 +18,15 @@ BuildRequires: gcc
 BuildRequires: make
 
 %description
-TBD
+A simple (KISS) specification and an example implementation of a test "runner"
+framework for system testing and/or integration and execution of test suites.
+
+The "portable" refers to its inspiration from POSIX concepts and C API - the
+specification can be implemented purely using POSIX.1-2008 and the reference
+implementation does so (no GNU extensions).
 
 %changelog
-{{{ git_changelog }}}
+{{{ ptef_git_changelog }}}
 
 %prep
 {{{ git_setup_macro }}}
@@ -56,6 +61,7 @@ CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" make
 	python3_sitelib="%{python3_sitelib}"
 
 %files
+%license LICENSE
 %attr(755,root,root) %{_bindir}/ptef-runner
 %attr(755,root,root) %{_bindir}/ptef-report
 %attr(755,root,root) %{_bindir}/ptef-mklog
@@ -70,6 +76,3 @@ CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" make
 # el7 doesn't apparently have working pycached
 %attr(644,root,root) %{python3_sitelib}/ptef.py*
 %attr(644,root,root) %{python3_sitelib}/__pycache__/ptef.*.pyc
-
-#%license
-

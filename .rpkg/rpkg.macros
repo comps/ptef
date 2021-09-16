@@ -1,8 +1,26 @@
 function ptef_git_version {
-	local version=$(git describe --long --tags HEAD)  # v0.7-113-g1a9f9a3
+	local rev="${1:-HEAD}"
+	local version=$(git describe --long --tags "$rev")  # v0.7-113-g1a9f9a3
 	version="${version#v}"     # 0.7-113-g1a9f9a3
 	version="${version//-/.}"  # 0.7.113.g1a9f9a3
 	echo -n "$version"
+}
+
+function ptef_git_changelog {
+	local rev= entry= ver=
+	for rev in $(git rev-list HEAD); do
+		# use committer date, not author date, as commits may be
+		# out-of-order after a rebase and rpmbuild then throws an error
+		# noting: %changelog not in descending chronological order
+		entry=$(LANG=C git log -1 \
+			--format='* %cd %an <%ae> - %%%%%%VER%%%%%%%n- %s' \
+			--date=format:'%a %b %d %Y' \
+			"$rev")
+		ver=$(ptef_git_version "$rev")
+		ver="$ver-1"  # release is always 1 here
+		entry="${entry/\%%%VER%%%/$ver}"
+		printf "%s\n\n" "$entry"
+	done
 }
 
 # vim:syntax=sh
