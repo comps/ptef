@@ -143,6 +143,7 @@ int for_each_merged_arg(int argc, char **argv, char *basename, int jobs)
         goto err;
     }
     int merged_idx = 1;
+    merged[merged_idx] = NULL;  // terminate
 
     char *merge_prefix = NULL;
 
@@ -152,13 +153,24 @@ int for_each_merged_arg(int argc, char **argv, char *basename, int jobs)
 
         // if a merge is ongoing and the prefix of the current arg is different
         // from the one being merged, finish the merge
-        if (merge_prefix && strcmp(prefix, merge_prefix) != 0) {
+        if (merge_prefix && (!rest || strcmp(prefix, merge_prefix) != 0)) {
             merged[merged_idx] = NULL;  // terminate
             if (execute(merge_prefix, EXEC_TYPE_UNKNOWN, merged, basename,
                         state) == -1)
                 goto err;
             merge_prefix = NULL;
             merged_idx = 1;
+            merged[merged_idx] = NULL;  // re-terminate at [1]
+        }
+
+        // if standalone (no slash), just execute without a merge
+        if (!rest) {
+            // 'merged' here provides an allocated [0] required by execute()
+            // and a NULL terminator on [1], indicating no arguments
+            if (execute(prefix, EXEC_TYPE_UNKNOWN, merged, basename,
+                        state) == -1)
+                goto err;
+            continue;
         }
 
         // start a new merge

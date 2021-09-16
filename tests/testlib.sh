@@ -28,7 +28,7 @@ function make_arg_printer {
 	{ echo "argv0: \$0"
 	  echo "argc: \$#"
 	  echo "argv: \$@"
-	} > exec_log${suffix}
+	} >> exec_log${suffix}
 	EOF
 }
 
@@ -39,7 +39,7 @@ function make_var_printer {
 	#!/bin/bash
 	if env | grep -q $varname; then echo "\$$varname"
 	else echo "unset"
-	fi > exec_log${suffix}
+	fi >> exec_log${suffix}
 	EOF
 
 }

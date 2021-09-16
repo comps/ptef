@@ -61,22 +61,13 @@ function multiple_args {
 	assert_nogrep '/exec2' "$tmpdir/runner_out"
 }
 
-# Test that no executables are run when an empty zero-length argument is given
-# (runner does not default to arg-less run)
-function zero_length_arg {
+# Test that multiple occurences of the same argument do indeed repeatedly
+# run the same executable
+function repeated_arg {
 	mk2execs
-	assert_ptef_runner "$@" '' > "$tmpdir/runner_out"
-	assert_nogrep "$@" '' "$tmpdir/runner_out"
-	assert_ptef_runner "$@" '' '' > "$tmpdir/runner_out"
-	assert_nogrep '' "$tmpdir/runner_out"
-}
-
-# Test that zero-length arg is skipped amongst other arguments
-function zero_length_arg_skip {
-	mk2execs
-	assert_ptef_runner "$@" exec1 '' exec2 > "$tmpdir/runner_out"
-	assert_grep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
-	assert_grep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+	assert_ptef_runner "$@" exec1 exec1 > "$tmpdir/runner_out"
+	assert_contents $'PASS[\t ]*/exec1\nPASS[\t ]*/exec1\n' \
+		"$tmpdir/runner_out"
 }
 
 # Test that the runner throws an error on a spec-defined invalid argument
@@ -143,6 +134,7 @@ function nonexecutable {
 + one_arg
 + one_arg_with_spaces
 + multiple_args
++ repeated_arg
 + invalid_arg
 + invalid_arg_skip
 + double_dash_skip
@@ -154,6 +146,7 @@ function no_args_nomerge { no_args -m "$@"; }
 function one_arg_nomerge { one_arg -m "$@"; }
 function one_arg_with_spaces_nomerge { one_arg_with_spaces -m "$@"; }
 function multiple_args_nomerge { multiple_args -m "$@"; }
+function repeated_arg_nomerge { multiple_args -m "$@"; }
 function invalid_arg_nomerge { invalid_arg -m "$@"; }
 function invalid_arg_skip_nomerge { invalid_arg_skip -m "$@"; }
 function double_dash_skip_nomerge { double_dash_skip -m "$@"; }
@@ -163,6 +156,7 @@ function nonexecutable_nomerge { nonexecutable -m "$@"; }
 + one_arg_nomerge
 + one_arg_with_spaces_nomerge
 + multiple_args_nomerge
++ repeated_arg_nomerge
 + invalid_arg_nomerge
 + invalid_arg_skip_nomerge
 + double_dash_skip_nomerge
@@ -170,32 +164,63 @@ function nonexecutable_nomerge { nonexecutable -m "$@"; }
 
 
 # Test that argument merging works as expected
-function merged_args {
+# - one executable with two arguments
+function merged_args_one_exec {
+	local cnt=
 	mkfile 1 > exec1
-	mkfile 2 > exec2
-	chmod +x exec1 exec2
-	# one executable with two arguments
+	chmod +x exec1
 	assert_ptef_runner "$@" exec1/arg1 exec1/arg2 > "$tmpdir/runner_out"
 	assert_grep '^argc: 2$' exec_log.1
 	assert_grep '^argv: arg1 arg2$' exec_log.1
-	# same, but with an additional different executable
-	assert_ptef_runner "$@" exec1/arg1 exec1/arg2 exec2 > "$tmpdir/runner_out"
-	assert_grep '^argv: arg1 arg2$' exec_log.1
-	assert_grep '^argc: 0$' exec_log.2
-	# one executable run twice, without arguments
-	assert_ptef_runner "$@" exec1 exec1 > "$tmpdir/runner_out"
-	assert_grep '^argc: 0$' exec_log.1  # last execution
+	# exec1 is run only once, with both args
+	[ "$(grep -c '^argc:' exec_log.1)" -eq 1 ]
 }
-function nonmerged_args {
+# - same, but with an additional different executable
+function merged_args_different {
 	mkfile 1 > exec1
 	mkfile 2 > exec2
 	chmod +x exec1 exec2
+	assert_ptef_runner "$@" exec1/arg1 exec1/arg2 exec2 > "$tmpdir/runner_out"
+	assert_grep '^argv: arg1 arg2$' exec_log.1
+	assert_grep '^argc: 0$' exec_log.2
+
+}
+# - same, but with arg-less exec1 aborting the merging
+function merged_args_argless {
+	mkfile 1 > exec1
+	chmod +x exec1
+	assert_ptef_runner "$@" exec1/arg1 exec1/arg2 exec1 > "$tmpdir/runner_out"
+	# first execution with 2 args
+	assert_grep '^argv: arg1 arg2$' exec_log.1
+	assert_grep '^argc: 2$' exec_log.1
+	# second execution with no args
+	assert_grep '^argc: 0$' exec_log.1
+}
+# - extend the repeated_arg test with actual exec_log checking
+function merged_args_repeated {
+	local cnt=
+	mkfile 1 > exec1
+	chmod +x exec1
+	assert_ptef_runner "$@" exec1 exec1 > "$tmpdir/runner_out"
+	# twice, without args
+	[ "$(grep -c '^argc: 0$' exec_log.1)" -eq 2 ]
+
+}
+function nonmerged_args {
+	local cnt=
+	mkfile 1 > exec1
+	chmod +x exec1
 	assert_ptef_runner "$@" -m exec1/arg1 exec1/arg2 > "$tmpdir/runner_out"
-	assert_grep '^argc: 1$' exec_log.1
-	assert_grep '^argv: arg2$' exec_log.1  # last execution
+	assert_grep '^argv: arg1$' exec_log.1
+	assert_grep '^argv: arg2$' exec_log.1
+	# one argument, twice
+	[ "$(grep -c '^argc: 1$' exec_log.1)" -eq 2 ]
 }
 
-+ merged_args
++ merged_args_one_exec
++ merged_args_different
++ merged_args_argless
++ merged_args_repeated
 + nonmerged_args
 
 
