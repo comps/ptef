@@ -1,7 +1,7 @@
 Name: {{{ git_name }}}
 Version: {{{ ptef_git_version }}}
 Release: 1%{?dist}
-Summary: POSIX-inspired Test Execution Framework
+Summary: Portable Test Execution Framework
 
 License: MIT
 URL: https://github.com/comps/ptef

@@ -1,6 +1,6 @@
 """
 This is the python interface of a reference implementation of the
-POSIX-inspired Test Execution Framework (PTEF).
+Portable Test Execution Framework (PTEF).
 
 It mostly maps 1:1 to the C interface while using pythonic data types,
 see the ptef_runner(3), ptef_report(3) and ptef_mklog(3) manpages.

@@ -1,4 +1,4 @@
-= POSIX-inspired Test Execution Framework
+= Portable Test Execution Framework
 :toc:
 :numbered:
 
@@ -9,8 +9,10 @@ standardize the inputs/outputs and behavior of programs implementing PTEF.
 
 This document assumes the reader is familiar with basic concepts of PTEF and is
 meant to refine and clarify the concepts, serving as an authoritative reference
-for developers implementing PTEF. +
-It chooses to trade readability for strict, unabiguous language.
+for developers implementing PTEF.
+
+End uses *are expected to deviate from the specification* as they customize
+the behavior of PTEF tooling to suit their use cases. This is fine.
 
 [[execution-and-recursion]]
 == Execution and recursion

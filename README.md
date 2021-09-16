@@ -1,55 +1,100 @@
-# POSIX-inspired Test Execution Framework (PTEF)
+# Portable Test Execution Framework (PTEF)
 
-A (fairly) simple specification and an example implementation of a test "runner"
+A simple (KISS) specification and an example implementation of a test "runner"
 framework for system testing and/or integration and execution of test suites.
 
-Currently still in active development (unstable API).
+[Read the specification here!](src/doc/ptef.adoc)
 
-## The straight dope
+The "portable" refers to its inspiration from POSIX concepts and C API - the
+specification can be implemented purely using POSIX.1-2008 and the reference
+implementation does so (no GNU extensions).
 
+## The deal
 
+The specification above is pretty simple, but this is the basic idea:
 
+* Have a directory tree of executable files (and other unrelated data)
+* Run everything in CWD
+  * If a file is executable, just run it
+  * If it's a directory, see if there's an executable file inside it
+    called after `basename(argv[0])` of the current process
+    * If so, `cd` into it and run the file there
 
+This allows for natural execution flow propagation throughout a hierarchy.
 
+Result reporting is then (and this feels revolutionary) done independently
+of this hierarchy - it should follow it, but any executable can basically
+report anything.
 
-## Basic intro
+```
+PASS  /some/dir/blabla
+FAIL  /some/dir/extra-test
+PASS  /some/dir/multi-test/x/y/z
+```
 
-### What is PTEF?
+Here, `some` and `dir` are directories, `blabla` and `extra-test` are plain
+executables - their statuses are reported by the parent logic running them
+(see above).  
+On the other hand, `multi-test` is an executable which hijacks the system and
+reports custom results for a "virtual" hierarchy. This is essential for wrapping
+other test suites and transcribing their results, or even for just reporting
+as status for every file in `/usr` that passes/fails some test.
 
-A specification of API for test execution. It tells how to run tests/suites or
-(in general) any executables, how to manage and recurse into subtrees of tests,
-how to report results, where and how to store output from tests, etc.
-All using standard POSIX interfaces.
+The reference implementation (under [`src/`](src)) provides command-line
+utilities, native C functions, Python bindings and Bash builtins, all using
+the single ABI of `libptef.so` (accessible to other languages).
 
-All of this could easily be created from scratch for an individual project,
-but PTEF aims to render this unnecessary and unify simple test execution.
+There's much more and most of it is using neat basic \*nix concepts, go see
+[the full specification](src/doc/ptef.adoc) or dive into annotated
+[examples](examples).
 
-### What isn't PTEF?
+## How to install
 
-A test library. PTEF doesn't provide any helper functions for tests themselves,
-only for management of their execution.
+### Fedora
 
-### Why should I want it?
+Pre-built RPM packages are currently available via Fedora COPR (remove `-y`
+to make it interactive).
 
-* It takes care of the topmost system level of test execution - ideal when you
-  have lots of tests and know how to write them, but don't have a good way
-  to run them in an organized way
+```sh
+dnf -y copr enable jjaburek/ptef
+dnf -y install ptef
+```
 
-* It integrates well, both down and up. Downwards with any tests or test suites
-  that are POSIX-compatible (most programming languages), ie. bash/python/C/etc.
-  Upwards with any execution managers that have a POSIX interface (incl. any
-  that can run a shell), ie. Jenkins, Travis CI, or a human being.
+### Building from source
 
-* It's just a specification. If you don't like the reference implementation,
-  you can write you own in whatever language you like.
+Note that the `make install` here needs to be done as `root` (ie. via `sudo`)
+as it will install everything onto your system.
 
-* In fact, it's encouraged to have multiple (even partial) implementations of
-  the specification (or alteration of an existing one) for specific needs, such
-  as execution of a monolithic 3rd party test suite.
+```sh
+# install build dependencies (adjust for your distribution)
+# - asciidoctor is optional - if missing, you won't get a nice HTML version
+#   of the PTEF spec in /usr/share/doc
+dnf -y install gcc make python3 bash bash-devel asciidoctor
 
-* It's KISS. It's small and does what it was designed to do, nothing more.
-  Any non-essential parts are either intentionally left undefined or optional.
+# build (use gmake on non-Linux)
+make
 
-### TODO
+# run test suite (optional)
+dnf -y install valgrind
+make test
 
-- install valgrind before `make test`
+# install (into /usr)
+make install
+```
+
+The build system respects
+["standard" directory variables](https://www.gnu.org/prep/standards/html_node/Directory-Variables.html)
+so you can install in `/usr/local` as `make install prefix=/usr/local`. It also
+honors `DESTDIR`, allowing you to set a new root for the installation, ie.
+`make install DESTDIR=$tmpdir` which works even unprivileged if `$tmpdir` is
+owned by the unprivileged user.
+
+This should really be done only in (temporary) containers, ie. in various
+CI systems, as mixing `make install`-ed binaries with RPM/DEB installs can
+cause issues on persistent systems.
+
+## License
+
+Unless otherwise specified (such as at a beginning of a file), all content in
+this repository is provided under the MIT license.  
+See the [LICENSE](LICENSE) file for details.

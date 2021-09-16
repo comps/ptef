@@ -238,7 +238,7 @@ static char *set_status_colors_help[] = {
     NULL
 };
 static char *report_help[] = {
-    "Reports STATUS for a given TESTNAME, prepending PTEF_PREFIX to the TESTNAME,"
+    "Reports STATUS for a given TESTNAME, prepending PTEF_PREFIX to the TESTNAME",
     "copying the report to PTEF_RESULTS_FD if defined.",
     "Outputs color if stdout is connected to a terminal.",
     NULL
