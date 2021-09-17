@@ -1,11 +1,11 @@
-Name: {{{ git_name }}}
-Version: {{{ ptef_git_version }}}
+Name: ptef
+Version: {{{PTEF_VERSION}}}
 Release: 1%{?dist}
 Summary: Portable Test Execution Framework
 
 License: MIT
 URL: https://github.com/comps/ptef
-Source: {{{ git_pack }}}
+Source: ptef-{{{PTEF_VERSION}}}.tar.gz
 
 # required for python rpm macros to work
 BuildRequires: python3-devel
@@ -17,7 +17,6 @@ BuildRequires: python3-devel
 BuildRequires: gcc
 BuildRequires: make
 BuildRequires: bash-devel
-BuildRequires: asciidoctor
 
 Recommends: bash
 Recommends: python3
@@ -31,10 +30,10 @@ specification can be implemented purely using POSIX.1-2008 and the reference
 implementation does so (no GNU extensions).
 
 %changelog
-{{{ ptef_git_changelog }}}
+{{{PTEF_CHANGELOG}}}
 
 %prep
-{{{ git_setup_macro }}}
+%setup
 
 %build
 # -Wno-unused-result
@@ -81,5 +80,4 @@ CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" make
 %attr(644,root,root) %{_mandir}/man3/ptef_mklog.3*
 %attr(755,root,root) %dir %{_docdir}/ptef
 %attr(644,root,root) %{_docdir}/ptef/ptef.adoc
-%attr(644,root,root) %{_docdir}/ptef/ptef.html
 %pycached %{python3_sitelib}/ptef.py
