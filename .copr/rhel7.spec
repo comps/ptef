@@ -7,8 +7,8 @@ License: MIT
 URL: https://github.com/comps/ptef
 Source: ptef-{{{PTEF_VERSION}}}.tar.gz
 
-# required for python rpm macros to work
-BuildRequires: python3-devel
+# python3_sitelib macro
+BuildRequires: python3-rpm-macros
 
 # for tests - disabled, see %%check below
 #BuildRequires: valgrind

@@ -7,8 +7,8 @@ License: MIT
 URL: https://github.com/comps/ptef
 Source: ptef-{{{PTEF_VERSION}}}.tar.gz
 
-# required for python rpm macros to work
-BuildRequires: python3-devel
+# python3_sitelib macro
+BuildRequires: python3-rpm-macros
 
 # for tests - disabled, see %%check below
 #BuildRequires: valgrind
@@ -80,4 +80,6 @@ CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" make
 %attr(644,root,root) %{_mandir}/man3/ptef_mklog.3*
 %attr(755,root,root) %dir %{_docdir}/ptef
 %attr(644,root,root) %{_docdir}/ptef/ptef.adoc
-%pycached %{python3_sitelib}/ptef.py
+# el8 also doesn't have pycached on older minors
+%attr(644,root,root) %{python3_sitelib}/ptef.py*
+%attr(644,root,root) %{python3_sitelib}/__pycache__/ptef.*.pyc

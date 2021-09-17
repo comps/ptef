@@ -27,6 +27,8 @@ function ptef_changelog {
 		ver=$(ptef_version "$rev")
 		ver="$ver-1"  # release is always 1 here
 		entry="${entry/\%%%VER%%%/$ver}"
+		# remove any % present in changelog messages (breaks specfile)
+		entry="${entry//%/}"
 		printf "%s\n\n" "$entry"
 	done
 }
