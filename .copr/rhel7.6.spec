@@ -7,9 +7,6 @@ License: MIT
 URL: https://github.com/comps/ptef
 Source: ptef-{{{PTEF_VERSION}}}.tar.gz
 
-# required for python rpm macros to work
-BuildRequires: python3-devel
-
 # for tests - disabled, see %%check below
 #BuildRequires: valgrind
 #BuildRequires: python3
@@ -59,8 +56,7 @@ CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" make
 	includedir="%{_includedir}" \
 	datadir="%{_datadir}" \
 	docdir="%{_docdir}" \
-	mandir="%{_mandir}" \
-	python3_sitelib="%{python3_sitelib}"
+	mandir="%{_mandir}"
 
 %files
 %license LICENSE
@@ -75,6 +71,5 @@ CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" make
 %attr(644,root,root) %{_mandir}/man3/ptef_mklog.3*
 %attr(755,root,root) %dir %{_docdir}/ptef
 %attr(644,root,root) %{_docdir}/ptef/ptef.adoc
-# el7 doesn't apparently have working pycached
-%attr(644,root,root) %{python3_sitelib}/ptef.py*
-%attr(644,root,root) %{python3_sitelib}/__pycache__/ptef.*.pyc
+# rhel7.6 doesn't have python3, don't package it here
+# - make install also detects this and won't install anything

@@ -56,8 +56,12 @@ tar -cvzf ".rpmbuild/SOURCES/ptef-$version.tar.gz" \
 # be missing when this SRPM is actually built elsewhere
 content=$(<"$specfile")
 content="${content//\{\{\{PTEF_VERSION\}\}\}/$version}"
-changelog=$(ptef_changelog)
-content="${content/\{\{\{PTEF_CHANGELOG\}\}\}/$changelog}"
+# save some time by not generating git-describe for every commit
+# if it is not going to be used in the end
+if [[ $content =~ \{\{\{PTEF_CHANGELOG\}\}\} ]]; then
+	changelog=$(ptef_changelog)
+	content="${content/\{\{\{PTEF_CHANGELOG\}\}\}/$changelog}"
+fi
 printf "%s" "$content" > .rpmbuild/SPECS/ptef.spec
 
 rpmbuild \
