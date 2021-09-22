@@ -129,7 +129,6 @@ argument fails sanity checks, no executables are run.
 
 [NOTE]
 --
-
 The `--` argument skip is for compatibility with runners using `getopt(3)` style
 option arguments.
 --
@@ -176,9 +175,9 @@ must be a status of `FAIL`.
 Any external code processing PTEF result lines must be able to deal with any
 non-whitespace string as status, not just `PASS` and `FAIL`. This specification
 intentionally invites custom user-defined statuses such as `SKIP`, `WAIVE`,
-`IGN`, etc. +
-Therefore, any external code should filter out any result lines with statuses
-it doesn't know how to parse.
+`ERROR`, `CONF`, `IGN`, etc. +
+Therefore, any external code should filter out any result lines it is unable to
+parse, based on the status.
 --
 
 In case of an executable in CWD, a test name is equal to the file name of
@@ -273,7 +272,7 @@ as an error condition.
 
 Inside the log location, the runner must recursively create a directory path
 equal to the value of `PTEF_PREFIX`, if it doesn't exist already. The actual
-log file is then placed inside the leaf directory of this path.
+log file is then placed inside the last directory of this path.
 
 [NOTE]
 --
@@ -359,8 +358,8 @@ This is very useful for quick debugging if any executables (tests) are
 configured to print verbose output on stderr, such as `set -x` for bash scripts.
 --
 
-The runner may still create log directories and even log files for test names
-as if it was about to redirect the output.
+Further, the runner must not perform any actions described <<logging,by the
+logging section>>.
 
 [[ptef-shell]]
 === Running an interactive shell for debugging (`PTEF_SHELL`)
@@ -375,7 +374,8 @@ of this specification.
 The shell must be launched without arguments (must be interactive) and may be
 either a child of the runner (ie. `system(3)`) or a replacement for the runner
 itself (ie. `execve(2)`). In any case, if the shell is successfully launched,
-the runner must exit with the same exit code as the shell.
+the runner must exit with the same exit code as the shell once the shell itself
+terminates.
 
 If the `PTEF_SHELL` variable contains a path to an executable file, as indicated
 by `access(2)`, it must be used as the shell executable. +
@@ -390,8 +390,8 @@ redirected to a log file.
 [NOTE]
 --
 The intended use is to launch an interactive shell deep within a hierarchy,
-giving all parent runners (which might perform non-PTEF actions) to do setup
-and cleanup as they would normally have. Ie.
+giving all parent runners (which might perform non-PTEF actions) a chance to do
+setup and cleanup as they would normally have. Ie.
 ----
 ./run /path/to/deep/subdir
 ----
