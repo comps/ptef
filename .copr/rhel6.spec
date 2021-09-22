@@ -22,7 +22,7 @@ The "portable" refers to its inspiration from POSIX concepts and C API - the
 specification can be implemented purely using POSIX.1-2008 and the reference
 implementation does so (no GNU extensions).
 
-# don't generate changelog due to rhel7 git-log being too old to support
+# don't generate changelog due to rhel6 git-log being too old to support
 # --date=format:... and there's no other reasonable way to format timestamps
 # in the unique specfile format
 %changelog
@@ -31,11 +31,7 @@ implementation does so (no GNU extensions).
 %setup
 
 %build
-# -Wno-unused-result
-#   we intentionally discard writev() result as it's used only for debugging,
-#   unfortunately, there's no __attribute__ that could create an exception,
-#   and (void) also doesn't silence it, so just disable it globally
-CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" make
+CFLAGS="${RPM_OPT_FLAGS} -Wextra" make
 
 # disable completely on copr, which builds non-native arches in chroot,
 # failing to actually run non-native binaries
@@ -59,7 +55,6 @@ CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" make
 	mandir="%{_mandir}"
 
 %files
-%license LICENSE
 %attr(755,root,root) %{_bindir}/ptef-runner
 %attr(755,root,root) %{_bindir}/ptef-report
 %attr(755,root,root) %{_bindir}/ptef-mklog
@@ -71,5 +66,5 @@ CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" make
 %attr(644,root,root) %{_mandir}/man3/ptef_mklog.3*
 %attr(755,root,root) %dir %{_docdir}/ptef
 %attr(644,root,root) %{_docdir}/ptef/ptef.adoc
-# rhel7.6 doesn't have python3, don't package it here
+# rhel6 doesn't have python3, don't package it here
 # - make install also detects this and won't install anything
