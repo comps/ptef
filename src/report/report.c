@@ -117,7 +117,7 @@ static char *default_colors[][2] = {
     { NULL }
 };
 
-__thread char *(*ptef_status_colors)[2] = default_colors;
+char *(*ptef_status_colors)[2] = default_colors;
 
 // don't use STDOUT_FILENO as the standard specifies numbers
 #define TERMINAL_FD 1

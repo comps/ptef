@@ -11,7 +11,7 @@ ptef_report \- provides result-reporting functionality of the PTEF spec
 .PP
 .BI "int ptef_report(char *" status ", char *" testname ", int " flags );
 .PP
-.BR "extern __thread char *(*" ptef_status_colors ")[2];"
+.BR "extern char *(*" ptef_status_colors ")[2];"
 .fi
 .PP
 Link with \fI\-lptef\fP.
@@ -82,6 +82,12 @@ error output without locking and using
 .BR strerror (3)
 which is not thread-safe as it may use a global table of error descriptions,
 which may be altered during runtime by another thread changing locale.
+.PP
+Furher, making changes to
+.I ptef_status_colors
+as a global variable is obviously not thread-safe and should be done prior to
+.BR ptef_report (3)
+usage in threads.
 
 .SH SEE ALSO
 .ad l

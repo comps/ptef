@@ -12,7 +12,7 @@ ptef_runner \- implements a runner as described by the PTEF spec
 .BI "int ptef_runner(int " argc ", char **" argv ", int " jobs ", char **" ignored ,
 .BI "                int " flags );
 .PP
-.BR "extern __thread char *(*" ptef_status_colors ")[2];"
+.BR "extern char *(*" ptef_status_colors ")[2];"
 .fi
 .PP
 Link with \fI\-lptef\fP.
