@@ -19,7 +19,7 @@ static pid_t waitpid_safe(pid_t pid, int *wstatus, int options)
     return ret;
 }
 
-static _Noreturn void execute_child(char *basename, char **argv, char *dir)
+static void execute_child(char *basename, char **argv, char *dir)
 {
     int logfd = -1;
     char *tmp = NULL;
