@@ -15,11 +15,15 @@ else
 
 all: libptef-bash.so builtins.bash
 
-CFLAGS += -I/usr/include/bash/include -I../include -L../lib
-CFLAGS += -std=c99 -D_POSIX_C_SOURCE=200809
+CFLAGS += -I/usr/include/bash/include -I../include
+CFLAGS += -fPIC -std=c99 -D_POSIX_C_SOURCE=200809
 
-libptef-bash.so: libptef-bash.c
-	$(CC) -shared -fPIC $(CFLAGS) -o $@ $^ -l:libptef.so.0
+LDFLAGS += -L../lib
+
+libptef-bash.o: libptef-bash.c
+
+libptef-bash.so: libptef-bash.o
+	$(CC) -shared $(LDFLAGS) -o $@ $^ -lptef
 
 builtins.bash: builtins-template.bash
 	sed 's|TEMPLATE_LIBDIR|$(libdir)|' $< > $@
@@ -33,5 +37,5 @@ install:
 endif
 
 clean:
-	rm -f libptef-bash.so
+	rm -f libptef-bash.o libptef-bash.so
 	rm -f builtins.bash
