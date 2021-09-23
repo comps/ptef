@@ -65,6 +65,7 @@ PASS /cli/logging/local_logs_prefix
 PASS /cli/logging/stdio_redir
 PASS /cli/logging
 PASS /cli/misc/parallel_jobs
+PASS /cli/misc/parallel_jobs_extrajobs
 PASS /cli/misc/open_fds
 PASS /cli/misc/run_before_pass
 PASS /cli/misc/ignored
@@ -177,6 +178,7 @@ PASS /valgrind/logging/local_logs_prefix
 PASS /valgrind/logging/stdio_redir
 PASS /valgrind/logging
 PASS /valgrind/misc/parallel_jobs
+PASS /valgrind/misc/parallel_jobs_extrajobs
 PASS /valgrind/misc/open_fds
 PASS /valgrind/misc/run_before_pass
 PASS /valgrind/misc/ignored
@@ -289,6 +291,7 @@ PASS /bash/logging/local_logs_prefix
 PASS /bash/logging/stdio_redir
 PASS /bash/logging
 PASS /bash/misc/parallel_jobs
+PASS /bash/misc/parallel_jobs_extrajobs
 PASS /bash/misc/open_fds
 PASS /bash/misc/run_before_pass
 PASS /bash/misc/ignored
@@ -399,6 +402,7 @@ PASS /python/logging/local_logs_prefix
 PASS /python/logging/stdio_redir
 PASS /python/logging
 PASS /python/misc/parallel_jobs
+PASS /python/misc/parallel_jobs_extrajobs
 PASS /python/misc/open_fds
 PASS /python/misc/run_before_pass
 PASS /python/misc/ignored

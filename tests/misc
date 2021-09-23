@@ -56,6 +56,14 @@ function parallel_jobs {
 	local final=$(<statefile)
 	[ "$final" = "7" ]
 }
+# Test that extra unused -j jobs correctly wait for the smaller amount of used
+# jobs to finish
+function parallel_jobs_extrajobs {
+	make_arg_printer > exec1
+	chmod +x exec1
+	assert_ptef_runner -j 5 > "$tmpdir/runner_out"
+	assert_contents $'PASS[\t ]*/exec1\n' "$tmpdir/runner_out"
+}
 
 # Test that the runner passes no extra open file descriptors to executables
 # (Expect fd 255 due to the executable being bash)
@@ -137,6 +145,7 @@ function cli_noargs {
 
 
 + parallel_jobs
++ parallel_jobs_extrajobs
 + open_fds
 + run_before_pass
 + ignored
