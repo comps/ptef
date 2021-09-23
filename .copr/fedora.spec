@@ -41,7 +41,11 @@ implementation does so (no GNU extensions).
 #   we intentionally discard writev() result as it's used only for debugging,
 #   unfortunately, there's no __attribute__ that could create an exception,
 #   and (void) also doesn't silence it, so just disable it globally
-CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" make
+# -fPIE / -Wl,-z,now
+#   because Fedora/RHEL defaults add it to ./configure, which we don't have
+CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra -pie -Wl,-z,now" \
+	LDFLAGS="-Wl,-z,now" \
+	make
 
 # disable completely on copr, which builds non-native arches in chroot,
 # failing to actually run non-native binaries
