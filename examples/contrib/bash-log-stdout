@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# this demonstrates how you can log all output (stdout and stderr) of all
+# commands used by this script, while still reporting results to the real
+# stdout, as required by PTEF
+
+# these 3 lines could be in a test library, sourced from here
+. /usr/share/ptef/builtins.bash
+exec {orig_stdout}>&1 1>&2
+ptef_report() { builtin ptef_report "$@" >&"$orig_stdout"; }
+
+# test logic below, any output is logged, even stdout
+
+grep root /etc/passwd
+ptef_report PASS some-sub-test
+echo bla bla

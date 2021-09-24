@@ -194,3 +194,8 @@ Users of PTEF (test suite authors) are free to break the rules!
     * This test also shows off interactive operation, which is possible with
       stdin on a console, asking user whether they really want to run the LTP
       suite, which may modify the system it's running on.
+
+## Additional examples
+
+See the [contrib/](contrib) directory for even more (free-form) examples,
+typically simplified forms of scripts from real-world use.
