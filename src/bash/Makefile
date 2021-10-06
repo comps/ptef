@@ -18,12 +18,10 @@ all: libptef-bash.so builtins.bash
 CFLAGS += -I/usr/include/bash/include -I../include
 CFLAGS += -fPIC -std=c99 -D_POSIX_C_SOURCE=200809
 
-LDFLAGS += -L../lib
-
 libptef-bash.o: libptef-bash.c
 
 libptef-bash.so: libptef-bash.o
-	$(CC) -shared $(LDFLAGS) -o $@ $^ -lptef
+	$(CC) -shared -L../lib $(LDFLAGS) -o $@ $^ -lptef
 
 builtins.bash: builtins-template.bash
 	sed 's|TEMPLATE_LIBDIR|$(libdir)|' $< > $@

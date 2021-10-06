@@ -43,8 +43,8 @@ implementation does so (no GNU extensions).
 #   and (void) also doesn't silence it, so just disable it globally
 # -fPIE / -Wl,-z,now
 #   because Fedora/RHEL defaults add it to ./configure, which we don't have
-CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra -pie -Wl,-z,now" \
-	LDFLAGS="-Wl,-z,now" \
+CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" \
+	LDFLAGS="${RPM_LD_FLAGS}" \
 	make
 
 # disable completely on copr, which builds non-native arches in chroot,
