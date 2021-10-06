@@ -41,8 +41,6 @@ implementation does so (no GNU extensions).
 #   we intentionally discard writev() result as it's used only for debugging,
 #   unfortunately, there's no __attribute__ that could create an exception,
 #   and (void) also doesn't silence it, so just disable it globally
-# -fPIE / -Wl,-z,now
-#   because Fedora/RHEL defaults add it to ./configure, which we don't have
 CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" \
 	LDFLAGS="${RPM_LD_FLAGS}" \
 	make
