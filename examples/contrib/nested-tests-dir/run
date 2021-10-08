@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Some projects contain things other than tests and like to therefore have
+# the tests confined in some subdirectory, typically 'tests' or 'test'.
+# At the same time, they might want to run these from outside that directory,
+# perhaps adding their own setup, waiving logic, etc. in a wrapper.
+#
+# The code below demonstrates how one can achieve that fairly transparently.
+#
+# Try (from outside 'tests'):
+#     ./run
+#     ./run test1
+#     ./run /test1
+#     ./run tests/test1    # bash tab completion
+
+# typically used by bigger projects
+export PTEF_LOGS="$PWD/suite-logs"
+
+# if specific tests were selected by relative path including tests/,
+# strip 'tests/' from their paths
+args=("${@#tests/}")
+
+# save a copy of the results, outside tests/, for some post-processing
+exec {RESULT_LOG}>result.log
+
+pushd tests/ >/dev/null
+PTEF_RESULTS_FD="$RESULT_LOG" ./run "${args[@]}"
+ret="$?"
+popd >/dev/null
+
+exec {RESULT_LOG}>&-
+
+# simulate as if this was us running inside 'tests'
+exit "$ret"

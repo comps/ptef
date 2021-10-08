@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# this shows how you can reuse the reporting format for something other
+# than hierarchy-based test execution - some test suites need an OS to be
+# specially prepared and some environment variables exported, ie. PCI address
+# of a network card to be passed via IOMMU to a VM
+
+. /usr/share/ptef/builtins.bash
+
+exec {PTEF_RESULTS_FD}>env-report.log
+export PTEF_RESULTS_FD
+
+for pkg in bash basesystem mpi-libs-extra pam; do
+	if rpm -q "$pkg" >/dev/null; then
+		ptef_report -r PASS "$pkg is installed"
+	else
+		ptef_report -r FAIL "$pkg is installed"
+	fi
+done
+
+if [ -z "$INSTALL_DIR" ]; then
+	echo
+	echo "Cannot install the built binaries used during suite execution."
+	echo "Please follow README and export INSTALL_DIR appropriately."
+	ptef_report -r FAIL "INSTALL_DIR is exported"
+else
+	ptef_report -r PASS "INSTALL_DIR is exported"
+fi
+
+exec {PTEF_RESULTS_FD}>&-
+
+if grep -q '^FAIL' env-report.log; then
+	echo
+	echo "Some environment checks failed. See README."
+	exit 1
+fi
+exit 0
