@@ -1,0 +1,14 @@
+#!/bin/bash
+
+export PATH="$PATH:$PWD/ptef/usr/bin"
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$PWD/ptef/usr/lib64"
+export LIBPTEF_BASH="$PWD/ptef/usr/lib64/libptef-bash.so"
+export BASHLIB="$PWD/ptef/usr/share/ptef/builtins.bash"
+site_packages=$(ls -1d "$PWD"/ptef/usr/lib/python*/site-packages)
+export PYTHONPATH="$PYTHONPATH:$site_packages"
+
+# if sourcing, exit now
+return 2>/dev/null
+
+base=$(basename "$0")
+./ptef/usr/bin/ptef-runner -a "$base" "$@"

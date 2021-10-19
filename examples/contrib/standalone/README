@@ -1,0 +1,12 @@
+This shows how to make a test suite building its own PTEF binaries, independent
+of anything provided by the OS.
+
+This allows the suite to build and run unprivileged, though it does require some
+package dependencies to be provided by the OS, more than would be required for
+installing PTEF as a binary package.
+
+Do 'make' prior to running.
+
+To run tests from inside the hierarchy manually (rather than running the full
+suite), source the 'run' in top level first (from a bash shell).
+This will export some env variables into your current shell.
