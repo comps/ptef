@@ -15,8 +15,8 @@ else
 
 all: libptef-bash.so builtins.bash
 
-CFLAGS += -I/usr/include/bash/include -I../include
-CFLAGS += -fPIC -std=c99 -D_POSIX_C_SOURCE=200809
+override CFLAGS += -I/usr/include/bash/include -I../include \
+			-fPIC -std=c99 -D_POSIX_C_SOURCE=200809
 
 libptef-bash.o: libptef-bash.c
 

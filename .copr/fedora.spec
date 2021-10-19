@@ -41,9 +41,9 @@ implementation does so (no GNU extensions).
 #   we intentionally discard writev() result as it's used only for debugging,
 #   unfortunately, there's no __attribute__ that could create an exception,
 #   and (void) also doesn't silence it, so just disable it globally
-CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" \
-	LDFLAGS="${RPM_LD_FLAGS}" \
-	make
+make \
+	CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" \
+	LDFLAGS="${RPM_LD_FLAGS}"
 
 # disable completely on copr, which builds non-native arches in chroot,
 # failing to actually run non-native binaries

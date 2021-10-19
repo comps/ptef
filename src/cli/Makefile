@@ -3,7 +3,7 @@ include ../common.mk
 .PHONY: all install clean
 all: ptef-runner ptef-report ptef-mklog
 
-CFLAGS += -I../include -I../helpers -std=c99 -D_POSIX_C_SOURCE=200809
+override CFLAGS += -I../include -I../helpers -std=c99 -D_POSIX_C_SOURCE=200809
 
 ptef-runner.o: ptef-runner.c
 ptef-report.o: ptef-report.c

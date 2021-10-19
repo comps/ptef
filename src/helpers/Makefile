@@ -3,7 +3,7 @@ include ../common.mk
 .PHONY: all install clean
 all: ptef_helpers.o
 
-CFLAGS += -I../include -fPIC -std=c99 -D_POSIX_C_SOURCE=200809
+override CFLAGS += -I../include -fPIC -std=c99 -D_POSIX_C_SOURCE=200809
 
 ptef_helpers.o: ptef_helpers.c
 

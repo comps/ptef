@@ -31,9 +31,9 @@ implementation does so (no GNU extensions).
 %setup
 
 %build
-CFLAGS="${RPM_OPT_FLAGS} -Wextra" \
-	LDFLAGS="${RPM_LD_FLAGS}" \
-	make
+make \
+	CFLAGS="${RPM_OPT_FLAGS} -Wextra" \
+	LDFLAGS="${RPM_LD_FLAGS}"
 
 # disable completely on copr, which builds non-native arches in chroot,
 # failing to actually run non-native binaries
