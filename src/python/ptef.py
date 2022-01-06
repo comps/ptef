@@ -93,6 +93,45 @@ def set_status_colors(src: dict):
     current_map.contents = _custom_status_colors
 
 
+_custom_exit_statuses = None
+_custom_exit_statuses_default = None
+def set_exit_statuses(src: dict, default: str):
+    """
+    Set a custom exit-code-to-status map, used only by runner() for reporting
+    results when running executables.
+
+    This takes a dict() with int exit codes as keys and their str statuses as
+    dict values. A default status (for exit codes not present in the dict)
+    must also be supplied.
+    See ptef_runner(3) for more details.
+
+    Obviously, the int keys must never be < 0 or > 255.
+    Ie.
+    {
+        0: "PASS",
+        2: "WARN",
+        3: "ERROR",
+    }
+    with "FAIL" passed as default
+    """
+    new = [None]*256
+    for key, value in src.items():
+        if key < 0 or key > 255:
+            raise IndexError("key must be within 0-255")
+        new[key] = ctypes.c_char_p(value.encode('utf-8'))
+    default_bstr = default.encode('utf-8')
+    char_256_type = ctypes.c_char_p * 256
+    char_default_type = ctypes.c_char * len(default)
+    global _custom_exit_statuses
+    global _custom_exit_statuses_default
+    _custom_exit_statuses = char_256_type(*new)
+    _custom_exit_statuses_default = char_default_type(*default_bstr)
+    current_map = ctypes.POINTER(char_256_type).in_dll(libptef, 'ptef_exit_statuses')
+    current_map.contents = _custom_exit_statuses
+    current_default = ctypes.POINTER(ctypes.c_char_p).in_dll(libptef, 'ptef_exit_statuses_default')
+    current_default.contents = _custom_exit_statuses_default
+
+
 def report(status: str, testname: str, flags: int = 0) -> None:
     """
     Produce a report line on stdout, as implemented by ptef_report(3).

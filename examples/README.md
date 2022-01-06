@@ -53,6 +53,8 @@ Unlimited hierarchy levels as standard.
   * The specific wrapper here does `chmod +x *.sh` before executing
     `ptef-runner`, but it obviously can do anything you need - setup/cleanup,
     wrapping everything in `valgrind`, etc., etc.
+    * It also illustrates custom exit-code-to-status mapping, for test suites
+      that use exit codes to indicate a complex result
 * `04-build-systems`
   * This shows, similarly to `02-test-lib`, how the same hiearchy can accomodate
     multiple recursive systems - ie. GNU Make (via `Makefile`s) alongside PTEF.

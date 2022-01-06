@@ -52,4 +52,6 @@ char *getenv_defined(const char *name);
 
 void *memcpy_append(void *dest, void *src, size_t n);
 
+int strtoi_safe(char *str);
+
 #endif

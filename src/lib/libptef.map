@@ -1,5 +1,11 @@
 VERS_0.7 {
-  global: ptef_runner; ptef_report; ptef_mklog; ptef_status_colors;
+  global:
+    ptef_runner;
+    ptef_report;
+    ptef_mklog;
+    ptef_status_colors;
+    ptef_exit_statuses;
+    ptef_exit_statuses_default;
   local: *;
 };
 

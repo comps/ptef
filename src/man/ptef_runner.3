@@ -13,6 +13,9 @@ ptef_runner \- implements a runner as described by the PTEF spec
 .BI "                int " flags );
 .PP
 .BR "extern char *(*" ptef_status_colors ")[2];"
+.PP
+.BR "extern char **" ptef_exit_statuses ;
+.BR "extern char *" ptef_exit_statuses_default ;
 .fi
 .PP
 Link with \fI\-lptef\fP.
@@ -60,6 +63,24 @@ variable points to a default set of colors to be used for PTEF result line
 statuses. See
 .BR ptef_report (3)
 for more details.
+.PP
+.I ptef_exit_statuses
+allow you to override a PTEF standard behavior of reporting PASS on 0 exit code
+and FAIL on non-0 exit code by supplying your own char *array[256] specifying
+statuses as strings, indexed by an exit code. A NULL in place of a string tells
+the runner to use a default status.
+.I ptef_exit_statuses_default
+then specifies this default. As an example, this is the preset array,
+conforming to the PTEF standard:
+.PP
+.in +4n
+.EX
+char *ptef_exit_statuses[256] = {
+    [0] = "PASS",
+};
+char *ptef_exit_statuses_default = "FAIL";
+.EE
+.in
 
 .SH RETURN VALUE
 On success,

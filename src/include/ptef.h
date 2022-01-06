@@ -14,6 +14,9 @@
 
 extern char *(*ptef_status_colors)[2];
 
+extern char **ptef_exit_statuses;
+extern char *ptef_exit_statuses_default;
+
 int ptef_runner(int argc, char **argv, int jobs, char **ignored, int flags);
 int ptef_report(char *status, char *testname, int flags);
 int ptef_mklog(char *testname, int flags);

@@ -153,6 +153,12 @@ err:
     exit(1);
 }
 
+static char *std_exit_statuses[256] = {
+    [0] = "PASS",
+};
+char **ptef_exit_statuses = std_exit_statuses;
+char *ptef_exit_statuses_default = "FAIL";
+
 static int start_job(pid_t pid, char *name, struct exec_state *state)
 {
     if (getenv_defined("PTEF_RUN"))
@@ -175,11 +181,13 @@ static int finish_job(pid_t pid, struct exec_state *state, int exitcode)
     int i, maxjobs = state->max_jobs;
     for (i = 0; i < maxjobs && map[i].pid != pid; i++);
     if (i >= maxjobs) {
-        ERROR_FMT("pid %d not ours", pid);
+        ERROR_FMT("pid %d not ours\n", pid);
         // technically not our problem, we can just skip it
         return 0;
     }
-    char *status = exitcode == 0 ? "PASS" : "FAIL";
+    char *status = ptef_exit_statuses[exitcode];
+    if (!status)
+        status = ptef_exit_statuses_default;
     int report_rc = ptef_report(status, map[i].name, 0);
     // TODO: won't be needed once free() guarantees no errno changes
     int report_errno = errno;

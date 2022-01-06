@@ -178,9 +178,9 @@ int ptef_report_v0(char *status, char *testname, int flags)
                 goto err;
         }
 
-        ptef_results_fd_fd = atoi(ptef_results_fd);
-        if (ptef_results_fd_fd == 0 && *ptef_results_fd != '0') {
-            ERROR_FMT("atoi(%s) failed conversion", ptef_results_fd);
+        ptef_results_fd_fd = strtoi_safe(ptef_results_fd);
+        if (ptef_results_fd_fd == -1) {
+            PERROR_FMT("PTEF_RESULTS_FD=%s bad number", ptef_results_fd);
             goto err;
         }
     }

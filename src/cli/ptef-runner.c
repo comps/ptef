@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include <ptef.h>
@@ -13,6 +14,7 @@ static void print_help(void)
             "  -A BASE  set and export PTEF_BASENAME, overriding even -a\n"
             "  -j NR    number of parallel jobs (tests)\n"
             "  -i IGN   ignore a file/dir named IGN when searching for executables\n"
+            "  -x MAP   use a non-standard exit-code-to-status mapping\n"
             "  -r       set PTEF_RUN and export it\n"
             "  -s       set PTEF_SILENT and export it\n"
             "  -v       set PTEF_NOLOGS and export it (\"verbose\")\n"
@@ -23,19 +25,69 @@ static void print_help(void)
             "subdirectories.\n"
             "If TEST is specified, runs only that test, without searching for executables.\n"
             "\n"
-            "The -i option can be specified multiple times.\n");
+            "The -i option can be specified multiple times.\n"
+            "\n"
+            "Custom exit code MAP is a space-separated \"NUMBER:STATUS\" set of pairs,\n"
+            "with the last separated element specifying a default fallback STATUS.\n"
+            "For example: -x '0:PASS 2:WARN 3:ERROR FAIL'\n");
+}
+
+int parse_exit_code_map(char *optarg, char **map, char **def)
+{
+    int nr;
+    char *trailer, *pair, *status, *saveptr;
+
+    if ((trailer = strrchr(optarg, ' ')) == NULL) {
+        ERROR_FMT("need at least two map elements: %s\n", optarg);
+        return -1;
+    }
+    *trailer++ = '\0';
+
+    pair = strtok_r(optarg, " ", &saveptr);
+    if (!pair) {
+        ERROR_FMT("first code:status pair empty: %s\n", optarg);
+        return -1;
+    }
+
+    while (pair != NULL) {
+        if ((status = strchr(pair, ':')) == NULL) {
+            ERROR_FMT("missing colon separator: %s\n", pair);
+            return -1;
+        }
+        *status++ = '\0';
+        if (*status == '\0') {
+            ERROR_FMT("empty status string: %s\n", pair);
+            return -1;
+        }
+        if ((nr = strtoi_safe(pair)) == -1 || nr > 255) {
+            if (!errno && nr > 255)
+                errno = ERANGE;
+            PERROR_FMT("invalid exit code nr: %s", pair);
+            return -1;
+        }
+        map[nr] = status;
+        pair = strtok_r(NULL, " ", &saveptr);
+    }
+
+    *def = trailer;
+
+    return 0;
 }
 
 int main(int argc, char **argv)
 {
     char *argv0 = NULL;
     int jobs = 1;
-    char **ignored = NULL;
-    int ignored_cnt = 0;
     int flags = 0;
 
+    char **ignored = NULL;
+    int ignored_cnt = 0;
+
+    char **code_map = NULL;
+    char *code_default;
+
     int c;
-    while ((c = getopt(argc, argv, "a:A:j:i:rsvdmh")) != -1) {
+    while ((c = getopt(argc, argv, "a:A:j:i:x:rsvdmh")) != -1) {
         switch (c) {
             case 'a':
                 argv0 = optarg;
@@ -48,9 +100,9 @@ int main(int argc, char **argv)
                 argv0 = optarg;  // avoid unnecessary basename() later
                 break;
             case 'j':
-                jobs = atoi(optarg);
+                jobs = strtoi_safe(optarg);
                 if (jobs < 1) {
-                    ERROR_FMT("invalid job cnt: %s\n", optarg);
+                    PERROR_FMT("invalid job cnt: %s", optarg);
                     goto err;
                 }
                 break;
@@ -58,6 +110,18 @@ int main(int argc, char **argv)
                 ignored_cnt++;
                 ignored = realloc_safe(ignored, ignored_cnt*sizeof(char*));
                 ignored[ignored_cnt-1] = optarg;
+                break;
+            case 'x':
+                free(code_map);
+                if ((code_map = malloc(256*sizeof(char*))) == NULL) {
+                    PERROR("malloc");
+                    goto err;
+                }
+                memset(code_map, 0, 256*sizeof(char*));
+                if (parse_exit_code_map(optarg, code_map, &code_default) == -1)
+                    goto err;
+                ptef_exit_statuses = code_map;
+                ptef_exit_statuses_default = code_default;
                 break;
             case 'r':
                 if (setenv("PTEF_RUN", "1", 1) == -1) {
@@ -111,9 +175,11 @@ int main(int argc, char **argv)
 
     int ret = ptef_runner(argc, argv, jobs, ignored, flags);
     free(ignored);
+    free(code_map);
     return !!ret;
 
 err:
     free(ignored);
+    free(code_map);
     return 1;
 }

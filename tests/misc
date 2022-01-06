@@ -115,6 +115,27 @@ function ignored {
 	assert_nogrep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
 }
 
+# Test that custom exit-code-to-status mapping is honored
+function mkexitfile {
+	cat <<-EOF
+	#!/bin/bash
+	exit $1
+	EOF
+}
+function exit_codes {
+	mkexitfile 1 > exec1
+	mkexitfile 0 > exec2
+	mkexitfile 255 > exec3
+	mkexitfile 2 > exec4
+	chmod +x exec1 exec2 exec3 exec4
+	assert_ptef_runner -x '1:SECOND 0:FIRST 255:TEST ERROR' \
+		> "$tmpdir/runner_out"
+	assert_grep '^SECOND[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+	assert_grep '^FIRST[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+	assert_grep '^TEST[[:space:]]\+/exec3$' "$tmpdir/runner_out"
+	assert_grep '^ERROR[[:space:]]\+/exec4$' "$tmpdir/runner_out"
+}
+
 # Test that all ptef-* CLIs support -h (for help)
 function cli_help {
 	local ret=0
@@ -143,15 +164,35 @@ function cli_noargs {
 	[ -s "$tmpdir/mklog_err" ]
 }
 
+# Test some of the -x option sanity checking
+function assert_runner_error {
+	local ret=0
+	ptef-runner "$@" >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
+	[ "$ret" -ne 0 ]
+	assert_contents '' "$tmpdir/runner_out"
+	[ -s "$tmpdir/runner_err" ]
+}
+function exit_codes_sanity {
+	local ret=0
+	assert_runner_error -x ''
+	assert_runner_error -x 'END'
+	assert_runner_error -x 'PASS END'
+	assert_runner_error -x ':PASS END'
+	assert_runner_error -x '0: END'
+	assert_runner_error -x '256:PASS END'
+}
+
 
 + parallel_jobs
 + parallel_jobs_extrajobs
 + open_fds
 + run_before_pass
 + ignored
++ exit_codes
 case "$TEST_VARIANT" in	cli|valgrind)
 	+ cli_help
 	+ cli_noargs
+	+ exit_codes_sanity
 	;;
 esac
 

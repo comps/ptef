@@ -70,6 +70,7 @@ int main(int argc, char **argv)
         colorcnt++;
         colormap = realloc_safe(colormap, colorcnt*sizeof(char*[1][2]));
         colormap[colorcnt-1][0] = colormap[colorcnt-1][1] = NULL;
+        ptef_status_colors = colormap;
     }
 
     argc -= optind;
@@ -80,8 +81,6 @@ int main(int argc, char **argv)
         goto err;
     }
 
-    if (colormap)
-        ptef_status_colors = colormap;
     int ret = ptef_report(argv[0], argv[1], flags);
     free(colormap);
     if (ret == -1 &&

@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <ctype.h>
+#include <limits.h>
 #include <sys/uio.h>
 #include <unistd.h>
 
@@ -88,4 +90,30 @@ char *getenv_defined(const char *name)
 void *memcpy_append(void *dest, void *src, size_t n)
 {
     return memcpy(dest, src, n) + n;
+}
+
+// more controlled and strict behavior than atoi, positive only
+int strtoi_safe(char *str)
+{
+    char *endptr;
+    unsigned long res;
+    if (!isdigit(*str))
+        goto invalid;
+    errno = 0;
+    res = strtoul(str, &endptr, 10);
+    if (errno)
+        goto error;
+    if (*endptr != '\0')
+        goto invalid;
+    if (res > 0 && *str == '0')
+        goto invalid;
+    if (res > INT_MAX) {
+        errno = ERANGE;
+        goto error;
+    }
+    return res;
+invalid:
+    errno = EINVAL;
+error:
+    return -1;
 }

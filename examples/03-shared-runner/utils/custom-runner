@@ -5,4 +5,7 @@
 chmod +x *.sh
 
 base=$(basename "$0")
-ptef-runner -a "$base" "$@"
+
+# also report SKIP instead of FAIL when tests exit with 2
+
+ptef-runner -a "$base" -x '0:PASS 2:SKIP FAIL' "$@"

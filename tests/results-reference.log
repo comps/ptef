@@ -69,8 +69,10 @@ PASS /cli/misc/parallel_jobs_extrajobs
 PASS /cli/misc/open_fds
 PASS /cli/misc/run_before_pass
 PASS /cli/misc/ignored
+PASS /cli/misc/exit_codes
 PASS /cli/misc/cli_help
 PASS /cli/misc/cli_noargs
+PASS /cli/misc/exit_codes_sanity
 PASS /cli/misc
 PASS /cli/mklog/sanity
 PASS /cli/mklog/testname_with_spaces
@@ -182,8 +184,10 @@ PASS /valgrind/misc/parallel_jobs_extrajobs
 PASS /valgrind/misc/open_fds
 PASS /valgrind/misc/run_before_pass
 PASS /valgrind/misc/ignored
+PASS /valgrind/misc/exit_codes
 PASS /valgrind/misc/cli_help
 PASS /valgrind/misc/cli_noargs
+PASS /valgrind/misc/exit_codes_sanity
 PASS /valgrind/misc
 PASS /valgrind/mklog/sanity
 PASS /valgrind/mklog/testname_with_spaces
@@ -295,6 +299,7 @@ PASS /bash/misc/parallel_jobs_extrajobs
 PASS /bash/misc/open_fds
 PASS /bash/misc/run_before_pass
 PASS /bash/misc/ignored
+PASS /bash/misc/exit_codes
 PASS /bash/misc
 PASS /bash/mklog/sanity
 PASS /bash/mklog/testname_with_spaces
@@ -406,6 +411,7 @@ PASS /python/misc/parallel_jobs_extrajobs
 PASS /python/misc/open_fds
 PASS /python/misc/run_before_pass
 PASS /python/misc/ignored
+PASS /python/misc/exit_codes
 PASS /python/misc
 PASS /python/mklog/sanity
 PASS /python/mklog/testname_with_spaces
