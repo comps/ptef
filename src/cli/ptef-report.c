@@ -19,10 +19,7 @@ static void print_help(void)
             "copying the report to PTEF_RESULTS_FD if defined.\n"
             "Outputs color if stdout is connected to a terminal.\n"
             "\n"
-            "Custom color MAP is a \"STATUS NEWSTATUS\" pair, rewriting STATUS to NEWSTATUS\n"
-            "(which can contain color escape sequences or additional trailing spaces for\n"
-            "alignment with longer statuses). The -c option can be specified multiple times.\n"
-            "For example: -c $'FAIL \\e[1;41mFAIL\\e[0m ' -c $'WAIVE \\e[1;33mWAIVE\\e[0m'\n");
+            "The -c option is the same as for ptef-runner.\n");
 }
 
 int main(int argc, char **argv)

@@ -60,9 +60,24 @@ Disable argument merging. See the PTEF specification for details.
 The
 .I ptef_status_colors
 variable points to a default set of colors to be used for PTEF result line
-statuses. See
-.BR ptef_report (3)
-for more details.
+statuses. Override the color set by making
+.I ptef_status_colors
+point to your own char *colors[][2] array, where the first column is status
+to be matched on, and the second column is the status it should be rewritten
+to (may include ASCII color codes, spaces for alignment, etc.).
+The array must be terminated with
+.I NULL
+in both columns on the same row. For example:
+.PP
+.in +4n
+.EX
+char *ptef_status_colors[][2] = {
+    { "PASS", "\\e[1;32mPASS\\e[0m " },
+    { "FAIL", "\\e[1;31mFAIL\\e[0m " },
+    { NULL }
+};
+.EE
+.in
 .PP
 .I ptef_exit_statuses
 allow you to override a PTEF standard behavior of reporting PASS on 0 exit code

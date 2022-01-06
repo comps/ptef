@@ -71,6 +71,7 @@ PASS /cli/misc/run_before_pass
 PASS /cli/misc/ignored
 PASS /cli/misc/exit_codes
 PASS /cli/misc/exit_codes_sanity
+PASS /cli/misc/runner_color_map
 PASS /cli/misc/cli_help
 PASS /cli/misc/cli_noargs
 PASS /cli/misc
@@ -186,6 +187,7 @@ PASS /valgrind/misc/run_before_pass
 PASS /valgrind/misc/ignored
 PASS /valgrind/misc/exit_codes
 PASS /valgrind/misc/exit_codes_sanity
+PASS /valgrind/misc/runner_color_map
 PASS /valgrind/misc/cli_help
 PASS /valgrind/misc/cli_noargs
 PASS /valgrind/misc
@@ -413,6 +415,7 @@ PASS /python/misc/run_before_pass
 PASS /python/misc/ignored
 PASS /python/misc/exit_codes
 PASS /python/misc/exit_codes_sanity
+PASS /python/misc/runner_color_map
 PASS /python/misc
 PASS /python/mklog/sanity
 PASS /python/mklog/testname_with_spaces

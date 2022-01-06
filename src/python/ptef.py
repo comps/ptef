@@ -192,6 +192,11 @@ class RunnerCLI:
 
         The -i option can be specified multiple times.
 
+        Custom color MAP is a "STATUS NEWSTATUS" pair, rewriting STATUS to NEWSTATUS
+        (which can contain color escape sequences or additional trailing spaces for
+        alignment with longer statuses). The -c option can be specified multiple times.
+        For example: -c $'FAIL \e[1;41mFAIL\e[0m ' -c $'WAIVE \e[1;33mWAIVE\e[0m'
+
         Custom exit code MAP is a space-separated "NUMBER:STATUS" set of pairs,
         with the last separated element specifying a default fallback STATUS.
         For example: -x '0:PASS 2:WARN 3:ERROR FAIL'
@@ -211,6 +216,7 @@ class RunnerCLI:
         p.add_argument('-A', metavar='BASE', help="set and export PTEF_BASENAME, overriding even -a")
         p.add_argument('-j', type=int, default=0, metavar='NR', help="number of parallel jobs (tests)")
         p.add_argument('-i', action='append', metavar='IGN', help="ignore a file/dir named IGN when searching for executables")
+        p.add_argument('-c', action='append', metavar='MAP', help="use custom color mapping for statuses")
         p.add_argument('-x', metavar='MAP', help="use a non-standard exit-code-to-status mapping")
         p.add_argument('-r', action='store_true', help="set PTEF_RUN and export it")
         p.add_argument('-s', action='store_true', help="set PTEF_SILENT and export it")
@@ -237,6 +243,16 @@ class RunnerCLI:
 
         if args.a is not None:
             args.rest[0] = args.a
+
+        if args.c is not None:
+            color_map = dict()
+            for pair in args.c:
+                old_new = pair.split(' ', 1)
+                if len(old_new) < 2:
+                    self.parser.error(f"MAP has no space: {pair}")
+                old, new = old_new
+                color_map[old] = new
+            set_status_colors(color_map)
 
         if args.x is not None:
             pairs = args.x.split(' ')

@@ -55,14 +55,9 @@ a test name.
 The
 .I ptef_status_colors
 variable points to a default set of colors to be used for PTEF result line
-statuses. Override the color set by making
-.I ptef_status_colors
-point to your own char *colors[][2] array, where the first column is status
-to be matched on, and the second column is the status it should be rewritten
-to (may include ASCII color codes, spaces for alignment, etc.).
-The array must be terminated with
-.I NULL
-in both columns on the same row.
+statuses. See
+.BR ptef_runner (3)
+for more details.
 
 .SH RETURN VALUE
 On success,

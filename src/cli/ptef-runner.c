@@ -14,6 +14,7 @@ static void print_help(void)
             "  -A BASE  set and export PTEF_BASENAME, overriding even -a\n"
             "  -j NR    number of parallel jobs (tests)\n"
             "  -i IGN   ignore a file/dir named IGN when searching for executables\n"
+            "  -c MAP   use custom color mapping for statuses\n"
             "  -x MAP   use a non-standard exit-code-to-status mapping\n"
             "  -r       set PTEF_RUN and export it\n"
             "  -s       set PTEF_SILENT and export it\n"
@@ -26,6 +27,11 @@ static void print_help(void)
             "If TEST is specified, runs only that test, without searching for executables.\n"
             "\n"
             "The -i option can be specified multiple times.\n"
+            "\n"
+            "Custom color MAP is a \"STATUS NEWSTATUS\" pair, rewriting STATUS to NEWSTATUS\n"
+            "(which can contain color escape sequences or additional trailing spaces for\n"
+            "alignment with longer statuses). The -c option can be specified multiple times.\n"
+            "For example: -c $'FAIL \\e[1;41mFAIL\\e[0m ' -c $'WAIVE \\e[1;33mWAIVE\\e[0m'\n"
             "\n"
             "Custom exit code MAP is a space-separated \"NUMBER:STATUS\" set of pairs,\n"
             "with the last separated element specifying a default fallback STATUS.\n"
@@ -83,11 +89,15 @@ int main(int argc, char **argv)
     char **ignored = NULL;
     int ignored_cnt = 0;
 
+    char *(*colormap)[2] = NULL;
+    int colorcnt = 0;
+    char *delim;
+
     char **code_map = NULL;
     char *code_default;
 
     int c;
-    while ((c = getopt(argc, argv, "a:A:j:i:x:rsvdmh")) != -1) {
+    while ((c = getopt(argc, argv, "a:A:j:i:c:x:rsvdmh")) != -1) {
         switch (c) {
             case 'a':
                 argv0 = optarg;
@@ -110,6 +120,18 @@ int main(int argc, char **argv)
                 ignored_cnt++;
                 ignored = realloc_safe(ignored, ignored_cnt*sizeof(char*));
                 ignored[ignored_cnt-1] = optarg;
+                break;
+            case 'c':
+                delim = strchr(optarg, ' ');
+                if (!delim) {
+                    ERROR_FMT("MAP has no space: %s\n", optarg);
+                    goto err;
+                }
+                colorcnt++;
+                colormap = realloc_safe(colormap, colorcnt*sizeof(char*[1][2]));
+                *delim = '\0';
+                colormap[colorcnt-1][0] = optarg;
+                colormap[colorcnt-1][1] = delim+1;  // worst case, it is '\0'
                 break;
             case 'x':
                 free(code_map);
@@ -162,6 +184,13 @@ int main(int argc, char **argv)
         ignored_cnt++;
         ignored = realloc_safe(ignored, ignored_cnt*sizeof(char*));
         ignored[ignored_cnt-1] = NULL;
+    }
+
+    if (colormap) {
+        colorcnt++;
+        colormap = realloc_safe(colormap, colorcnt*sizeof(char*[1][2]));
+        colormap[colorcnt-1][0] = colormap[colorcnt-1][1] = NULL;
+        ptef_status_colors = colormap;
     }
 
     // shift argv[0] before the remaining arguments,
