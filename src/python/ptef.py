@@ -8,13 +8,19 @@ see the ptef_runner(3), ptef_report(3) and ptef_mklog(3) manpages.
 One notable difference is the use of a dedicated set_status_colors()
 function to set the ptef_status_colors global variable in the C library,
 as python cannot easily define a native 'char **colors[][2]' array.
+Same for set_exit_statuses().
 
 Some functions use bitmask-based flags. This python interface exposes
 them as module variables with names identical to the C #defines, without
 the leading PTEF_ part of their names.
 """
 
-import typing, ctypes, sys, os
+import os
+import sys
+import typing
+import ctypes
+import argparse
+import textwrap
 
 
 libptef = ctypes.CDLL("libptef.so.0", use_errno=True)
@@ -84,7 +90,7 @@ def set_status_colors(src: dict):
             ctypes.c_char_p(src[x].encode('utf-8'))
         ) for x in src
     ]
-    pairs.append((ctypes.c_char_p(None),ctypes.c_char_p(None))) # NULL-terminate
+    pairs.append((ctypes.c_char_p(None), ctypes.c_char_p(None))) # NULL-terminate
     # ((ctypes.c_char_p * 2) * 5) , a char[5][2] data type
     char_n_2_type = (ctypes.c_char_p * 2) * len(pairs)
     global _custom_status_colors
@@ -164,3 +170,114 @@ def mklog(testname: str, flags: int = 0) -> typing.BinaryIO:
         raise OSError(errno, os.strerror(errno), None)
     else:
         return os.fdopen(fd, 'wb')
+
+
+class RunnerCLI:
+    """
+    Emulate the command line interface of the ptef-runner utility, which uses
+    the C-based getopt(3) and a lot of related logic to provide a standard
+    CLI for accesing most of the PTEF runner features.
+
+    Use this class if you want to write your own CLI-based ptef-runner like
+    utility and would like to use the semi-standard command line options,
+    possibly extending them with your features.
+
+    runner = ptef.RunnerCLI()
+    runner.run()
+    """
+    epilog = textwrap.dedent(r"""
+        Executes the PTEF runner logic from CWD, executing executables and traversing
+        subdirectories.
+        If TEST is specified, runs only that test, without searching for executables.
+
+        The -i option can be specified multiple times.
+
+        Custom exit code MAP is a space-separated "NUMBER:STATUS" set of pairs,
+        with the last separated element specifying a default fallback STATUS.
+        For example: -x '0:PASS 2:WARN 3:ERROR FAIL'
+    """)
+    def __init__(self, **argparse_args):
+        self.parser = argparse.ArgumentParser(
+            epilog=self.epilog, allow_abbrev=False, add_help=False,
+            usage="%(prog)s [OPTIONS] [TEST]...",
+            formatter_class=argparse.RawTextHelpFormatter, **argparse_args)
+        self.add_option_args()
+        self.add_remainder_arg()
+
+    def add_option_args(self):
+        p = self.parser
+        p.add_argument('-h', action='store_true', help=argparse.SUPPRESS)
+        p.add_argument('-a', metavar='BASE', help="runner basename, overriding autodetection from basename(argv[0])")
+        p.add_argument('-A', metavar='BASE', help="set and export PTEF_BASENAME, overriding even -a")
+        p.add_argument('-j', type=int, default=0, metavar='NR', help="number of parallel jobs (tests)")
+        p.add_argument('-i', action='append', metavar='IGN', help="ignore a file/dir named IGN when searching for executables")
+        p.add_argument('-x', metavar='MAP', help="use a non-standard exit-code-to-status mapping")
+        p.add_argument('-r', action='store_true', help="set PTEF_RUN and export it")
+        p.add_argument('-s', action='store_true', help="set PTEF_SILENT and export it")
+        p.add_argument('-v', action='store_true', help="set PTEF_NOLOGS and export it (\"verbose\")")
+        p.add_argument('-d', action='store_true', help="set PTEF_SHELL to 1 and export it (\"debug\")")
+        p.add_argument('-m', action='store_true', help="don't merge arguments of subrunners (always pass 1 arg)")
+
+    def add_remainder_arg(self):
+        self.parser.add_argument('rest', nargs=argparse.REMAINDER, help=argparse.SUPPRESS)
+
+    def postprocess_args(self, args):
+        # I wish python had better handling of unknown remainder args :(
+        if len(args.rest) > 0 and args.rest[0] == '--':
+            args.rest.pop(0)
+        args.rest.insert(0, self.parser.prog)
+
+        if args.h:
+            self.parser.print_help(file=sys.stderr)
+            sys.exit(0)
+
+        if args.A is not None:
+            os.environ['PTEF_BASENAME'] = args.A
+            args.a = args.A
+
+        if args.a is not None:
+            args.rest[0] = args.a
+
+        if args.x is not None:
+            pairs = args.x.split(' ')
+            if len(pairs) < 2:
+                self.parser.error(f"need at least two map elements: {args.x}")
+            default = pairs.pop(-1)
+            code_map = dict()
+            for pair in pairs:
+                code_status = pair.split(':', 1)
+                if len(code_status) < 2:
+                    self.parser.error(f"missing colon separator: {pair}")
+                code, status = code_status
+                if not status:
+                    self.parser.error(f"empty status string: {pair}")
+                try:
+                    code = int(code)
+                except ValueError:
+                    self.parser.error(f"invalid exit code nr: {code}")
+                code_map[code] = status
+            set_exit_statuses(code_map, default)
+
+        if args.r:
+            os.environ['PTEF_RUN'] = str(1)
+
+        if args.s:
+            os.environ['PTEF_SILENT'] = str(1)
+
+        if args.v:
+            os.environ['PTEF_NOLOGS'] = str(1)
+
+        if args.d:
+            os.environ['PTEF_SHELL'] = str(1)
+
+        self.flags = 0
+        if args.m:
+            self.flags |= NOMERGE
+
+    def run(self, *args):
+        """
+        Parse a list of command line arguments and run the PTEF runner logic.
+        """
+        args = self.parser.parse_args(*args)
+        self.postprocess_args(args)
+        runner(argv=args.rest, jobs=args.j, ignored=args.i, flags=self.flags)

@@ -189,10 +189,13 @@ function exit_codes_sanity {
 + run_before_pass
 + ignored
 + exit_codes
+case "$TEST_VARIANT" in	cli|valgrind|python)
+	+ exit_codes_sanity
+	;;
+esac
 case "$TEST_VARIANT" in	cli|valgrind)
 	+ cli_help
 	+ cli_noargs
-	+ exit_codes_sanity
 	;;
 esac
 
