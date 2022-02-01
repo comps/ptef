@@ -53,8 +53,6 @@ Unlimited hierarchy levels as standard.
   * The specific wrapper here does `chmod +x *.sh` before executing
     `ptef-runner`, but it obviously can do anything you need - setup/cleanup,
     wrapping everything in `valgrind`, etc., etc.
-    * It also illustrates custom exit-code-to-status mapping, for test suites
-      that use exit codes to indicate a complex result
 * `04-build-systems`
   * This shows, similarly to `02-test-lib`, how the same hiearchy can accomodate
     multiple recursive systems - ie. GNU Make (via `Makefile`s) alongside PTEF.
@@ -175,6 +173,11 @@ Users of PTEF (test suite authors) are free to break the rules!
     * Before you do, make sure you have
       [LTP dependencies](https://github.com/linux-test-project/ltp/blob/20210524/INSTALL#L1-L18)
       installed.
+  * `custom-exit` illustrates how to use the reference runner implementation
+    to report custom result statuses based on exit codes of executables
+    * The specification only allows 0 = PASS, any other = FAIL, but using other
+      states based on exit code is widespread amongst test suites, hence this
+      functionality.
   * `etc-scan` scans `/etc` for executable files and reports them as `FAIL`,
     while reporting any non-executable ones as `PASS`.
     * Useful if you want to keep long-term track of which files appeared or

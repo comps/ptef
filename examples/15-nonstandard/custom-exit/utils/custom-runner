@@ -1,0 +1,12 @@
+#!/bin/bash
+
+base=$(basename "$0")
+ptef-runner \
+	-a "$base" \
+	-x '0:PASS 2:SKIP 3:ERROR FAIL' \
+	-c $'PASS \e[1;32mPASS\e[0m ' \
+	-c $'SKIP \e[1;35mSKIP\e[0m ' \
+	-c $'ERROR \e[1;41mERROR\e[0m' \
+	-c $'FAIL \e[1;31mFAIL\e[0m ' \
+	-c $'RUN \e[1;34mRUN\e[0m  ' \
+	"$@"
