@@ -1,0 +1,16 @@
+Some test suite use an intermediary layer between tests and the execution logic
+to re-use test code by parametrizing the tests.
+
+For example, a test can check ELF binary properties of any passed argument,
+reporting PASS/FAIL for that file. An intermediary "runconf" then specifies
+several executions of that same test, with different arguments.
+
+These "runconf" files can be a simple static language (like runtest files in the
+Linux Test Project), or they can be scripts that dynamically select/parametrize
+the tests based on environment.
+
+This example uses bash "runconf", defining a custom function called '+' that
+appends user-provided strings into a big array, which simply get passed to
+ptef-runner during a default argument-less run.
+When arguments are given on CLI, anything from runconf is ignored and the CLI
+arguments are used instead, preserving standard PTEF behavior.

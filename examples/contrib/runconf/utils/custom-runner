@@ -1,0 +1,28 @@
+#!/bin/bash
+
+_alltests=()
+function + {
+	_alltests+=("$@")
+}
+
+if [ -f runconf ]; then
+	. runconf
+fi
+
+_base=$(basename "$0")
+
+if [ $# -eq 0 ]; then
+	# no tests configured: behave according to spec, run everything
+	if [ "${#_alltests[@]}" -eq 0 ]; then
+		ptef-runner -a "$_base"
+	else
+		# since 'alltests' can contain more than ARG_MAX strings,
+		# use xargs to split them into ARG_MAX-sized runs
+		printf '%s\0' "${_alltests[@]}" | \
+			xargs -0 ptef-runner -a "$_base"
+	fi
+else
+	# running with user arguments, override alltests and just run what
+	# the user instructed, per the spec
+	ptef-runner -a "$_base" "$@"
+fi

@@ -1,0 +1,17 @@
+# this is sourced by bash, so any bash logic is valid here
+
++ exists/etc/passwd
+
+id=$(. /etc/os-release; echo "$ID")
+idlike=$(. /etc/os-release; echo "$ID_LIKE")
+
+if [ "$id" = "fedora" -o "$idlike" = "fedora" ]; then
+	+ empty/etc/cron.deny
+	+ empty/etc/motd
+fi
+
+if false; then
+	+ this/is/never/added
+fi
+
+# vim: syntax=sh

@@ -1,0 +1,9 @@
+#!/bin/bash -x
+while [ $# -gt 0 ]; do
+	if [ -f "/$1" -a ! -s "/$1" ]; then
+		ptef-report PASS "$1"
+	else
+		ptef-report FAIL "$1"
+	fi
+	shift
+done
