@@ -99,19 +99,38 @@ Unless otherwise specified (such as at a beginning of a file), all content in
 this repository is provided under the MIT license.  
 See the [LICENSE](LICENSE) file for details.
 
+## API Stability
+
+There are currently no guarantees that the C-based function API, bash and python
+APIs won't change in the future. There's also no plan in place for keeping API
+stable within a versioned release, though that may come if this project becomes
+popular.
+
+For now, expect having to update your test suite's PTEF-interfacing code when
+moving to a newer PTEF version.
+
+## ABI Stability
+
+Despite `libptef.so` being an ELF shared object that *could* have ABI made from
+versioned symbols, maintaining this over time is outside the scope of this
+project and would just be a PITA with very few benefits.
+
+You're expected to maintain tests in a source code form and build them
+immediately prior to running them, not have a collection of compiled binary
+tests that last years and magically work with future PTEF versions.
+
 ## Portability
 
 The PTEF specification itself can be implemented in virtually any programming
 language on any platform or libc which provides access to POSIX.1-2008 C API,
 namely the functions mentioned in the specification.
 
-The reference implementation is mostly-C99 with `_POSIX_C_SOURCE=200809`
-extensions, the nonstandard exceptions being several occurences of (fairly
-commonly supported) function attributes (`__attribute__`).  
-The python3 interface to the reference implementation currently requires
-python 3.6 or newer.  
-The bash interface (bash builtins, not standalone CLI utilities) requires
-bash 4.4 or newer.
+* The reference implementation is mostly-C99 with `_POSIX_C_SOURCE=200809`
+  extensions.
+* The python3 interface to the reference implementation currently requires
+  python 3.6 or newer.
+* The bash interface (bash builtins, not standalone CLI utilities) requires
+  bash 4.4 or newer.
 
 Note that the build process is smart enough to detect the lack of `python3`
 in PATH, or the lack of bash development headers, and avoids building those
@@ -124,9 +143,6 @@ The build system also uses `/bin/bash` to avoid the myriad of differences
 between POSIX-like shells, though any 3.x or newer version should work just
 fine.
 
-The biggest (temporary) portability blocker right now is the dependence on
-GNU linker due to symbol (ABI) versioning via `--version-script` and systems
-with shared library support. A possible fix to this is using `libtool`, though
-I was unable to easily figure out how to use it *while* providing support for
-symbol versioning on GNU ld and `CFLAGS`/`LDFLAGS` like `-flto` or `-fPIE`.
-Feel free to submit patches / reach out in case of linking issues. Thanks!
+Feel free to report an issue (or send a pull request) on the build system
+if you run into issues. It's possible that ie. the C compiler options are
+not compatible with \*BSD linkers.

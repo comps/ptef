@@ -27,9 +27,7 @@ static void run_shell(char *shell)
 }
 
 // true if everything PASSed, false on error or FAIL
-__asm__(".symver ptef_runner_v0, ptef_runner@@VERS_0.7");
-__attribute__((used))
-int ptef_runner_v0(int argc, char **argv, int jobs, char **ignored, int flags)
+int ptef_runner(int argc, char **argv, int jobs, char **ignored, int flags)
 {
     if (argc < 1) {
         ERROR("need at least argv[0] for basename");

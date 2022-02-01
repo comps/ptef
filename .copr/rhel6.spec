@@ -60,7 +60,8 @@ make \
 %attr(755,root,root) %{_bindir}/ptef-runner
 %attr(755,root,root) %{_bindir}/ptef-report
 %attr(755,root,root) %{_bindir}/ptef-mklog
-%attr(755,root,root) %{_libdir}/libptef.so.0
+%attr(755,root,root) %{_libdir}/libptef.so.0.0
+%{_libdir}/libptef.so.0
 %{_libdir}/libptef.so
 %attr(644,root,root) %{_includedir}/ptef.h
 %attr(644,root,root) %{_mandir}/man3/ptef_runner.3*
