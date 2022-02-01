@@ -8,7 +8,7 @@ ifeq ($(DNF),)
 DNF := $(call which,yum)
 endif
 
-PTEF_URL := https://github.com/comps/ptef/archive/refs/heads/master.tar.gz
+PTEF_URL := https://github.com/comps/ptef/archive/refs/heads/main.tar.gz
 
 
 .PHONY: all deps ptef c clean
