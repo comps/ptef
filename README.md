@@ -75,7 +75,7 @@ dnf -y install gcc make python3 bash bash-devel asciidoctor
 make
 
 # run test suite (optional)
-dnf -y install valgrind
+dnf -y install diffutils valgrind
 make test
 
 # install (into /usr)

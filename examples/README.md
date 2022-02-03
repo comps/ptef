@@ -11,6 +11,14 @@ an RPM) for these to work (in case you want to actually run them).
 Despite this, the examples do not modify the installed system and can be
 run unprivileged.
 
+## Dependencies
+
+On top of PTEF itself, you will need
+
+```sh
+dnf -y install diffutils xz
+```
+
 ## How to run them
 
 The examples are numbered - from the most trivial one (you should start with)
