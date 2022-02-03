@@ -26,6 +26,7 @@ function get_keyval {
 function run_ltp {
 	local cmd=(
 		./runltp
+		-Q
 		-f syscalls
 	)
 
