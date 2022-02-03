@@ -138,7 +138,12 @@ function nonexecutable {
 + invalid_arg
 + invalid_arg_skip
 + double_dash_skip
-+ nonexecutable
+# since we do exit(1) if execve() fails, we never free() and of the allocations
+# made throughout the runner - this doesn't matter since we're doing exit() from
+# a fork()ed child, and we can't fix it easily without passing tons of pointers
+# all the way down to execute(), .. but valgrind still cares, so we simply avoid
+# running this for valgrind
+[ "$TEST_VARIANT" != "valgrind" ] && + nonexecutable
 
 
 # run all tests also with argument merging disabled
@@ -160,7 +165,7 @@ function nonexecutable_nomerge { nonexecutable -m "$@"; }
 + invalid_arg_nomerge
 + invalid_arg_skip_nomerge
 + double_dash_skip_nomerge
-+ nonexecutable_nomerge
+[ "$TEST_VARIANT" != "valgrind" ] && + nonexecutable_nomerge
 
 
 # Test that argument merging works as expected

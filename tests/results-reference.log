@@ -122,7 +122,6 @@ PASS /valgrind/args/repeated_arg
 PASS /valgrind/args/invalid_arg
 PASS /valgrind/args/invalid_arg_skip
 PASS /valgrind/args/double_dash_skip
-PASS /valgrind/args/nonexecutable
 PASS /valgrind/args/no_args_nomerge
 PASS /valgrind/args/one_arg_nomerge
 PASS /valgrind/args/one_arg_with_spaces_nomerge
@@ -131,7 +130,6 @@ PASS /valgrind/args/repeated_arg_nomerge
 PASS /valgrind/args/invalid_arg_nomerge
 PASS /valgrind/args/invalid_arg_skip_nomerge
 PASS /valgrind/args/double_dash_skip_nomerge
-PASS /valgrind/args/nonexecutable_nomerge
 PASS /valgrind/args/merged_args_one_exec
 PASS /valgrind/args/merged_args_different
 PASS /valgrind/args/merged_args_argless
@@ -175,8 +173,6 @@ PASS /valgrind/logging/absolute_prefix
 PASS /valgrind/logging/relative_prefix
 PASS /valgrind/logging/absolute_mkdir
 PASS /valgrind/logging/relative_mkdir
-PASS /valgrind/logging/absolute_noent
-PASS /valgrind/logging/relative_noent
 PASS /valgrind/logging/local_logs_prefix
 PASS /valgrind/logging/stdio_redir
 PASS /valgrind/logging

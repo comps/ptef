@@ -190,8 +190,13 @@ function stdio_redir {
 + relative_prefix
 + absolute_mkdir
 + relative_mkdir
-+ absolute_noent
-+ relative_noent
+# disable this for valgrind due to ptef_mklog() being called after fork(),
+# failing and causing exit(1) of the child without proper free() in place,
+# which is not a problem in practice, but valgrind still cares
+if [ "$TEST_VARIANT" != "valgrind" ]; then
+	+ absolute_noent
+	+ relative_noent
+fi
 + local_logs_prefix
 + stdio_redir
 
