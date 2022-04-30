@@ -77,6 +77,7 @@ exec {results_fd}>&-
 # when running a full test set (withou args),
 # compare generated results to a known-good reference
 if [ "$#" -eq 0 -a -f results-reference.log ]; then
+	sed '/^RUN[[:space:]]/d' -i results-current.log
 	if ! cmp -s results-current.log results-reference.log; then
 		err "results-current differs from reference"
 		diff --color=auto -u results-reference.log results-current.log
