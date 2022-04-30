@@ -95,12 +95,11 @@ and used instead of searching CWD
 
 For each argument:
 
+* Any leading and trailing forward slashes are removed (trimmed).
 * If it is empty (eg. its first byte is a string terminator), an error condition
-  must be triggered.
-  This condition is left up to the implementation.
+  must be triggered. This condition is left up to the implementation.
 * If it is equal to `--` and this is the first occurence of an `--` argument,
   it is silently skipped without an error.
-* Any leading and trailing forward slashes are removed (trimmed).
 * The argument is split into a "left" portion of non-slash characters up to,
   but excluding, a next forward slash, and a "right" portion of any
   characters after, and excluding, that slash.
@@ -544,7 +543,8 @@ are notable drawbacks to doing so.
 
 These factors contributed to the decision of making a runner not propagate
 the non-zero exit code upwards and only report a `FAIL`, exiting successfully
-if no error condition has occured.
+if no error condition has occured, indicating that "the process of testing
+has completed successfully (some tests may have failed)".
 
 See <<test-exit-code-handling,exit code handling in previous chapters>>.
 
@@ -576,7 +576,7 @@ Since interpreted runners are an important use case for PTEF, a replacement
 solution of using an environment variable was chosen instead.
 
 To allow symlink-based runners (zero configuration) setups, runners are still
-required to default to `basename(argv[0])` if `PTEF_RUNNER` is undefined,
+required to default to `basename(argv[0])` if `PTEF_BASENAME` is undefined,
 ie. for the first (root) runner of a hierarchy.
 
 === The use of environment variables instead of CLI options
