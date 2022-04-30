@@ -2,7 +2,7 @@
 
 # this could be any shell
 
-custom_report() {
+function custom_report {
 	ptef-report \
 		-c $'PASS \e[1;32mPASS\e[0m ' \
 		-c $'FAIL \e[1;31mFAIL\e[0m ' \
