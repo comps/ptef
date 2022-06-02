@@ -511,6 +511,7 @@ A runner can therefore rely on `dup(2)` returning 3 or higher.
 [[rationale]]
 == Rationale
 
+[[test-failure-shouldnt-fail-the-runner]]
 === Failure of an executable shouldn't fail the runner
 
 While it may be obvious for a runner to return non-zero exit code if at least
@@ -548,6 +549,7 @@ has completed successfully (some tests may have failed)".
 
 See <<test-exit-code-handling,exit code handling in previous chapters>>.
 
+[[ptef-basename]]
 === The existence of `PTEF_BASENAME`
 
 Earlier versions of this specification required the runner to simply search
@@ -579,6 +581,7 @@ To allow symlink-based runners (zero configuration) setups, runners are still
 required to default to `basename(argv[0])` if `PTEF_BASENAME` is undefined,
 ie. for the first (root) runner of a hierarchy.
 
+[[env-vars-intead-of-cli-options]]
 === The use of environment variables instead of CLI options
 
 While a runner is free to implement any `getopt(3)`-like option arguments,
@@ -607,6 +610,7 @@ A runner is however still free to use option arguments, ie. as a shorthand
 for exporting environment variables for subrunners, however these are
 non-standard.
 
+[[no-args-on-stdin]]
 === Not accepting arguments on standard input
 
 There is currently no great way of passing an arbitrary amount of arguments
@@ -645,6 +649,7 @@ filtering the list, and splitting it into cmdline-sized argument lists passed
 Since all arguments will always be without a `/`, no arguments are passed to
 executables and no argument merging occurs.
 
+[[no-elapsed-time-tracking]]
 === The lack of elapsed time tracking in results
 
 Some test result formats (jUnit, xUnit, NUnit, etc.) track how long a test
@@ -670,3 +675,48 @@ out timestamps using a custom status, serving both as keepalive entries
 as well as test duration estimates (when post-processed).
 
 All of these can be easily done in a top-level runner wrapper.
+
+[[no-dry-run]]
+=== No "dry run" mode
+
+It would be helpful if a test suite could perform any setup needed up to, but
+excluding the actual testing. Combined with `PTEF_RUN`, this could output test
+names that would be executed during a "real" run, incl. any dynamically-added
+virtual test cases.
+
+Unfortunately, this isn't reasonably possible in PTEF due to a combination of
+
+* hierarchy propagation being done through execution.
+* there being no way of distinguishing tests from hierarchy runners.
+
+If, for example, a runner was instructed to simply echo out the names of
+executables (or directories containing `PTEF_BASENAME`) in CWD instead of
+executing them, the user would get a listing *for the top level of the
+hierarchy only*, because the lower levels are provided by the executables that
+were not run.
+
+If the runner made an effort to print out executables in CWD while also
+executing any ``PTEF_BASENAME``-named executables inside subdirectories, it
+would break <<running-without-arguments,the very basics of PTEF>> by running
+actual tests which happen to use the directory format.
+
+One more way to make this work would be to offload "dry run-iness" to the
+test executables being run, ie. via an environment variable. This way, all
+executables would be run as usual, hierarchy would be traversed as usual,
+and the tests could simply `exit(0)` as a no-op. +
+The only problem here is that tests are not required to comply with PTEF, and
+thus don't have to implement this logic. In that case, a test could easily run
+its (potentially destructive) testing despite the "dry run" env var being set.
+
+This is also the best way to implement a "dry run" logic in this context if
+you have control of / source code for all your tests:
+
+. Reserve some special exit code to be used for "I didn't do anything".
+. Map that exit code to a PTEF status, ie. `SKIP`, and use non-standard runner
+  extensions that allow you to associate it with an exit code (as supported by
+  the reference runner implementation, the `-x` option).
+. Define some environment variable, ie. `MY_SUITE_DRYRUN`.
+. Modify *all* your tests to immediately exit with the reserved exit code when
+  the environment variable is set.
+.. (Modify virtual test generators to somehow figure out the test list without
+    running the tests, and report each as `SKIP`.)
