@@ -102,17 +102,22 @@ Unlimited hierarchy levels as standard.
   * Do `./run -d /subdir1/deepdir` to spawn a shell inside `deepdir`.
     instead of running any executables (remember to `exit` from it).
     * (Useful for hand-debugging individual tests that share a lengthy setup.)
+  * Note that the "Doing setup/cleanup ..." printouts were done by `run`
+    (wrapping `ptef-runner`), but any test has access to stdin/stdout (as PTEF
+    redirects only stderr), allowing you to write manual tests that interact
+    with the user.
+    * (Or simply test that provide verbose reasons for failure on stdout.)
 * `08-logdir`
   * This demonstrates the use of a dedicated log directory (via `PTEF_LOGS`),
     which mimics the execution hierarchy, as a replacement for per-level `logs`
     directories.
   * Useful for log archival (just one directory instead of many `logs` ones).
 * `09-parallel`
-  * The scripts in this directory sleep for 0-10 seconds, so when executed
-    normally, they may take up to 50 seconds to complete.
+  * The scripts in this directory sleep for 1 second, so when executed normally
+    (sequentially) take 5 seconds to complete.
   * Run as `./run -r -j 3` on the top level to print `RUN` statuses and launch
     3 jobs in parallel. Note that `subdir1` still runs sequentially (for up to
-    30 seconds).
+    3 seconds), making the overall execution last 3 seconds.
 
 ### Part 2: Tests as runners
 

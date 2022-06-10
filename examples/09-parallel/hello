@@ -1,5 +1,4 @@
 #!/bin/bash -x
-rand=$(( RANDOM % 10 ))
-echo running as $0, sleeping for $rand >&2
-sleep $rand
+echo running as $0, sleeping for 1 sec >&2
+sleep 1
 exit 0

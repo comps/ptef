@@ -1,13 +1,13 @@
-#!/bin/bash
+#!/bin/sh
 
 # this could be any shell
 
-function custom_report {
+custom_report() {
 	ptef-report \
-		-c $'PASS \e[1;32mPASS\e[0m ' \
-		-c $'FAIL \e[1;31mFAIL\e[0m ' \
-		-c $'RUN \e[1;34mRUN\e[0m  ' \
-		-c $'ERROR \e[1;41mERROR\e[0m' \
+		-c "`echo -e 'PASS \e[1;32mPASS\e[0m '`" \
+		-c "`echo -e 'FAIL \e[1;31mFAIL\e[0m '`" \
+		-c "`echo -e 'RUN \e[1;34mRUN\e[0m  '`" \
+		-c "`echo -e 'ERROR \e[1;41mERROR\e[0m'`" \
 		"$@"
 }
 

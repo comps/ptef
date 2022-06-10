@@ -4,3 +4,6 @@ msgstress03
 preadv203
 preadv203_64
 setsockopt06
+creat05
+fork09
+open04

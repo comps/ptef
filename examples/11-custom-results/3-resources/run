@@ -14,13 +14,13 @@ def exec_with_stats(args, testname, indir=None):
             os.chdir(indir)
         with ptef.mklog(testname) as log:
             ret = subprocess.run(args, executable=f'./{args[0]}', stderr=log)
+        status = 'PASS' if ret.returncode == 0 else 'FAIL'
+        ptef.report(status, testname)
         # print rusage
         rs = resource.getrusage(resource.RUSAGE_CHILDREN)
         stats = f"user={rs.ru_utime:.3f},system={rs.ru_stime:.3f},maxrss={rs.ru_maxrss}"
         prefix = os.getenv('PTEF_PREFIX', default='')
         ptef.report('USAGE', f"{stats} {prefix}/{testname}", ptef.RAWNAME)
-        status = 'PASS' if ret.returncode == 0 else 'FAIL'
-        ptef.report(status, testname)
         sys.exit(0)
     else:
         pid, status = os.wait()
@@ -42,7 +42,7 @@ else:
         if os.path.isfile(f):
             if not os.access(f, os.X_OK):
                 continue
-            exec_with_stats([f], testname=base)
+            exec_with_stats([f], testname=f)
         elif os.path.isdir(f):
             exe = os.path.join(f, base)
             if not os.access(exe, os.X_OK):
