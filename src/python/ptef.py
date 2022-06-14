@@ -23,7 +23,7 @@ import argparse
 import textwrap
 
 
-libptef = ctypes.CDLL("libptef.so.0", use_errno=True)
+libptef = ctypes.CDLL("libptef.so.0.0", use_errno=True)
 
 # runner flags
 NOMERGE     = (1 << 0)

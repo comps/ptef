@@ -6,10 +6,10 @@ build: bin_clean
 	$(MAKE) -C bin && \
 	$(MAKE) -C ../src clean && \
 	CFLAGS="-Wall -O0 -g3" $(MAKE) -C ../src && \
-	cp -v ../src/cli/ptef-{runner,report,mklog} ../src/lib/libptef.so.0 bin/valgrind/cli/. && \
+	cp -v ../src/cli/ptef-{runner,report,mklog} ../src/lib/libptef.so.0.0 bin/valgrind/cli/. && \
 	$(MAKE) -C ../src clean && \
 	$(MAKE) -C ../src && \
-	cp -v ../src/cli/ptef-{runner,report,mklog} ../src/lib/libptef.so.0 bin/cli/. && \
+	cp -v ../src/cli/ptef-{runner,report,mklog} ../src/lib/libptef.so.0.0 bin/cli/. && \
 	cp -v ../src/bash/{libptef-bash.so,builtins.bash} bin/bash/. && \
 	cp -v ../src/python/ptef.py bin/python/.
 
@@ -19,9 +19,9 @@ run:
 
 .PHONY: bin_clean
 bin_clean:
-	rm -f bin/valgrind/cli/{ptef-{runner,report,mklog},libptef.so.0}
-	rm -f bin/cli/{ptef-{runner,report,mklog},libptef.so.0}
-	rm -f bin/{ptef-{runner,report,mklog},libptef.so.0}
+	rm -f bin/valgrind/cli/{ptef-{runner,report,mklog},libptef.so.0.0}
+	rm -f bin/cli/{ptef-{runner,report,mklog},libptef.so.0.0}
+	rm -f bin/{ptef-{runner,report,mklog},libptef.so.0.0}
 	rm -f bin/bash/{libptef-bash.so,builtins.bash}
 	rm -f bin/python/ptef.py
 
