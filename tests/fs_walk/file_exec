@@ -1,0 +1,11 @@
+#!/bin/bash
+# Test simple file execution - the runner should find an executable file which
+# isn't itself and execute it
+
+. testlib.bash
+
+mkfile > executable
+chmod +x executable
+assert_ptef_runner > "$tmpdir/runner_out"
+assert_grep '^argv0: executable$' exec_log
+assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/runner_out"

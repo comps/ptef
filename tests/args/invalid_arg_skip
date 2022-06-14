@@ -1,0 +1,12 @@
+#!/bin/bash
+# Test that the runner aborts on invalid argument and doesn't execute anything
+
+. testlib.bash
+
+ret=0
+mk2execs
+ptef-runner ${TEST_NOMERGE:+-m} exec1 '.' exec2 \
+	>"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
+assert_grep 'arg failed sanity check: \.$' "$tmpdir/runner_err"
+assert_contents '' "$tmpdir/runner_out"
+[ "$ret" -ne 0 ]

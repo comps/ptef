@@ -1,0 +1,11 @@
+#!/bin/bash
+# Test that cli -v option exports PTEF_NOLOGS and the runner honors it
+
+. testlib.bash
+
+make_var_printer PTEF_NOLOGS > executable
+echo 'echo "this is stderr" >&2' >> executable
+chmod +x executable
+ptef-runner -v >"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
+assert_contents $'1\n' exec_log
+assert_contents $'this is stderr\n' "$tmpdir/runner_err"

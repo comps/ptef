@@ -1,0 +1,12 @@
+#!/bin/bash
+# Test that argument merging works as expected
+# - extend the repeated_arg test with actual exec_log checking
+
+. ../testlib.bash
+
+cnt=
+mkfile 1 > exec1
+chmod +x exec1
+assert_ptef_runner exec1 exec1 > "$tmpdir/runner_out"
+# twice, without args
+[ "$(grep -c '^argc: 0$' exec_log.1)" -eq 2 ]

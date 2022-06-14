@@ -1,0 +1,12 @@
+#!/bin/bash
+# Test that non-existing pre-set PTEF_BASENAME results in no subdir being run
+
+. testlib.bash
+
+mkdir subd
+mkfile > subd/ptef-runner
+chmod +x subd/ptef-runner
+PTEF_BASENAME=nonex assert_ptef_runner > "$tmpdir/runner_out"
+[ ! -f subd/exec_log ]
+[ ! -f logs ]
+

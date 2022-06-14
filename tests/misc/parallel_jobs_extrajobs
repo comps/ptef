@@ -1,0 +1,10 @@
+#!/bin/bash
+# Test that extra unused -j jobs correctly wait for the smaller amount of used
+# jobs to finish
+
+. testlib.bash
+
+make_arg_printer > exec1
+chmod +x exec1
+assert_ptef_runner -j 5 > "$tmpdir/runner_out"
+assert_contents $'PASS[\t ]*/exec1\n' "$tmpdir/runner_out"

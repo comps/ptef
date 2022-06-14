@@ -112,7 +112,7 @@ int main(int argc, char **argv)
             case 'j':
                 jobs = strtoi_safe(optarg);
                 if (jobs < 1) {
-                    PERROR_FMT("invalid job cnt: %s", optarg);
+                    ERROR_FMT("invalid job cnt: %s\n", optarg);
                     goto err;
                 }
                 break;

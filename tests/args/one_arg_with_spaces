@@ -1,0 +1,12 @@
+#!/bin/bash
+# Test that the runner can deal with arguments containing whitespace
+
+. testlib.bash
+
+mk2execs
+mv exec1 "ex ec1"
+assert_ptef_runner ${TEST_NOMERGE:+-m} "ex ec1" > "$tmpdir/runner_out"
+assert_grep '^PASS[[:space:]]\+/ex ec1$' "$tmpdir/runner_out"
+assert_nogrep '/exec2' "$tmpdir/runner_out"
+assert_nogrep '/ex$' "$tmpdir/runner_out"
+assert_nogrep '/ec1' "$tmpdir/runner_out"

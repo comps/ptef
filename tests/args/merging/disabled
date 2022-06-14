@@ -1,0 +1,13 @@
+#!/bin/bash
+# Test the NOMERGE / -m functionality
+
+. ../testlib.bash
+
+cnt=
+mkfile 1 > exec1
+chmod +x exec1
+assert_ptef_runner -m exec1/arg1 exec1/arg2 > "$tmpdir/runner_out"
+assert_grep '^argv: arg1$' exec_log.1
+assert_grep '^argv: arg2$' exec_log.1
+# one argument, twice
+[ "$(grep -c '^argc: 1$' exec_log.1)" -eq 2 ]

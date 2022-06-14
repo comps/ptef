@@ -1,0 +1,20 @@
+#!/bin/bash
+# Test that ptef_report locks PTEF_RESULTS_FD descriptor when writing a result
+# to it, independently of stdout
+
+. testlib.bash
+
+touch "$tmpdir/results_fd_out"
+exec {fd}>"$tmpdir/results_fd_out"
+mkfifo "$tmpdir/lockfifo"
+hold-lock "$tmpdir/lockfifo" >&"$fd" &
+# wait for hold-lock to lock report_out
+cat "$tmpdir/lockfifo"
+PTEF_RESULTS_FD="$fd" TEST_WRAPPER="timeout 1" \
+	assert_ptef_report PASS testname >"$tmpdir/report_out" || true
+# make hold-lock finish
+cat "$tmpdir/lockfifo"
+wait
+# ptef-report should have timed out
+assert_contents '' "$tmpdir/results_fd_out"
+assert_contents '' "$tmpdir/report_out"

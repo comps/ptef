@@ -1,0 +1,14 @@
+#!/bin/bash
+# Test that argument merging works as expected
+# - with arg-less exec1 aborting the merging
+
+. ../testlib.bash
+
+mkfile 1 > exec1
+chmod +x exec1
+assert_ptef_runner exec1/arg1 exec1/arg2 exec1 > "$tmpdir/runner_out"
+# first execution with 2 args
+assert_grep '^argv: arg1 arg2$' exec_log.1
+assert_grep '^argc: 2$' exec_log.1
+# second execution with no args
+assert_grep '^argc: 0$' exec_log.1

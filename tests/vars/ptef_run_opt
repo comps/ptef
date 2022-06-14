@@ -1,0 +1,11 @@
+#!/bin/bash
+# Test that cli -r option exports PTEF_RUN and the runner honors it
+
+. testlib.bash
+
+make_var_printer PTEF_RUN > executable
+chmod +x executable
+assert_ptef_runner -r > "$tmpdir/runner_out"
+assert_contents $'1\n' exec_log
+assert_contents $'RUN[\t ]*/executable\nPASS[\t ]*/executable\n' \
+	"$tmpdir/runner_out"

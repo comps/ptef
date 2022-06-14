@@ -1,0 +1,12 @@
+#!/bin/bash
+# Test that PTEF_RUN prints out a RUN status
+
+. testlib.bash
+
+mkfile > executable
+chmod +x executable
+assert_ptef_runner > "$tmpdir/runner_out"
+assert_contents $'PASS[\t ]*/executable\n' "$tmpdir/runner_out"
+PTEF_RUN=1 assert_ptef_runner > "$tmpdir/runner_out"
+assert_contents $'RUN[\t ]*/executable\nPASS[\t ]*/executable\n' \
+	"$tmpdir/runner_out"

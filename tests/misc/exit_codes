@@ -1,0 +1,23 @@
+#!/bin/bash
+# Test that custom exit-code-to-status mapping is honored
+
+. testlib.bash
+
+function mkexitfile {
+	cat <<-EOF
+	#!/bin/bash
+	exit $1
+	EOF
+}
+
+mkexitfile 1 > exec1
+mkexitfile 0 > exec2
+mkexitfile 255 > exec3
+mkexitfile 2 > exec4
+chmod +x exec1 exec2 exec3 exec4
+assert_ptef_runner -x '1:SECOND 0:FIRST 255:TEST ERROR' \
+	> "$tmpdir/runner_out"
+assert_grep '^SECOND[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+assert_grep '^FIRST[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+assert_grep '^TEST[[:space:]]\+/exec3$' "$tmpdir/runner_out"
+assert_grep '^ERROR[[:space:]]\+/exec4$' "$tmpdir/runner_out"

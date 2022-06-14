@@ -1,0 +1,15 @@
+#!/bin/bash
+# Test that path inside PTEF_LOGS is controlled by PTEF_PREFIX and
+# is created (like 'mkdir -p') across several levels
+
+. testlib.bash
+
+mkfile > executable
+chmod +x executable
+mkdir testlogs
+PTEF_PREFIX=/a/b/c PTEF_LOGS=testlogs \
+	assert_ptef_runner > "$tmpdir/runner_out"
+# path to testlogs is based on real fs path, not PTEF_PREFIX
+assert_contents $'testlogs\n' exec_log
+[ -f testlogs/a/b/c/executable.log ]
+assert_contents $'stderr output\n' testlogs/a/b/c/executable.log

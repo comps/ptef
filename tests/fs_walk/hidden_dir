@@ -1,0 +1,11 @@
+#!/bin/bash
+# Test that a hidden executable/directory is not executed
+
+. testlib.bash
+
+mkdir .subd
+mkfile > .subd/ptef-runner
+chmod +x .subd/ptef-runner
+assert_ptef_runner > "$tmpdir/runner_out"
+[ ! -f subd/exec_log -a ! -f exec_log ]
+assert_nogrep '' "$tmpdir/runner_out"

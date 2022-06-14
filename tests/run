@@ -1,6 +1,11 @@
 #!/bin/bash
 argv0=$(basename "$0")
 
+# this top-level 'run' adds one more abstract hierarchy level
+# at the top, here called a "variant", ie. 'cli', 'valgrind', etc.,
+# symlinking the appropriate binaries/libraries/scripts for each
+# before running ptef-runner on the real hierarchy
+
 # eat up option args, pass them later to ptef-runner
 opts=()
 while [ "$#" -gt 0 ]; do
@@ -17,10 +22,10 @@ export LD_LIBRARY_PATH="$PWD/bin"
 export TEST_BINDIR="$PWD/bin"
 
 function run_arg {
-	local test="${1#/}" binary=
+	local testpath="${1#/}" binary=
 
-	local variant= subtest=
-	IFS=/ read -r variant subtest <<<"$test"
+	local variant= test=
+	IFS=/ read -r variant test <<<"$testpath"
 
 	for binary in ptef-runner ptef-report ptef-mklog libptef.so.0.0; do
 		if [ ! -x "bin/$variant/$binary" ]; then
@@ -32,10 +37,10 @@ function run_arg {
 
 	export TEST_VARIANT="$variant"
 
-	if [ -n "$subtest" ]; then
-		subtest=("$subtest")
+	if [ -n "$test" ]; then
+		test=("$test")
 	else
-		subtest=()
+		test=()
 	fi
 
 	if [ "$variant" = "valgrind" ]; then
@@ -45,7 +50,7 @@ function run_arg {
 
 	[ -n "$PTEF_RUN" ] && ptef-report RUN "$variant"
 	PTEF_PREFIX="/$variant" PTEF_LOGS="$PWD/logs" \
-		ptef-runner -a "$argv0" "${opts[@]}" "${subtest[@]}"
+		ptef-runner -a "$argv0" "${opts[@]}" "${test[@]}"
 	rc=$?
 	if [ "$rc" -eq 0 ]; then
 		ptef-report PASS "$variant"
@@ -74,10 +79,13 @@ for variant in "${variants[@]}"; do
 done
 exec {results_fd}>&-
 
-# when running a full test set (withou args),
+# when running a full test set (without args),
 # compare generated results to a known-good reference
 if [ "$#" -eq 0 -a -f results-reference.log ]; then
-	sed '/^RUN[[:space:]]/d' -i results-current.log
+	sed '/^RUN[[:space:]]/d' results-current.log | \
+		sort -r > results-tmp.log
+	mv results-tmp.log results-current.log
+
 	if ! cmp -s results-current.log results-reference.log; then
 		err "results-current differs from reference"
 		diff --color=auto -u results-reference.log results-current.log

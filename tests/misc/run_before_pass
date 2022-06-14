@@ -1,0 +1,23 @@
+#!/bin/bash
+# Test that the runner emits a RUN result when it runs an executable
+# before the executable finishes
+
+. testlib.bash
+
+cat > executable <<-EOF
+#!/bin/bash
+cat fifolock >&2
+EOF
+chmod +x executable
+mkfifo fifolock
+PTEF_RUN=1 assert_ptef_runner > "$tmpdir/runner_out" &
+for ((i = 0; i < 1000; i++)); do
+	[ -s "$tmpdir/runner_out" ] && break
+	sleep 0.1
+done
+cp "$tmpdir/runner_out" "$tmpdir/midrun_out"
+echo > fifolock
+wait
+assert_contents $'RUN[\t ]*/executable\n' "$tmpdir/midrun_out"
+assert_contents $'RUN[\t ]*/executable\nPASS[\t ]*/executable\n' \
+	"$tmpdir/runner_out"

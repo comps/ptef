@@ -1,0 +1,9 @@
+#!/bin/bash
+# Test that the runner respects PTEF_BASENAME over its basename(argv[0])
+
+. testlib.bash
+
+mkfile > executable
+chmod +x executable
+PTEF_BASENAME=testrun assert_ptef_runner > "$tmpdir/runner_out"
+assert_contents $'testrun\n' exec_log

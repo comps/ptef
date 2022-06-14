@@ -1,0 +1,12 @@
+#!/bin/bash
+# Test non-argv0-named executable in a subdir - the runner should ignore
+# the entire subdir
+
+. testlib.bash
+
+mkdir subd
+mkfile > subd/executable
+chmod +x subd/executable
+assert_ptef_runner > "$tmpdir/runner_out"
+[ ! -f subd/exec_log -a ! -f exec_log ]
+assert_nogrep '' "$tmpdir/runner_out"

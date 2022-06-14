@@ -1,0 +1,16 @@
+#!/bin/bash
+# Test that PTEF_NOLOGS results in executable stderr not being redirected
+# and prevents logs from being created
+
+. testlib.bash
+
+cat > executable <<-EOF
+#!/bin/bash
+echo "this is stderr" >&2
+EOF
+chmod +x executable
+PTEF_NOLOGS=1 ptef-runner \
+	>"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
+assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/runner_out"
+[ ! -d logs ]
+assert_contents $'this is stderr\n' "$tmpdir/runner_err"

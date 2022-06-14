@@ -1,0 +1,11 @@
+#!/bin/bash
+# Test PTEF_PREFIX containing whitespaces, runner should treat them the same as
+# any other characters
+
+. testlib.bash
+
+mkdir subd
+mkfile > subd/ptef-runner
+chmod +x subd/ptef-runner
+PTEF_PREFIX="/pre fix" assert_ptef_runner > "$tmpdir/runner_out"
+assert_contents $'/pre fix/subd\n' subd/exec_log

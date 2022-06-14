@@ -1,0 +1,14 @@
+#!/bin/bash
+# Test that the runner passes no extra open file descriptors to executables
+# (Expect fd 255 due to the executable being bash)
+
+. testlib.bash
+
+cat > executable <<-EOF
+#!/bin/bash
+exec list-fds > exec_log
+EOF
+chmod +x executable
+assert_ptef_runner > "$tmpdir/runner_out"
+valgrind_fd="${TEST_VALGRIND_FD:+$'\n'$TEST_VALGRIND_FD}"
+assert_contents $'0\n1\n2'"$valgrind_fd"$'\n' exec_log

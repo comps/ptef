@@ -1,0 +1,10 @@
+#!/bin/bash
+# Test that PTEF_BASENAME is set by a runner to basename(argv[0])
+
+. testlib.bash
+
+mkdir subd
+mkfile > subd/ptef-runner
+chmod +x subd/ptef-runner
+assert_ptef_runner > "$tmpdir/runner_out"
+assert_contents $'ptef-runner\n' subd/exec_log

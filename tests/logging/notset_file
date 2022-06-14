@@ -1,0 +1,12 @@
+#!/bin/bash
+# Test that an unset PTEF_LOGS results in a 'logs' subdir in CWD
+
+. testlib.bash
+
+mkfile > executable
+chmod +x executable
+assert_ptef_runner > "$tmpdir/runner_out"
+assert_contents $'unset\n' exec_log
+[ -d logs ]
+[ -f logs/executable.log ]
+assert_contents $'stderr output\n' logs/executable.log

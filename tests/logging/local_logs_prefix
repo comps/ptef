@@ -1,0 +1,12 @@
+#!/bin/bash
+# Test that PTEF_PREFIX has no effect on local 'logs' dir (PTEF_LOGS unset)
+
+. testlib.bash
+
+mkfile > executable
+chmod +x executable
+PTEF_PREFIX=/a/b/c assert_ptef_runner > "$tmpdir/runner_out"
+assert_contents $'unset\n' exec_log
+[ -d logs ]
+[ -f logs/executable.log ]
+assert_contents $'stderr output\n' logs/executable.log

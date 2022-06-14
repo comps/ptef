@@ -1,0 +1,22 @@
+#!/bin/bash
+# Test that the runner throws an error on a spec-defined invalid argument
+# and ignores it
+
+. testlib.bash
+
+ret=0
+mk2execs
+ptef-runner ${TEST_NOMERGE:+-m} '.' >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
+assert_grep 'arg failed sanity check: \.$' "$tmpdir/runner_err"
+assert_contents '' "$tmpdir/runner_out"
+[ "$ret" -ne 0 ]
+ret=0
+ptef-runner ${TEST_NOMERGE:+-m} '..' >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
+assert_grep 'arg failed sanity check: \.\.$' "$tmpdir/runner_err"
+assert_contents '' "$tmpdir/runner_out"
+[ "$ret" -ne 0 ]
+ret=0
+ptef-runner ${TEST_NOMERGE:+-m} '' >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
+assert_grep 'arg failed sanity check: $' "$tmpdir/runner_err"
+assert_contents '' "$tmpdir/runner_out"
+[ "$ret" -ne 0 ]

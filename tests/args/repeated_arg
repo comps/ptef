@@ -1,0 +1,10 @@
+#!/bin/bash
+# Test that multiple occurences of the same argument do indeed repeatedly
+# run the same executable
+
+. testlib.bash
+
+mk2execs
+assert_ptef_runner ${TEST_NOMERGE:+-m} exec1 exec1 > "$tmpdir/runner_out"
+assert_contents $'PASS[\t ]*/exec1\nPASS[\t ]*/exec1\n' \
+	"$tmpdir/runner_out"

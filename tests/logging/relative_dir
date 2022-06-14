@@ -1,0 +1,13 @@
+#!/bin/bash
+# Test that PTEF_LOGS can be relative (and is adjusted according to prefix)
+
+. testlib.bash
+
+mkdir subd
+mkfile > subd/ptef-runner
+chmod +x subd/ptef-runner
+PTEF_LOGS=testlogs assert_ptef_runner > "$tmpdir/runner_out"
+assert_contents $'../testlogs\n' subd/exec_log
+[ ! -d logs ]
+[ -f testlogs/subd.log ]
+assert_contents $'stderr output\n' testlogs/subd.log

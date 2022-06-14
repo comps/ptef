@@ -1,0 +1,18 @@
+#!/bin/bash
+# Test non-default argv0 of the runner, make sure that it still executes only
+# an argv0-named executable in a subdir
+
+. testlib.bash
+
+runner_file=$(command -v ptef-runner)
+[ "${runner_file::1}" = "/" ]   # fails on alias
+ln -s "$runner_file" custom-runner
+mkdir subd
+mkfile > subd/custom-runner
+chmod +x subd/custom-runner
+cp subd/custom-runner subd/executable
+./custom-runner > "$tmpdir/runner_out" 2>"$tmpdir/runner_err"
+assert_nogrep '' "$tmpdir/runner_err"
+assert_grep '^argv0: custom-runner$' subd/exec_log
+assert_nogrep '^argv0: executable$' subd/exec_log
+assert_grep '^PASS[[:space:]]\+/subd$' "$tmpdir/runner_out"

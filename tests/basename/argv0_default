@@ -1,0 +1,11 @@
+#!/bin/bash
+# Test that PTEF_BASENAME defaults to filesystem-based argv0
+
+. testlib.bash
+
+mkfile > executable
+chmod +x executable
+link_from_PATH ptef-runner testrun
+[ -x testrun ]
+./testrun >"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
+assert_contents $'testrun\n' exec_log

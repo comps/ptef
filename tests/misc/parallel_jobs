@@ -1,0 +1,56 @@
+#!/bin/bash
+# Test that parallel runner execution runs all executables at once by doing
+# custom locking inside the executables, forcing them to complete in a specific
+# predetermined order
+
+. testlib.bash
+
+function mkparafile {
+	local waitfor="$1" setto="$2"
+	cat <<-EOF
+	#!/bin/bash
+	for ((i = 0; i < 1000; i++)); do
+		content=\$(<statefile)
+		if [ "\$content" = "$waitfor" ]; then
+			echo "$setto" > statefile
+			exit 0
+		fi
+		sleep 0.1
+	done
+	exit 1
+	EOF
+}
+
+# ensure out-of-alpha-order locking
+mkparafile 1 2 > exec_d
+mkparafile 2 3 > exec_e
+mkparafile 3 4 > exec_a
+mkparafile 4 5 > exec_c
+mkparafile 5 6 > exec_f
+mkparafile 6 7 > exec_b
+chmod +x exec_*
+# since the runner executes in alpha order, 4 parallel jobs should
+# be enough:
+# a
+# a b
+# a b c
+# a b c d
+# a b c
+# a b c e
+# a b c
+# b c
+# b
+# b f
+# b
+echo 1 > statefile
+assert_ptef_runner -j 4 > "$tmpdir/runner_out"
+# no need for runner_out order checking; executables do exit 1 if they
+# fail to find expected value within some time
+assert_grep '^PASS[[:space:]]\+/exec_a' "$tmpdir/runner_out"
+assert_grep '^PASS[[:space:]]\+/exec_b' "$tmpdir/runner_out"
+assert_grep '^PASS[[:space:]]\+/exec_c' "$tmpdir/runner_out"
+assert_grep '^PASS[[:space:]]\+/exec_d' "$tmpdir/runner_out"
+assert_grep '^PASS[[:space:]]\+/exec_e' "$tmpdir/runner_out"
+assert_grep '^PASS[[:space:]]\+/exec_f' "$tmpdir/runner_out"
+final=$(<statefile)
+[ "$final" = "7" ]

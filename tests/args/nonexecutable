@@ -1,0 +1,17 @@
+#!/bin/bash
+# Test that error is printed to stderr when trying to run a non-executable file
+# given as argument
+# (The error is from execve() which comes late in the process)
+
+. testlib.bash
+
+ret=0
+mkfile > nonexec
+ptef-runner ${TEST_NOMERGE:+-m} nonexec >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
+# platforms without O_CLOEXEC should have it inside logs/
+assert_grep 'ptef error .* Permission denied' "$tmpdir/runner_err" || \
+	assert_grep 'ptef error .* Permission denied' logs/nonexec.log
+# since the fail happens after fork(), it should emit a FAIL result
+assert_grep '^FAIL[[:space:]]\+/nonexec$' "$tmpdir/runner_out"
+# .. and it as a parent should exit successfully
+[ "$ret" -eq 0 ]

@@ -1,0 +1,18 @@
+#!/bin/bash
+# Test that a symlink to a directory with an argv0-named executable is executed
+# as if it was a normal subdirectory
+
+. testlib.bash
+
+dir="$tmpdir/subd"
+mkdir "$dir"
+mkfile > "$dir/ptef-runner"
+chmod +x "$dir/ptef-runner"
+ln -s "$dir" link
+assert_ptef_runner > "$tmpdir/runner_out"
+assert_grep '^argv0: ptef-runner$' "$dir/exec_log"
+# exec_log must be only in subd
+[ ! -f exec_log ]
+assert_grep '^PASS[[:space:]]\+/link$' "$tmpdir/runner_out"
+# runner must not report results for executables inside the subdir
+assert_nogrep '/link/ptef-runner' "$tmpdir/runner_out"

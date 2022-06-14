@@ -1,0 +1,9 @@
+#!/bin/bash
+# Test binary data written to the log
+
+. testlib.bash
+
+printf "%b" "\x00\x01\x02\x03\x04" > binfile
+assert_ptef_mklog testname < binfile
+[ -f logs/testname.log ]
+cmp binfile logs/testname.log

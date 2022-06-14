@@ -1,0 +1,19 @@
+#!/bin/bash
+# Test that ptef_report ignores any locking when PTEF_NOLOCK is passed
+
+. testlib.bash
+
+touch "$tmpdir/results_fd_out"
+exec {fd}>"$tmpdir/results_fd_out"
+mkfifo "$tmpdir/lockfifo"
+hold-lock "$tmpdir/lockfifo" >&"$fd" &
+# wait for hold-lock to lock report_out
+cat "$tmpdir/lockfifo"
+PTEF_RESULTS_FD="$fd" TEST_WRAPPER="timeout 10" \
+	assert_ptef_report -N PASS testname >"$tmpdir/report_out" || true
+# make hold-lock finish
+cat "$tmpdir/lockfifo"
+wait
+# ptef-report should have reported to both outputs, ignoring lock
+assert_contents $'PASS[\t ]*/testname\n' "$tmpdir/results_fd_out"
+assert_contents $'PASS[\t ]*/testname\n' "$tmpdir/report_out"

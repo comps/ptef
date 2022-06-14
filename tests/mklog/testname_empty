@@ -1,0 +1,9 @@
+#!/bin/bash
+# Test empty testname
+# (This is non-standard, but our mklog should treat it as valid)
+
+. testlib.bash
+
+assert_ptef_mklog "" </dev/null
+[ -d logs ]
+[ -f logs/.log ]

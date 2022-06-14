@@ -1,0 +1,18 @@
+#!/bin/bash
+# Test that ptef_report locks stdout when writing a result to it
+
+. testlib.bash
+
+touch "$tmpdir/report_out"
+mkfifo "$tmpdir/lockfifo"
+hold-lock "$tmpdir/lockfifo" >"$tmpdir/report_out" &
+# wait for hold-lock to lock report_out
+cat "$tmpdir/lockfifo"
+[ "$TEST_VARIANT" = "valgrind" ] && delay=10 || delay=2
+TEST_WRAPPER="timeout $delay" \
+	assert_ptef_report PASS testname >"$tmpdir/report_out" || true
+# make hold-lock finish
+cat "$tmpdir/lockfifo"
+wait
+# ptef-report should have timed out
+assert_contents '' "$tmpdir/report_out"

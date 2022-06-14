@@ -1,0 +1,12 @@
+#!/bin/bash
+# Test that a non-existent parent path to PTEF_LOGS location is considered
+# an error
+
+. testlib.bash
+
+mkfile > executable
+chmod +x executable
+PTEF_LOGS="a/b/c/testlogs" \
+	ptef-runner >"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || true
+assert_grep 'ptef error .* No such file or directory' "$tmpdir/runner_err"
+[ ! -e a ]

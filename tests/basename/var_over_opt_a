@@ -1,0 +1,9 @@
+#!/bin/bash
+# Test that PTEF_BASENAME is preferred over -a (default basename)
+
+. testlib.bash
+
+mkfile > executable
+chmod +x executable
+PTEF_BASENAME=varrun assert_ptef_runner -a optrun > "$tmpdir/runner_out"
+assert_contents $'varrun\n' exec_log

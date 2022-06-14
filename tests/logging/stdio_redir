@@ -1,0 +1,14 @@
+#!/bin/bash
+# Test that only stderr is redirected, stdout remains unaltered
+
+. testlib.bash
+
+mkfile > executable
+echo 'echo "stdout output"' >> executable
+chmod +x executable
+{
+	assert_ptef_runner
+} > "$tmpdir/runner_out"
+assert_grep '^stdout output$' "$tmpdir/runner_out"
+[ -f logs/executable.log ]
+assert_grep '^stderr output$' logs/executable.log

@@ -1,0 +1,9 @@
+#!/bin/bash
+# Test with PTEF_PREFIX set, but empty, result should be the same as when unset
+
+. testlib.bash
+
+mkfile > executable
+chmod +x executable
+PTEF_PREFIX= assert_ptef_runner > "$tmpdir/runner_out"
+assert_contents $'/executable\n' exec_log

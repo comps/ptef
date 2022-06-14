@@ -1,0 +1,11 @@
+#!/bin/bash
+# Test PTEF_PREFIX with a trailing slash and a subdir runner, the prefix should
+# have duplicate slashes, the runner should not trim the prefix string
+
+. testlib.bash
+
+mkdir subd
+mkfile > subd/ptef-runner
+chmod +x subd/ptef-runner
+PTEF_PREFIX="/prefix/" assert_ptef_runner > "$tmpdir/runner_out"
+assert_contents $'/prefix//subd\n' subd/exec_log

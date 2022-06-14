@@ -1,0 +1,15 @@
+#!/bin/bash
+# Test argv0-named executable in a subdir - the runner should execute it
+
+. testlib.bash
+
+mkdir subd
+mkfile > subd/ptef-runner
+chmod +x subd/ptef-runner
+assert_ptef_runner > "$tmpdir/runner_out"
+assert_grep '^argv0: ptef-runner$' subd/exec_log
+# exec_log must be only in subd
+[ ! -f exec_log ]
+assert_grep '^PASS[[:space:]]\+/subd$' "$tmpdir/runner_out"
+# runner must not report results for executables inside the subdir
+assert_nogrep '/subd/ptef-runner' "$tmpdir/runner_out"

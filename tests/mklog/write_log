@@ -1,0 +1,8 @@
+#!/bin/bash
+# Test actual log writing
+
+. testlib.bash
+
+assert_ptef_mklog testname <<<"this is logged"
+[ -f logs/testname.log ]
+assert_contents $'this is logged\n' logs/testname.log

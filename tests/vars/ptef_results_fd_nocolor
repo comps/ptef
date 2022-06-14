@@ -1,0 +1,14 @@
+#!/bin/bash
+# Test that it receives black&white output only, even if stdout gets
+# colors
+
+. testlib.bash
+
+colorpass=$'\e\[1;32mPASS\e\[0m'
+mkfile > executable
+chmod +x executable
+exec {test_fd}>"$tmpdir/result_log"
+TEST_WRAPPER=ttee PTEF_RESULTS_FD="$test_fd" \
+	assert_ptef_runner > "$tmpdir/runner_out"
+assert_grep "^$colorpass[[:space:]]\+/executable$" "$tmpdir/runner_out"
+assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/result_log"

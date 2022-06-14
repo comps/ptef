@@ -1,0 +1,13 @@
+#!/bin/bash
+# Test that an open file descriptor passed via PTEF_RESULTS_FD receives
+# the same results as stdout
+
+. testlib.bash
+
+mkfile > executable
+chmod +x executable
+exec {test_fd}>"$tmpdir/result_log"
+PTEF_RESULTS_FD="$test_fd" \
+	assert_ptef_runner > "$tmpdir/runner_out"
+assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/runner_out"
+assert_grep '^PASS[[:space:]]\+/executable$' "$tmpdir/result_log"

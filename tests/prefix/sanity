@@ -1,0 +1,9 @@
+#!/bin/bash
+# Test basic PTEF_PREFIX functionality, ensure that it works
+
+. testlib.bash
+
+mkfile > executable
+chmod +x executable
+PTEF_PREFIX=/prefix assert_ptef_runner > "$tmpdir/runner_out"
+assert_contents $'/prefix/executable\n' exec_log

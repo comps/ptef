@@ -1,0 +1,11 @@
+#!/bin/bash
+# Test unset PTEF_PREFIX with a subdir runner, runner should default to it
+# being empty and append the directory name
+
+. testlib.bash
+
+mkdir subd
+mkfile > subd/ptef-runner
+chmod +x subd/ptef-runner
+assert_ptef_runner > "$tmpdir/runner_out"
+assert_contents $'/subd\n' subd/exec_log

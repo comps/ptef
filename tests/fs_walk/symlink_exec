@@ -1,0 +1,13 @@
+#!/bin/bash
+# Test that a symlink to an executable is followed and treated as if it was
+# an executable itself
+
+. testlib.bash
+
+exe="$tmpdir/executable"
+mkfile > "$exe"
+chmod +x "$exe"
+ln -s "$exe" link
+assert_ptef_runner > "$tmpdir/runner_out"
+assert_grep '^argv0: link$' exec_log
+assert_grep '^PASS[[:space:]]\+/link$' "$tmpdir/runner_out"

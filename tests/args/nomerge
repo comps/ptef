@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# arguments from run.conf needed
+[ $# -eq 0 ] && exit 1
+
+TEST_NOMERGE=1 exec ptef-runner -a run "$@"

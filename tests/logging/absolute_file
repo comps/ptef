@@ -1,0 +1,13 @@
+#!/bin/bash
+# Test that PTEF_LOGS is used and works with absolute paths
+
+. testlib.bash
+
+mkfile > executable
+chmod +x executable
+mkdir testlogs
+PTEF_LOGS="$PWD/testlogs" assert_ptef_runner > "$tmpdir/runner_out"
+assert_contents "$PWD/testlogs"$'\n' exec_log
+[ ! -d logs ]
+[ -f testlogs/executable.log ]
+assert_contents $'stderr output\n' testlogs/executable.log

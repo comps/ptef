@@ -1,0 +1,9 @@
+#!/bin/bash
+# Test that the runner runs all executables in CWD when no args are given
+
+. testlib.bash
+
+mk2execs
+assert_ptef_runner ${TEST_NOMERGE:+-m} > "$tmpdir/runner_out"
+assert_grep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+assert_grep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"

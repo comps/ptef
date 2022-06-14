@@ -1,0 +1,15 @@
+#!/bin/bash
+# Test that the runner's -i option (and char **ignored functionality) correctly
+# ignore files in CWD
+
+. testlib.bash
+
+make_arg_printer > exec1
+make_arg_printer > exec2
+chmod +x exec1 exec2
+assert_ptef_runner -i exec1 > "$tmpdir/runner_out"
+assert_nogrep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+assert_grep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+assert_ptef_runner -i exec1 -i exec2 > "$tmpdir/runner_out"
+assert_nogrep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+assert_nogrep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"

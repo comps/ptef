@@ -1,0 +1,12 @@
+#!/bin/bash
+# Test that the runenr executes only the executable specified as arg
+
+. testlib.bash
+
+mk2execs
+assert_ptef_runner ${TEST_NOMERGE:+-m} exec1 > "$tmpdir/runner_out"
+assert_grep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+assert_nogrep '/exec2' "$tmpdir/runner_out"
+assert_ptef_runner ${TEST_NOMERGE:+-m} exec2 > "$tmpdir/runner_out"
+assert_grep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+assert_nogrep '/exec1' "$tmpdir/runner_out"

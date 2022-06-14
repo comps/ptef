@@ -1,0 +1,8 @@
+#!/bin/bash
+# Test basic log-creation functionality
+
+. testlib.bash
+
+assert_ptef_mklog testname </dev/null
+[ -d logs ]
+[ -f logs/testname.log ]

@@ -1,0 +1,13 @@
+#!/bin/bash
+# Test that the runner errors out on a closed PTEF_RESULTS_FD
+
+. testlib.bash
+
+ret=0
+mkfile > executable
+chmod +x executable
+exec {test_fd}>"$tmpdir/result_log"
+PTEF_RESULTS_FD="12345" ptef-runner \
+	>"$tmpdir/runner_out" 2>"$tmpdir/runner_err" || ret=$?
+[ "$ret" -ne 0 ]
+assert_grep 'Bad file descriptor' "$tmpdir/runner_err"

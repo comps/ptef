@@ -1,0 +1,11 @@
+#!/bin/bash
+# Test that the runner silently ignores non-executable files in directories
+
+. testlib.bash
+
+mkdir subd
+mkfile > subd/ptef-runner
+assert_ptef_runner > "$tmpdir/runner_out"
+# executable was not run, exec_log must not be present
+[ ! -f subd/exec_log -a ! -f exec_log ]
+assert_nogrep '' "$tmpdir/runner_out"

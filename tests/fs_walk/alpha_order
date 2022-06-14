@@ -1,0 +1,20 @@
+#!/bin/bash
+# Test that executables are run in an alphanumerical order
+
+. testlib.bash
+
+function mkalphafile {
+	cat <<-EOF
+	#!/bin/bash
+	echo -n "$1," >> exec_log
+	EOF
+}
+
+# create in random order, in case the filesystem has sequential dir log
+for i in a 1 0 00 11 01 B b 11 2 A; do
+	mkalphafile "$i" > "$i"
+	chmod +x "$i"
+done
+assert_ptef_runner > "$tmpdir/runner_out"
+echo >> exec_log
+assert_grep '^0,00,01,1,11,2,A,B,a,b,$' exec_log

@@ -1,0 +1,9 @@
+#!/bin/bash
+# Test that a broken symlink is ignored like a non-executable file would
+
+. testlib.bash
+
+mkdir subd
+ln -s "$tmpdir/nonexistent" subd/ptef-runner
+assert_ptef_runner > "$tmpdir/runner_out"
+assert_nogrep '' "$tmpdir/runner_out"

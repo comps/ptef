@@ -1,0 +1,7 @@
+#!/bin/bash
+# Test that an empty CWD doesn't execute anything, doesn't trigger any errors
+
+. testlib.bash
+
+assert_ptef_runner > "$tmpdir/runner_out"
+assert_nogrep '' "$tmpdir/runner_out"

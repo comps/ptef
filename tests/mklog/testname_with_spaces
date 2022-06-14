@@ -1,0 +1,8 @@
+#!/bin/bash
+# Test testname with spaces
+
+. testlib.bash
+
+assert_ptef_mklog "test name" </dev/null
+[ -d logs ]
+[ -f "logs/test name.log" ]

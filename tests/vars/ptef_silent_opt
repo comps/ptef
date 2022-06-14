@@ -1,0 +1,11 @@
+#!/bin/bash
+# Test that cli -s option exports PTEF_SILENT and the runner honors it
+
+. testlib.bash
+
+make_var_printer PTEF_SILENT > executable
+echo 'echo "this is stdout"' >> executable
+chmod +x executable
+ptef-runner -s >"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
+assert_contents $'1\n' exec_log
+assert_contents $'this is stdout\n' "$tmpdir/runner_out"

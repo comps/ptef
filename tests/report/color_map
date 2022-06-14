@@ -1,0 +1,24 @@
+#!/bin/bash
+# Test custom color mapping
+
+. testlib.bash
+
+colorpass=$'\e\[1;32mPASS\e\[0m'
+# color reporting sanity
+TEST_WRAPPER=ttee \
+	assert_ptef_report PASS testname >"$tmpdir/report_out"
+assert_contents "$colorpass"$'[\t ]*/testname\n' "$tmpdir/report_out"
+# specifying custom color map resets the default one
+TEST_WRAPPER=ttee \
+	assert_ptef_report -c "FAIL FOO" PASS testname >"$tmpdir/report_out"
+assert_contents $'PASS[\t ]*/testname\n' "$tmpdir/report_out"
+# the actual status rewrite
+TEST_WRAPPER=ttee \
+	assert_ptef_report -c "ONE FOO" -c "TWO BAR" ONE testname >"$tmpdir/report_out"
+assert_contents $'FOO[\t ]*/testname\n' "$tmpdir/report_out"
+TEST_WRAPPER=ttee \
+	assert_ptef_report -c "ONE FOO" -c "TWO BAR" TWO testname >"$tmpdir/report_out"
+assert_contents $'BAR[\t ]*/testname\n' "$tmpdir/report_out"
+# non-colored output should remain unchanged
+assert_ptef_report -c "ONE FOO" -c "TWO BAR" ONE testname >"$tmpdir/report_out"
+assert_contents $'ONE[\t ]*/testname\n' "$tmpdir/report_out"

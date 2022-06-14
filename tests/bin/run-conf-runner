@@ -1,0 +1,15 @@
+#!/bin/bash
+
+_alltests=()
+function + {
+	_alltests+=("$@")
+}
+
+. run.conf
+
+_base=$(basename "$0")
+if [ $# -eq 0 -a -z "$PTEF_SHELL" ]; then
+	exec ptef-runner -a "$_base" "${_alltests[@]}"
+else
+	exec ptef-runner -a "$_base" "$@"
+fi

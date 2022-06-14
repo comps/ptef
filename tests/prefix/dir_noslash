@@ -1,0 +1,11 @@
+#!/bin/bash
+# Test with PTEF_PREFIX set, but without any slash - this is nonstandard, but
+# the runner should still just prepend it to the test name
+
+. testlib.bash
+
+mkdir subd
+mkfile > subd/ptef-runner
+chmod +x subd/ptef-runner
+PTEF_PREFIX="prefix" assert_ptef_runner > "$tmpdir/runner_out"
+assert_contents $'prefix/subd\n' subd/exec_log

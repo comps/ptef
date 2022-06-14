@@ -7,10 +7,18 @@ License: MIT
 URL: https://github.com/comps/ptef
 Source: ptef-{{{PTEF_VERSION}}}.tar.gz
 
+# >1 on non-native (emulated) hw platforms in mock/copr,
+# https://rpm-software-management.github.io/mock/Release-Notes-2.11
+%if 0%{?_platform_multiplier} <= 1
+%global running_on_native 1
+%else
+%global running_on_native 0
+%endif
+
 # required for python rpm macros to work
 BuildRequires: python3-devel
 
-%if 0%{?run_tests}
+%if %{running_on_native} && 0%{?!skip_tests:1}
 BuildRequires: valgrind
 BuildRequires: python3
 %endif
@@ -46,10 +54,8 @@ make \
 	CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" \
 	LDFLAGS="${RPM_LD_FLAGS}"
 
+%if %{running_on_native} && 0%{?!skip_tests:1}
 %check
-# disable completely on copr, which builds non-native arches in chroot,
-# failing to actually run non-native binaries
-%if 0%{?run_tests}
 # testing is destructive since it re-builds binaries
 # with several different CFLAGS, so back-up original outputs
 rm -rf src-backup
@@ -60,8 +66,6 @@ make test \
 	LDFLAGS="${RPM_LD_FLAGS}"
 rm -rf src
 mv src-backup src
-%else
-true
 %endif
 
 %install

@@ -1,0 +1,14 @@
+#!/bin/bash
+# Test that the runner can process more than one argument
+
+. testlib.bash
+
+mk3execs
+assert_ptef_runner ${TEST_NOMERGE:+-m} exec1 exec2 > "$tmpdir/runner_out"
+assert_grep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+assert_grep '^PASS[[:space:]]\+/exec2$' "$tmpdir/runner_out"
+assert_nogrep '/exec3' "$tmpdir/runner_out"
+assert_ptef_runner ${TEST_NOMERGE:+-m} exec1 exec3 > "$tmpdir/runner_out"
+assert_grep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+assert_grep '^PASS[[:space:]]\+/exec3$' "$tmpdir/runner_out"
+assert_nogrep '/exec2' "$tmpdir/runner_out"

@@ -1,0 +1,14 @@
+#!/bin/bash
+# Test that PTEF_SILENT correctly silences runner stdout without impacting
+# stdout of executables
+
+. testlib.bash
+
+cat > executable <<-EOF
+#!/bin/bash
+echo "this is stdout"
+EOF
+chmod +x executable
+PTEF_SILENT=1 ptef-runner \
+	>"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
+assert_contents $'this is stdout\n' "$tmpdir/runner_out"

@@ -1,0 +1,11 @@
+#!/bin/bash
+# Test with PTEF_PREFIX set, but empty, with a subdir runner, result should
+# be same as when unset
+
+. testlib.bash
+
+mkdir subd
+mkfile > subd/ptef-runner
+chmod +x subd/ptef-runner
+PTEF_PREFIX= assert_ptef_runner > "$tmpdir/runner_out"
+assert_contents $'/subd\n' subd/exec_log

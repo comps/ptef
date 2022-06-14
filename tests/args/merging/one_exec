@@ -1,0 +1,14 @@
+#!/bin/bash
+# Test that argument merging works as expected
+# - one executable with two arguments
+
+. ../testlib.bash
+
+cnt=
+mkfile 1 > exec1
+chmod +x exec1
+assert_ptef_runner exec1/arg1 exec1/arg2 > "$tmpdir/runner_out"
+assert_grep '^argc: 2$' exec_log.1
+assert_grep '^argv: arg1 arg2$' exec_log.1
+# exec1 is run only once, with both args
+[ "$(grep -c '^argc:' exec_log.1)" -eq 1 ]

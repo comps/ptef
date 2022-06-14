@@ -1,0 +1,13 @@
+#!/bin/bash
+# Test that the first occurence of '--' is skipped
+
+. testlib.bash
+
+mkfile 1 > '--'
+mkfile 2 > exec1
+chmod +x -- -- exec1
+assert_ptef_runner ${TEST_NOMERGE:+-m} -- exec1 > "$tmpdir/runner_out"
+assert_nogrep '^PASS[[:space:]]\+/--$' "$tmpdir/runner_out"
+assert_grep '^PASS[[:space:]]\+/exec1$' "$tmpdir/runner_out"
+[ ! -f exec_log.1 ]
+[ -f exec_log.2 ]

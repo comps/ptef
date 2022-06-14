@@ -1,0 +1,10 @@
+#!/bin/bash
+# Test that PTEF_RAWNAME outputs testname as-is, unchanged
+
+. testlib.bash
+
+assert_ptef_report -r PASS testname >"$tmpdir/report_out"
+assert_contents $'PASS[\t ]*testname\n' "$tmpdir/report_out"
+PTEF_PREFIX=/prefix \
+	assert_ptef_report -r PASS testname >"$tmpdir/report_out"
+assert_contents $'PASS[\t ]*testname\n' "$tmpdir/report_out"

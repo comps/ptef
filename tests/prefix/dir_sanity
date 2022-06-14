@@ -1,0 +1,11 @@
+#!/bin/bash
+# Test basic PTEF_PREFIX sanity when used with a subdir runner, the directory
+# name should be appended to the prefix
+
+. testlib.bash
+
+mkdir subd
+mkfile > subd/ptef-runner
+chmod +x subd/ptef-runner
+PTEF_PREFIX=/prefix assert_ptef_runner > "$tmpdir/runner_out"
+assert_contents $'/prefix/subd\n' subd/exec_log

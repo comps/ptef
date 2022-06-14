@@ -1,0 +1,11 @@
+#!/bin/bash
+# Test basic color map sanity for the runner, detailed testing is performed
+# in report/color_map
+
+. testlib.bash
+
+make_arg_printer > exec1
+chmod +x exec1
+TEST_WRAPPER=ttee \
+	assert_ptef_runner -c 'PASS TESTME' > "$tmpdir/runner_out"
+assert_contents $'TESTME[\t ]*/exec1\n' "$tmpdir/runner_out"

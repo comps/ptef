@@ -1,0 +1,9 @@
+#!/bin/bash
+# Test that default basename can be set via CLI -a option
+
+. testlib.bash
+
+mkfile > executable
+chmod +x executable
+assert_ptef_runner -a testrun > "$tmpdir/runner_out"
+assert_contents $'testrun\n' exec_log

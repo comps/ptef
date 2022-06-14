@@ -1,0 +1,13 @@
+#!/bin/bash
+# Test that report/mklog without args exit with error (without segfault)
+
+. testlib.bash
+
+ret=1
+ptef-report >"$tmpdir/report_out" 2>"$tmpdir/report_err" || ret=$?
+[ "$ret" -ne 0 ]
+[ -s "$tmpdir/report_err" ]
+ret=1
+ptef-mklog >"$tmpdir/mklog_out" 2>"$tmpdir/mklog_err" || ret=$?
+[ "$ret" -ne 0 ]
+[ -s "$tmpdir/mklog_err" ]

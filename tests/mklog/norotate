@@ -1,0 +1,10 @@
+#!/bin/bash
+# Test that log rotation can be disabled
+
+. testlib.bash
+
+assert_ptef_mklog testname <<<"1"
+assert_ptef_mklog -r testname <<<"2"
+[ -f logs/testname.log ]
+[ ! -f logs/testname.log.* ]
+assert_contents $'2\n' logs/testname.log

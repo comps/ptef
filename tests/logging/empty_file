@@ -1,0 +1,12 @@
+#!/bin/bash
+# Test that an empty PTEF_LOGS is treated as unset
+
+. testlib.bash
+
+mkfile > executable
+chmod +x executable
+PTEF_LOGS= assert_ptef_runner > "$tmpdir/runner_out"
+assert_contents $'\n' exec_log
+[ -d logs ]
+[ -f logs/executable.log ]
+assert_contents $'stderr output\n' logs/executable.log

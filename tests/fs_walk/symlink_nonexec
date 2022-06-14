@@ -1,0 +1,12 @@
+#!/bin/bash
+# Test that a symlink to an non-executable file is ignored as if it was
+# a non-executable file
+
+. testlib.bash
+
+exe="$tmpdir/executable"
+mkfile > "$exe"
+ln -s "$exe" link
+assert_ptef_runner > "$tmpdir/runner_out"
+[ ! -f exec_log ]
+assert_nogrep '' "$tmpdir/runner_out"

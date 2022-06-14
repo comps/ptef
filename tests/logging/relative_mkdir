@@ -1,0 +1,9 @@
+#!/bin/bash
+# Test that the PTEF_LOGS directory itself is mkdir'd
+
+. testlib.bash
+
+mkfile > executable
+chmod +x executable
+PTEF_LOGS=testlogs assert_ptef_runner > "$tmpdir/runner_out"
+[ -d testlogs ]

@@ -1,0 +1,10 @@
+#!/bin/bash
+# Test that the runner silently ignores non-executable files while walking
+# a directory structure
+
+. testlib.bash
+
+mkfile > nonexecutable
+assert_ptef_runner > "$tmpdir/runner_out"
+[ ! -f exec_log ]
+assert_nogrep '' "$tmpdir/runner_out"
