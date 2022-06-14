@@ -10,9 +10,10 @@ Source: ptef-{{{PTEF_VERSION}}}.tar.gz
 # required for python rpm macros to work
 BuildRequires: python3-devel
 
-# for tests - disabled, see %%check below
-#BuildRequires: valgrind
-#BuildRequires: python3
+%if 0%{?run_tests}
+BuildRequires: valgrind
+BuildRequires: python3
+%endif
 
 BuildRequires: gcc
 BuildRequires: make
@@ -45,17 +46,23 @@ make \
 	CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" \
 	LDFLAGS="${RPM_LD_FLAGS}"
 
+%check
 # disable completely on copr, which builds non-native arches in chroot,
 # failing to actually run non-native binaries
-#%%check
-## testing is destructive since it re-builds binaries
-## with several different CFLAGS, so back-up original outputs
-#rm -rf src-backup
-#mv src src-backup
-#cp -a src-backup src
-#CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result" make test
-#rm -rf src
-#mv src-backup src
+%if 0%{?run_tests}
+# testing is destructive since it re-builds binaries
+# with several different CFLAGS, so back-up original outputs
+rm -rf src-backup
+mv src src-backup
+cp -a src-backup src
+make test \
+	CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" \
+	LDFLAGS="${RPM_LD_FLAGS}"
+rm -rf src
+mv src-backup src
+%else
+true
+%endif
 
 %install
 %make_install \

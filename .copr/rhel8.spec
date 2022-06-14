@@ -7,12 +7,21 @@ License: MIT
 URL: https://github.com/comps/ptef
 Source: ptef-{{{PTEF_VERSION}}}.tar.gz
 
+# >1 on non-native (emulated) hw platforms in mock/copr,
+# https://rpm-software-management.github.io/mock/Release-Notes-2.11
+%if 0%{?_platform_multiplier} <= 1
+%global running_on_native 1
+%else
+%global running_on_native 0
+%endif
+
 # python3_sitelib macro
 BuildRequires: python3-rpm-macros
 
-# for tests - disabled, see %%check below
-#BuildRequires: valgrind
-#BuildRequires: python3
+%if %{running_on_native} && 0%{?!skip_tests:1}
+BuildRequires: valgrind
+BuildRequires: python3
+%endif
 
 BuildRequires: gcc
 BuildRequires: make
@@ -44,17 +53,19 @@ make \
 	CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" \
 	LDFLAGS="${RPM_LD_FLAGS}"
 
-# disable completely on copr, which builds non-native arches in chroot,
-# failing to actually run non-native binaries
-#%%check
-## testing is destructive since it re-builds binaries
-## with several different CFLAGS, so back-up original outputs
-#rm -rf src-backup
-#mv src src-backup
-#cp -a src-backup src
-#CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result" make test
-#rm -rf src
-#mv src-backup src
+%if %{running_on_native} && 0%{?!skip_tests:1}
+%check
+# testing is destructive since it re-builds binaries
+# with several different CFLAGS, so back-up original outputs
+rm -rf src-backup
+mv src src-backup
+cp -a src-backup src
+make test \
+	CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" \
+	LDFLAGS="${RPM_LD_FLAGS}"
+rm -rf src
+mv src-backup src
+%endif
 
 %install
 %make_install \

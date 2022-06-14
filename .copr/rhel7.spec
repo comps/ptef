@@ -42,17 +42,8 @@ make \
 	CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" \
 	LDFLAGS="${RPM_LD_FLAGS}"
 
-# disable completely on copr, which builds non-native arches in chroot,
-# failing to actually run non-native binaries
+# no tests due to missing bash-devel
 #%%check
-## testing is destructive since it re-builds binaries
-## with several different CFLAGS, so back-up original outputs
-#rm -rf src-backup
-#mv src src-backup
-#cp -a src-backup src
-#CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result" make test
-#rm -rf src
-#mv src-backup src
 
 %install
 %make_install \

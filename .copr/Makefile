@@ -12,5 +12,5 @@ endif
 all: srpm
 
 srpm:
-	$(DNF) -y install git && \
+	$(DNF) -y install git-core && \
 	./.copr/build_versioned_srpm.sh "$(spec)" "$(outdir)"
