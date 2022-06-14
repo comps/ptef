@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e
+set -e -x
 
 function fatal {
 	echo "error: $@" >&2
@@ -39,6 +39,13 @@ function ptef_changelog {
 specfile="$1"
 [ -n "$specfile" ] || fatal "missing specfile arg"
 shift
+
+# if running on actual COPR (and not just 'make srpm' on a regular OS),
+# fix git for mock as COPRs seem to use a different user for the git
+# repo metadata, which git doesn't like
+if [ "$HOSTNAME" = "mock" ] && [[ "$PWD" =~ ^/mnt/workdir-.* ]]; then
+	git config --global --add safe.directory '*'
+fi
 
 version=$(ptef_version)
 
