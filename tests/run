@@ -83,7 +83,7 @@ exec {results_fd}>&-
 # compare generated results to a known-good reference
 if [ "$#" -eq 0 -a -f results-reference.log ]; then
 	sed '/^RUN[[:space:]]/d' results-current.log | \
-		sort -r > results-tmp.log
+		LC_COLLATE=C sort -r > results-tmp.log
 	mv results-tmp.log results-current.log
 
 	if ! cmp -s results-current.log results-reference.log; then

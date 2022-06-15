@@ -79,8 +79,8 @@ PASS /valgrind/fs_walk/alpha_order
 PASS /valgrind/fs_walk
 PASS /valgrind/basename/var_over_opt_a
 PASS /valgrind/basename/var_over_argv0
-PASS /valgrind/basename/opt_A_over_var
 PASS /valgrind/basename/opt_a_over_argv0
+PASS /valgrind/basename/opt_A_over_var
 PASS /valgrind/basename/nonexistent_var
 PASS /valgrind/basename/export_var_file
 PASS /valgrind/basename/export_var_dir
@@ -192,8 +192,8 @@ PASS /python/fs_walk/alpha_order
 PASS /python/fs_walk
 PASS /python/basename/var_over_opt_a
 PASS /python/basename/var_over_argv0
-PASS /python/basename/opt_A_over_var
 PASS /python/basename/opt_a_over_argv0
+PASS /python/basename/opt_A_over_var
 PASS /python/basename/nonexistent_var
 PASS /python/basename/export_var_file
 PASS /python/basename/export_var_dir
@@ -310,8 +310,8 @@ PASS /cli/fs_walk/alpha_order
 PASS /cli/fs_walk
 PASS /cli/basename/var_over_opt_a
 PASS /cli/basename/var_over_argv0
-PASS /cli/basename/opt_A_over_var
 PASS /cli/basename/opt_a_over_argv0
+PASS /cli/basename/opt_A_over_var
 PASS /cli/basename/nonexistent_var
 PASS /cli/basename/export_var_file
 PASS /cli/basename/export_var_dir
@@ -424,8 +424,8 @@ PASS /bash/fs_walk/alpha_order
 PASS /bash/fs_walk
 PASS /bash/basename/var_over_opt_a
 PASS /bash/basename/var_over_argv0
-PASS /bash/basename/opt_A_over_var
 PASS /bash/basename/opt_a_over_argv0
+PASS /bash/basename/opt_A_over_var
 PASS /bash/basename/nonexistent_var
 PASS /bash/basename/export_var_file
 PASS /bash/basename/export_var_dir
