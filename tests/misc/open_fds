@@ -4,11 +4,25 @@
 
 . testlib.bash
 
+# close any foreign fds that may be coming from the OS environment,
+# note that _SC_OPEN_MAX is not a good indicator as there may be
+# dup2()'d numbers above it
+fds=$(ls -1 --indicator-style=none /proc/$$/fd)
+for i in $fds; do
+	case "$i" in
+		0|1|2)	;;
+		*)	eval "exec $i>&-" ;;
+	esac
+done
+
+# when used with a single exec command, bash doesn't actually open the 255
+# file descriptor it usually has ... also, we can't use 'ls', because 'ls'
+# opens its own fd 3 for some weird reason, hence the custom binary
 cat > executable <<-EOF
 #!/bin/bash
 exec list-fds > exec_log
 EOF
 chmod +x executable
+
 assert_ptef_runner > "$tmpdir/runner_out"
-valgrind_fd="${TEST_VALGRIND_FD:+$'\n'$TEST_VALGRIND_FD}"
-assert_contents $'0\n1\n2'"$valgrind_fd"$'\n' exec_log
+assert_contents $'0\n1\n2\n' exec_log

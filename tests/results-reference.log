@@ -40,7 +40,6 @@ PASS /valgrind/misc/runner_color_map
 PASS /valgrind/misc/run_before_pass
 PASS /valgrind/misc/parallel_jobs_extrajobs
 PASS /valgrind/misc/parallel_jobs
-PASS /valgrind/misc/open_fds
 PASS /valgrind/misc/ignored
 PASS /valgrind/misc/exit_codes_sanity
 PASS /valgrind/misc/exit_codes
