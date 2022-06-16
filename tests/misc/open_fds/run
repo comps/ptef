@@ -2,7 +2,9 @@
 # Test that the runner passes no extra open file descriptors to executables
 # (Expect fd 255 due to the executable being bash)
 
-. testlib.bash
+export PATH="$PWD:$PATH"
+
+. ../testlib.bash
 
 # close any foreign fds that may be coming from the OS environment,
 # note that _SC_OPEN_MAX is not a good indicator as there may be

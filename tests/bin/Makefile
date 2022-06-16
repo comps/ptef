@@ -2,15 +2,14 @@
 # NOT for anything ptef runner related
 
 .PHONY: all
-all: ttee list-fds hold-lock
+all: ttee hold-lock
 
 CFLAGS ?= -O2 -Wall -Wextra -Werror -g
 override CFLAGS += -std=c99 -D_POSIX_C_SOURCE=200809
 
 ttee: ttee.c
-list-fds: list-fds.c
 hold-lock: hold-lock.c
 
 .PHONY: clean
 clean:
-	rm -f ttee list-fds hold-lock
+	rm -f ttee hold-lock
