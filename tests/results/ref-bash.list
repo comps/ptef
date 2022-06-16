@@ -12,10 +12,11 @@ PASS /bash/vars/ptef_nologs
 PASS /bash/vars/ptef_color
 PASS /bash/vars
 PASS /bash/report/rawname
-PASS /bash/report/locking_stdout
-PASS /bash/report/locking_results_fd
-PASS /bash/report/locking_nowait
-PASS /bash/report/locking_nolock
+PASS /bash/report/locking/stdout
+PASS /bash/report/locking/results_fd
+PASS /bash/report/locking/nowait
+PASS /bash/report/locking/nolock
+PASS /bash/report/locking
 PASS /bash/report/color_map
 PASS /bash/report
 PASS /bash/prefix/sanity

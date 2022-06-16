@@ -12,10 +12,11 @@ PASS /python/vars/ptef_nologs
 PASS /python/vars/ptef_color
 PASS /python/vars
 PASS /python/report/rawname
-PASS /python/report/locking_stdout
-PASS /python/report/locking_results_fd
-PASS /python/report/locking_nowait
-PASS /python/report/locking_nolock
+PASS /python/report/locking/stdout
+PASS /python/report/locking/results_fd
+PASS /python/report/locking/nowait
+PASS /python/report/locking/nolock
+PASS /python/report/locking
 PASS /python/report/color_map
 PASS /python/report
 PASS /python/prefix/sanity

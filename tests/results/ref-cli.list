@@ -12,10 +12,11 @@ PASS /cli/vars/ptef_nologs
 PASS /cli/vars/ptef_color
 PASS /cli/vars
 PASS /cli/report/rawname
-PASS /cli/report/locking_stdout
-PASS /cli/report/locking_results_fd
-PASS /cli/report/locking_nowait
-PASS /cli/report/locking_nolock
+PASS /cli/report/locking/stdout
+PASS /cli/report/locking/results_fd
+PASS /cli/report/locking/nowait
+PASS /cli/report/locking/nolock
+PASS /cli/report/locking
 PASS /cli/report/color_map
 PASS /cli/report
 PASS /cli/prefix/sanity

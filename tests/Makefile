@@ -1,5 +1,5 @@
 #SUBDIRS	:= bin args basename fs_walk logging misc mklog prefix report vars
-SUBDIRS	:= bin misc/open_fds
+SUBDIRS	:= bin misc/open_fds report/locking
 
 # this is only for preparing the "variants" (cli, valgrind, etc.) in bin/
 # and not any unrelated helper tools, those are handled by bin/Makefile

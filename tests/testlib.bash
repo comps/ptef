@@ -39,35 +39,35 @@ function make_var_printer {
 }
 
 function assert_contents {
-	local content=
-	IFS= read -r -d '' content < "$2" || true  # will hit EOF
-	# supports globbing - see bash(1) on [[
-	[[ $content == $1 ]] || {
-		{
+	{
+		local content=
+		IFS= read -r -d '' content < "$2" || true  # will hit EOF
+		# supports globbing - see bash(1) on [[
+		[[ $content == $1 ]] || {
 			echo "assert_contents failed, ${@: -1} contains:"
 			echo "$content"
 			return 1
-		} 1>&2 2>/dev/null
-	}
+		}
+	} 1>&2 2>/dev/null
 }
 
 function assert_grep {
-	grep "$@" >&2 || {
-		{
+	{
+		grep "$@" || {
 			echo "assert_grep failed, ${@: -1} contains:"
 			cat "${@: -1}"
 			return 1
-		} 1>&2 2>/dev/null
-	}
+		}
+	} 1>&2 2>/dev/null
 }
 function assert_nogrep {
-	! grep "$@" >&2 || {
-		{
+	{
+		! grep "$@" || {
 			echo "assert_nogrep failed, ${@: -1} contains:"
 			cat "${@: -1}"
 			return 1
-		} 1>&2 2>/dev/null
-	}
+		}
+	} 1>&2 2>/dev/null
 }
 
 function assert_ptef_runner {
@@ -83,6 +83,35 @@ function assert_ptef_mklog {
 	! grep '' "$tmpdir/mklog_err" >&2
 }
 
+function clear_cleanup {
+	{
+		function _cleanup_buffer {
+			:
+		}
+	} 1>&2 2>/dev/null
+}
+clear_cleanup
+function execute_cleanup {
+	_cleanup_buffer
+	clear_cleanup
+}
+function append_cleanup {
+	{
+		eval "function _cleanup_buffer {
+			$(declare -f _cleanup_buffer | sed '1,2d;$d')
+			$*
+		}"
+	} 1>&2 2>/dev/null
+}
+function prepend_cleanup {
+	{
+		eval "function _cleanup_buffer {
+			$*
+			$(declare -f _cleanup_buffer | sed '1,2d;$d')
+		}"
+	} 1>&2 2>/dev/null
+}
+
 
 set -e
 
@@ -96,7 +125,8 @@ mkdir testdir
 rm -rf tmpdir
 mkdir tmpdir
 
-trap "(cd \"$PWD\" && grep -D skip -R . testdir tmpdir >&2) || true" EXIT
+append_cleanup "(cd \"$PWD\" && grep -D skip -R . testdir tmpdir >&2) || true"
+trap '{ echo -------------------------; } >&2 2>/dev/null; execute_cleanup' EXIT
 
 tmpdir="$PWD/tmpdir"
 cd testdir

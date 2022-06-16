@@ -12,8 +12,9 @@ PASS /valgrind/vars/ptef_nologs
 PASS /valgrind/vars/ptef_color
 PASS /valgrind/vars
 PASS /valgrind/report/rawname
-PASS /valgrind/report/locking_nowait
-PASS /valgrind/report/locking_nolock
+PASS /valgrind/report/locking/nowait
+PASS /valgrind/report/locking/nolock
+PASS /valgrind/report/locking
 PASS /valgrind/report/color_map
 PASS /valgrind/report
 PASS /valgrind/prefix/sanity

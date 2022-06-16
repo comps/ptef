@@ -15,9 +15,6 @@ bin/libptef.so*
 bin/ptef-mklog
 bin/ptef-report
 bin/ptef-runner
-bin/ttee
-bin/list-fds
-bin/hold-lock
 bin/valgrind/cli/libptef.so*
 bin/valgrind/cli/ptef-mklog
 bin/valgrind/cli/ptef-report
