@@ -83,6 +83,7 @@ done
 
 # when running a full test set (without args),
 # compare generated results to a known-good reference
+diffcolor=$(if diff --help | grep -q color; then echo --color; else echo; fi)
 if [ "$#" -eq 0 ]; then
 	for variant in "${!variants_used[@]}"; do
 		sed '/^RUN[[:space:]]/d' "results/cur-$variant.list" | \
@@ -91,7 +92,7 @@ if [ "$#" -eq 0 ]; then
 
 		if ! cmp -s "results/cur-$variant.list" "results/ref-$variant.list"; then
 			err "current results differ from reference"
-			diff --color=auto -U1 "results/ref-$variant.list" "results/cur-$variant.list" >&2
+			diff $diffcolor -U1 "results/ref-$variant.list" "results/cur-$variant.list" >&2
 		fi
 	done
 fi

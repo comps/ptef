@@ -7,9 +7,13 @@ License: MIT
 URL: https://github.com/comps/ptef
 Source: ptef-{{{PTEF_VERSION}}}.tar.gz
 
-# for tests - disabled, see %%check below
-#BuildRequires: valgrind
-#BuildRequires: python3
+# >1 on non-native (emulated) hw platforms in mock/copr,
+# https://rpm-software-management.github.io/mock/Release-Notes-2.11
+%if 0%{?_platform_multiplier} <= 1
+%global running_on_native 1
+%else
+%global running_on_native 0
+%endif
 
 BuildRequires: gcc
 BuildRequires: make
@@ -35,8 +39,19 @@ make \
 	CFLAGS="${RPM_OPT_FLAGS} -Wextra" \
 	LDFLAGS="${RPM_LD_FLAGS}"
 
-# no tests due to missing bash-devel and python3
-#%%check
+%if %{running_on_native} && 0%{?!skip_tests:1}
+%check
+# testing is destructive since it re-builds binaries
+# with several different CFLAGS, so back-up original outputs
+rm -rf src-backup
+mv src src-backup
+cp -a src-backup src
+TEST_VARIANTS='/cli' make test \
+	CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" \
+	LDFLAGS="${RPM_LD_FLAGS}"
+rm -rf src
+mv src-backup src
+%endif
 
 %install
 %make_install \
