@@ -22,10 +22,7 @@ export LD_LIBRARY_PATH="$PWD/bin"
 export TEST_BINDIR="$PWD/bin"
 
 function run_arg {
-	local testpath="${1#/}" binary=
-
-	local variant= test=
-	IFS=/ read -r variant test <<<"$testpath"
+	local variant="$1" test="$2" binary=
 
 	for binary in ptef-runner ptef-report ptef-mklog libptef.so.0.0; do
 		if [ ! -x "bin/$variant/$binary" ]; then
@@ -68,28 +65,35 @@ function run_arg {
 if [ "$#" -gt 0 ]; then
 	variants=("$@")
 else
-	variants=(/cli /valgrind /bash /python)
+	variants=(${TEST_VARIANTS:-/cli /valgrind /bash /python})
 fi
 
 rm -f valgrind.log
 
-exec {results_fd}>results-current.log
-for variant in "${variants[@]}"; do
-	PTEF_RESULTS_FD="$results_fd" run_arg "$variant"
+declare -A variants_used
+for testpath in "${variants[@]}"; do
+	variant= test=
+	IFS=/ read -r variant test <<<"${testpath#/}"
+	variants_used["$variant"]=1
+
+	exec {results_fd}>"results/cur-$variant.list"
+	PTEF_RESULTS_FD="$results_fd" run_arg "$variant" "$test"
+	exec {results_fd}>&-
 done
-exec {results_fd}>&-
 
 # when running a full test set (without args),
 # compare generated results to a known-good reference
-if [ "$#" -eq 0 -a -f results-reference.log ]; then
-	sed '/^RUN[[:space:]]/d' results-current.log | \
-		LC_COLLATE=C sort -r > results-tmp.log
-	mv results-tmp.log results-current.log
+if [ "$#" -eq 0 ]; then
+	for variant in "${!variants_used[@]}"; do
+		sed '/^RUN[[:space:]]/d' "results/cur-$variant.list" | \
+			LC_COLLATE=C sort -r > "results/tmp.list"
+		mv "results/tmp.list" "results/cur-$variant.list"
 
-	if ! cmp -s results-current.log results-reference.log; then
-		err "results-current differs from reference"
-		diff --color=auto -u results-reference.log results-current.log >&2
-	fi
+		if ! cmp -s "results/cur-$variant.list" "results/ref-$variant.list"; then
+			err "current results differ from reference"
+			diff --color=auto -U1 "results/ref-$variant.list" "results/cur-$variant.list" >&2
+		fi
+	done
 fi
 
 if [ -f valgrind.log ] && grep -q 'ERROR SUMMARY: [1-9] errors' valgrind.log; then
