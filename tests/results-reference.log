@@ -12,8 +12,6 @@ PASS /valgrind/vars/ptef_nologs
 PASS /valgrind/vars/ptef_color
 PASS /valgrind/vars
 PASS /valgrind/report/rawname
-PASS /valgrind/report/locking_stdout
-PASS /valgrind/report/locking_results_fd
 PASS /valgrind/report/locking_nowait
 PASS /valgrind/report/locking_nolock
 PASS /valgrind/report/color_map

@@ -10,7 +10,7 @@ mkfifo "$tmpdir/lockfifo"
 hold-lock "$tmpdir/lockfifo" >&"$fd" &
 # wait for hold-lock to lock report_out
 cat "$tmpdir/lockfifo"
-PTEF_RESULTS_FD="$fd" TEST_WRAPPER="timeout 1" \
+PTEF_RESULTS_FD="$fd" TEST_WRAPPER="timeout 2" \
 	assert_ptef_report PASS testname >"$tmpdir/report_out" || true
 # make hold-lock finish
 cat "$tmpdir/lockfifo"
