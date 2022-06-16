@@ -88,12 +88,13 @@ if [ "$#" -eq 0 -a -f results-reference.log ]; then
 
 	if ! cmp -s results-current.log results-reference.log; then
 		err "results-current differs from reference"
-		diff --color=auto -u results-reference.log results-current.log
+		diff --color=auto -u results-reference.log results-current.log >&2
 	fi
 fi
 
 if [ -f valgrind.log ] && grep -q 'ERROR SUMMARY: [1-9] errors' valgrind.log; then
 	err "found errors in valgrind.log"
+	cat valgrind.log >&2
 fi
 
 [ -z "$failed" ] && exit 0 || exit 1
