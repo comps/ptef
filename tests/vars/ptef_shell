@@ -4,18 +4,20 @@
 
 . testlib.bash
 
+# run with arguments shoud ignore PTEF_SHELL
 mkfile > executable
 chmod +x executable
-# run with arguments shoud ignore PTEF_SHELL
 PTEF_SHELL="/bin/echo" timeout 10 ptef-runner executable \
 	>"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
 assert_contents $'PASS[\t ]*/executable\n' "$tmpdir/runner_out"
 assert_contents '' "$tmpdir/runner_err"
+
 # set to a specific value = run that executable
 PTEF_SHELL="/bin/echo" timeout 10 ptef-runner \
 	>"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
 assert_contents $'\n' "$tmpdir/runner_out"
 assert_contents '' "$tmpdir/runner_err"
+
 # try with relative path
 cat > "$tmpdir/testshell" <<-EOF
 #!/bin/bash
@@ -27,6 +29,7 @@ PTEF_SHELL="$relpath" timeout 10 ptef-runner \
 	>"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
 assert_contents $'works\n' "$tmpdir/runner_out"
 assert_contents '' "$tmpdir/runner_err"
+
 # try non-zero exit code
 ret=0
 echo "exit 10" >> "$tmpdir/testshell"
@@ -35,6 +38,7 @@ PTEF_SHELL="$relpath" timeout 10 ptef-runner \
 assert_contents $'works\n' "$tmpdir/runner_out"
 assert_contents '' "$tmpdir/runner_err"
 [ "$ret" -eq 10 ]
+
 # check for $SHELL fallback
 PTEF_SHELL=1 SHELL="/bin/echo" timeout 10 ptef-runner \
 	>"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
