@@ -60,7 +60,7 @@ make \
 rm -rf src-backup
 mv src src-backup
 cp -a src-backup src
-make test \
+TEST_PRINT_LOGS=1 make test \
 	CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" \
 	LDFLAGS="${RPM_LD_FLAGS}"
 rm -rf src

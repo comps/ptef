@@ -95,11 +95,23 @@ if [ "$#" -eq 0 ]; then
 			diff $diffcolor -U1 "results/ref-$variant.list" "results/cur-$variant.list" >&2
 		fi
 	done
-fi
 
-if [ -f valgrind.log ] && grep -q 'ERROR SUMMARY: [1-9] errors' valgrind.log; then
-	err "found errors in valgrind.log"
-	cat valgrind.log >&2
+	if [ -n "$TEST_PRINT_LOGS" -a -n "$failed" ]; then
+		echo -e "\nlogs of failed tests:" >&2
+		pushd logs >/dev/null
+		while read -r testname; do
+			[ -f "$testname.log" ] && grep -H . "$testname.log" >&2
+		done < <(sed 's%^FAIL[[:space:]]\+/%%p' ../results/cur-*.list)
+		popd >/dev/null
+	fi
+
+	if [ -f valgrind.log ] && grep -q 'ERROR SUMMARY: [1-9] errors' valgrind.log; then
+		err "found errors in valgrind.log"
+		if [ -n "$TEST_PRINT_LOGS" ]; then
+			echo -e "\nvalgrind.log:" >&2
+			cat valgrind.log >&2
+		fi
+	fi
 fi
 
 [ -z "$failed" ] && exit 0 || exit 1

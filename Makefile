@@ -4,7 +4,7 @@ all:
 	$(MAKE) -C src
 
 test:
-	$(MAKE) -C tests build
+	$(MAKE) -C tests
 	$(MAKE) -C tests run
 
 install:
