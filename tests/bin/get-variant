@@ -1,0 +1,23 @@
+#!/bin/bash
+
+if [ -z "$TEST_BINDIR" ]; then
+	# try guessing
+	TEST_BINDIR=$(dirname $0)
+	if [ ! -x "$TEST_BINDIR/$(basename $0)" ]; then
+		echo "error: TEST_BINDIR not defined" >&2
+		exit 1
+	fi
+fi
+
+set -e
+cd "$TEST_BINDIR"
+link=$(readlink ptef-runner)
+variant=$(dirname "$link")
+
+# printing mode
+if [ "$#" -eq 0 ]; then
+	echo "$variant"
+# comparison mode
+else
+	[ "$variant" = "$1" ]
+fi

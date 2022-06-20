@@ -3,6 +3,10 @@
 #       (post-May-2021)
 argv0=$(basename "$0")
 target="$TEST_BINDIR/valgrind/cli/ptef-mklog"
+if [ -z "$TEST_VALGRIND_FD" ]; then
+	exec {TEST_VALGRIND_FD}>/dev/null
+	export TEST_VALGRIND_FD
+fi
 exec valgrind \
-	--leak-check=full --log-fd="$TEST_VALGRIND_FD" \
+	--leak-check=full --log-fd=$TEST_VALGRIND_FD \
 	-- "$target" "$@"

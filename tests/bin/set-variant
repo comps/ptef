@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [ -z "$TEST_BINDIR" ]; then
+	# try guessing
+	TEST_BINDIR=$(dirname $0)
+	if [ ! -x "$TEST_BINDIR/$(basename $0)" ]; then
+		echo "error: TEST_BINDIR not defined" >&2
+		exit 1
+	fi
+fi
+
+if [ "$#" -eq 0 ]; then
+	echo "usage: $0 <variant>" >&2
+	exit 1
+fi
+variant="$1"
+
+set -e
+cd "$TEST_BINDIR"
+for binary in ptef-runner ptef-report ptef-mklog libptef.so.0.0; do
+	ln -sf "$variant/$binary" "$binary"
+done

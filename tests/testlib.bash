@@ -112,6 +112,9 @@ function prepend_cleanup {
 	} 1>&2 2>/dev/null
 }
 
+# for bash scripts that aren't actually tests
+[ -n "$TESTLIB_NOOP" ] && return
+
 
 set -e
 
