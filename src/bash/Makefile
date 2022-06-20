@@ -21,7 +21,7 @@ override CFLAGS += -I/usr/include/bash/include -I../include \
 libptef-bash.o: libptef-bash.c
 
 libptef-bash.so: libptef-bash.o
-	$(CC) -shared -L../lib $(LDFLAGS) -o $@ $^ -lptef
+	$(CC) -shared -L../lib $(CFLAGS) $(LDFLAGS) -o $@ $^ -lptef
 
 builtins.bash: builtins-template.bash
 	sed 's|TEMPLATE_LIBDIR|$(libdir)|' $< > $@

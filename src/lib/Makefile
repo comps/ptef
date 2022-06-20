@@ -7,7 +7,7 @@ all: libptef.so
 libptef.so.0.0: ../helpers/*.o ../runner/*.o ../report/*.o ../mklog/*.o
 	$(CC) -shared -fPIC \
 		-Wl,-soname,$@ \
-		$(LDFLAGS) -o $@ $^
+		$(CFLAGS) $(LDFLAGS) -o $@ $^
 
 libptef.so.0: libptef.so.0.0
 	ln -sf $< $@
