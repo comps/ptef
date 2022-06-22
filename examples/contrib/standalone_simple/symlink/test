@@ -1,0 +1,3 @@
+#!/bin/bash
+echo foo bar >&2
+exit 0

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+export PATH="$PWD/ptef/usr/bin:$PATH"
+
+# if sourcing, exit now
+return 2>/dev/null
+
+base=$(basename "$0")
+ptef-runner -a "$base" "$@"

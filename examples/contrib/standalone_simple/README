@@ -1,0 +1,19 @@
+This shows how to make a test suite building its own PTEF binaries, independent
+of anything provided by the OS.
+
+This is a CLI-only trivial version of the 'standalone' example - see that one
+if you need full C / bash / python API support.
+
+The advantage of this version is that it has very minimal build dependencies
+- basically just a C compiler and GNU Make, that's it. If all you care about
+is running ptef-* CLI commands from shell-based tests, that's all you need.
+
+Do ie.
+
+    dnf install gcc make curl
+
+prior to issuing 'make' and './run'.
+
+To run tests from inside the hierarchy manually (rather than running the full
+suite), source the 'run' in top level first (from a bash shell).
+This will export some env variables into your current shell.

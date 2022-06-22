@@ -1,8 +1,8 @@
 SHELL := /bin/bash
 PTEF_URL := https://github.com/comps/ptef/archive/refs/heads/main.tar.gz
 
-.PHONY: all c clean
-all: ptef c
+.PHONY: all clean
+all: ptef
 
 ptef:
 	mkdir ptef-build && ( \
@@ -14,12 +14,4 @@ ptef:
 	rm -rf ptef-build
 
 clean:
-	$(MAKE) -C c clean
 	rm -rf ptef-build ptef
-
-
-c : export override CFLAGS	+= -I$(PWD)/ptef/usr/include
-c : export override LDFLAGS	+= -L$(PWD)/ptef/usr/lib64
-
-c:
-	$(MAKE) -C c

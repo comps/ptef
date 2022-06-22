@@ -5,7 +5,11 @@ This allows the suite to build and run unprivileged, though it does require some
 package dependencies to be provided by the OS, more than would be required for
 installing PTEF as a binary package.
 
-Do 'make' prior to running.
+Do ie.
+
+    dnf install gcc make python3 bash bash-devel curl
+
+prior to issuing 'make' and './run'.
 
 To run tests from inside the hierarchy manually (rather than running the full
 suite), source the 'run' in top level first (from a bash shell).
