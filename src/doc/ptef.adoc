@@ -384,7 +384,9 @@ Otherwise, `/bin/sh` must be used as a fallback.
 
 Standard output must be duplicated to standard error output prior to launching
 the shell, closing original standard error output, which might have been
-redirected to a log file.
+redirected to a log file. +
+Additionally, the `PTEF_SHELL` variable must be unset in the environment of
+the launched shell.
 
 [NOTE]
 --

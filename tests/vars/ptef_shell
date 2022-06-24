@@ -44,3 +44,15 @@ PTEF_SHELL=1 SHELL="/bin/echo" timeout 10 ptef-runner \
 	>"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
 assert_contents $'\n' "$tmpdir/runner_out"
 assert_contents '' "$tmpdir/runner_err"
+
+# make sure PTEF_SHELL is unset in the shell
+# (env to catch set-but-empty variable)
+cat > "$tmpdir/testshell" <<-EOF
+#!/bin/bash
+env | grep PTEF_SHELL || true
+EOF
+chmod +x "$tmpdir/testshell"
+PTEF_SHELL="$tmpdir/testshell" timeout 10 ptef-runner \
+	>"$tmpdir/runner_out" 2>"$tmpdir/runner_err"
+assert_contents '' "$tmpdir/runner_out"
+assert_contents '' "$tmpdir/runner_err"

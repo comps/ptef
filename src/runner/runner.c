@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <errno.h>
 #include <unistd.h>
 #include <libgen.h>
@@ -8,6 +9,10 @@ static void run_shell(char *shell)
 {
     if (dup2_safe(1, 2) == -1) {
         PERROR("dup2(1,2)");
+        return;
+    }
+    if (unsetenv("PTEF_SHELL") == -1) {
+        PERROR("unsetenv(PTEF_SHELL)");
         return;
     }
     if (access(shell, X_OK) == -1) {
