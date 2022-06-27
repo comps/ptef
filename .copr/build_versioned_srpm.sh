@@ -61,6 +61,7 @@ tar -cvzf ".rpmbuild/SOURCES/ptef-$version.tar.gz" \
 
 # hardcode version/release, don't use rpm macros, they would
 # be missing when this SRPM is actually built elsewhere
+set +x
 content=$(<"$specfile")
 content="${content//\{\{\{PTEF_VERSION\}\}\}/$version}"
 # save some time by not generating git-describe for every commit
@@ -70,6 +71,7 @@ if [[ $content =~ \{\{\{PTEF_CHANGELOG\}\}\} ]]; then
 	content="${content/\{\{\{PTEF_CHANGELOG\}\}\}/$changelog}"
 fi
 printf "%s" "$content" > .rpmbuild/SPECS/ptef.spec
+set -x
 
 rpmbuild \
 	--define "_topdir $PWD/.rpmbuild" \
