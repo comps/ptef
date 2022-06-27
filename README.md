@@ -3,7 +3,8 @@
 A simple (KISS) specification and an example implementation of a test "runner"
 framework for system testing and/or integration and execution of test suites.
 
-[Read the specification here!](src/doc/ptef.adoc)
+* [6-minute video "sales pitch"](https://www.youtube.com/watch?v=FodeosLO_RM)
+* [PTEF specification](src/doc/ptef.adoc)
 
 The "portable" refers to its inspiration from POSIX concepts and C API - the
 specification can be implemented purely using POSIX.1-2008 and the reference
@@ -44,9 +45,12 @@ The reference implementation (under [`src/`](src)) provides command-line
 utilities, native C functions, Python bindings and Bash builtins, all using
 the single ABI of `libptef.so` (accessible to other languages).
 
-There's much more and most of it is using neat basic \*nix concepts, go see
-[the full specification](src/doc/ptef.adoc) or dive into annotated
-[examples](examples).
+There's much more and most of it is using neat basic \*nix concepts,
+
+* go see [the full specification](src/doc/ptef.adoc)
+* dive into annotated [examples](examples)
+* [watch the examples as a 70-minute video](https://www.youtube.com/watch?v=qMbxrhlguhk)
+  (instead of running them yourself)
 
 ## How to install
 
