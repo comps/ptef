@@ -60,9 +60,11 @@ make \
 rm -rf src-backup
 mv src src-backup
 cp -a src-backup src
-# don't test 32bit bash/python .so against 64bit /bin/bash
+# if building 32bit on 64bit, do only minimal testing:
+# - 64bit bash/python would link .so against 64bit interpreter
+# - valgrind would need a 32bit memcheck tool
 %if "%{_host_cpu}" != "%{_target_cpu}"
-export TEST_VARIANTS="/cli /valgrind"
+export TEST_VARIANTS="/cli"
 %endif
 TEST_PRINT_LOGS=1 make test \
 	CFLAGS="${RPM_OPT_FLAGS} -Wno-unused-result -Wextra" \
