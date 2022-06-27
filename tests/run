@@ -65,7 +65,8 @@ rm -f valgrind.log
 
 exec {results_fd}>"results.log"
 for testpath in "${variants[@]}"; do
-	PTEF_RESULTS_FD="$results_fd" run_arg "$testpath"
+	PTEF_RESULTS_FD="$results_fd" run_arg "$testpath" || \
+		err "ptef-runner failed for $testpath"
 done
 exec {results_fd}>&-
 
@@ -83,7 +84,11 @@ if grep -q '^FAIL[[:space:]]\+/' results.log; then
 	fi
 fi
 
-if [ -f valgrind.log ] && grep -q 'ERROR SUMMARY: [1-9] errors' valgrind.log; then
+valgrind_matches=(
+	-e 'ERROR SUMMARY: [1-9]\+ errors'
+	-e 'Emulation fatal error'
+)
+if [ -f valgrind.log ] && grep -q "${valgrind_matches[@]}" valgrind.log; then
 	err "found errors in valgrind.log"
 	if [ -n "$TEST_PRINT_LOGS" ]; then
 		echo -e "\nvalgrind.log:" >&2
